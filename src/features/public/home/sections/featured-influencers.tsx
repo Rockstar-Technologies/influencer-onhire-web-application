@@ -36,7 +36,11 @@ function InfluencerCard({ influencer }: { influencer: Influencer }) {
       <div className="relative h-64 w-full bg-surface-alt">
         <Image src={imageUrl} alt={name} fill sizes="(min-width: 1024px) 360px, 100vw" className="object-cover" />
         <span className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-heading shadow-sm">
-          <FiGlobe className="text-sky-500" size={12} />
+          {language === "Bilingual" ? (
+            <FiGlobe className="text-sky-500" size={12} />
+          ) : (
+            <span className="text-[9px] font-bold text-muted">{language === "French" ? "FR" : "GB"}</span>
+          )}
           {language}
         </span>
       </div>
