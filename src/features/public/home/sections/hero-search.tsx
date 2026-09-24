@@ -1,23 +1,23 @@
 "use client";
 
+import Form from "next/form";
 import { useEffect, useRef, useState } from "react";
-import { FiCheck, FiChevronDown, FiGlobe, FiSliders, FiX } from "react-icons/fi";
+import { FiChevronDown, FiGlobe, FiSliders } from "react-icons/fi";
+import {
+  ActiveFilterChips,
+  FilterGroupFields,
+  getActiveFilters,
+  toggleFilterValue,
+  type FilterSelection,
+} from "@/components/shared/filter-chips";
 import { cn } from "@/lib/utils";
-import type { InfluencerSearchOptions } from "@/types/influencer-filters";
-
-type Selection = Record<string, string[]>;
-
-interface ActiveFilter {
-  groupKey: string;
-  value: string;
-  label: string;
-}
+import type { FilterGroup, InfluencerSearchOptions } from "@/types/influencer-filters";
 
 export function HeroSearch({ options }: { options: InfluencerSearchOptions }) {
   const { sortOptions, filterGroups } = options;
   const [open, setOpen] = useState(false);
   const [sort, setSort] = useState(sortOptions[0].value);
-  const [selected, setSelected] = useState<Selection>({});
+  const [selected, setSelected] = useState<FilterSelection>({});
   const filtersRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -36,28 +36,14 @@ export function HeroSearch({ options }: { options: InfluencerSearchOptions }) {
     };
   }, [open]);
 
-  const activeFilters: ActiveFilter[] = filterGroups.flatMap((group) =>
-    (selected[group.key] ?? []).map((value) => ({
-      groupKey: group.key,
-      value,
-      label: group.options.find((option) => option.value === value)?.label ?? value,
-    })),
-  );
+  const activeFilters = getActiveFilters(filterGroups, selected);
 
-  function toggle(groupKey: string, mode: "single" | "multiple", value: string) {
-    setSelected((current) => {
-      const values = current[groupKey] ?? [];
-      const isSelected = values.includes(value);
-      let next: string[];
-      if (mode === "single") next = isSelected ? [] : [value];
-      else next = isSelected ? values.filter((item) => item !== value) : [...values, value];
-      return { ...current, [groupKey]: next };
-    });
+  function toggle(group: FilterGroup, value: string) {
+    setSelected((current) => toggleFilterValue(current, group, value));
   }
 
   return (
-    <form action="/coming-soon" className="mt-10 w-full rounded-2xl border border-border bg-surface p-5 text-left shadow-sm">
-      <input type="hidden" name="title" value="Browse Influencers" />
+    <Form action="/influencers" className="mt-10 w-full rounded-2xl border border-border bg-surface p-5 text-left shadow-sm">
       {activeFilters.map((filter) => (
         <input key={`${filter.groupKey}-${filter.value}`} type="hidden" name={filter.groupKey} value={filter.value} />
       ))}
@@ -115,35 +101,7 @@ export function HeroSearch({ options }: { options: InfluencerSearchOptions }) {
               className="absolute left-0 top-full z-30 mt-2 w-[min(34rem,calc(100vw-3rem))] rounded-xl border border-border bg-surface shadow-xl"
             >
               <div className="max-h-[60vh] space-y-5 overflow-y-auto p-5">
-                {filterGroups.map((group) => (
-                  <fieldset key={group.key}>
-                    <legend className="mb-2 text-[11px] font-bold uppercase tracking-wider text-muted">
-                      {group.label}
-                    </legend>
-                    <div className="flex flex-wrap gap-2">
-                      {group.options.map((option) => {
-                        const isSelected = (selected[group.key] ?? []).includes(option.value);
-                        return (
-                          <button
-                            key={option.value}
-                            type="button"
-                            aria-pressed={isSelected}
-                            onClick={() => toggle(group.key, group.mode, option.value)}
-                            className={cn(
-                              "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
-                              isSelected
-                                ? "border-primary bg-primary text-white"
-                                : "border-border bg-surface text-body hover:border-primary-border hover:text-primary",
-                            )}
-                          >
-                            {isSelected && <FiCheck size={12} />}
-                            {option.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </fieldset>
-                ))}
+                <FilterGroupFields groups={filterGroups} selection={selected} onToggle={toggle} />
               </div>
 
               <div className="flex items-center justify-between border-t border-border px-5 py-3">
@@ -183,31 +141,12 @@ export function HeroSearch({ options }: { options: InfluencerSearchOptions }) {
           <FiChevronDown className="pointer-events-none absolute right-3 text-muted" />
         </label>
 
-        {activeFilters.map((filter) => (
-          <button
-            key={`${filter.groupKey}-${filter.value}`}
-            type="button"
-            onClick={() =>
-              toggle(filter.groupKey, filterGroups.find((group) => group.key === filter.groupKey)!.mode, filter.value)
-            }
-            aria-label={`Remove filter ${filter.label}`}
-            className="inline-flex items-center gap-1.5 rounded-full bg-primary-light px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary-border/60"
-          >
-            {filter.label}
-            <FiX size={12} />
-          </button>
-        ))}
-
-        {activeFilters.length > 0 && (
-          <button
-            type="button"
-            onClick={() => setSelected({})}
-            className="text-xs font-semibold text-muted underline-offset-2 hover:text-primary hover:underline"
-          >
-            Clear all
-          </button>
-        )}
+        <ActiveFilterChips
+          filters={activeFilters}
+          onRemove={(filter) => toggle(filterGroups.find((group) => group.key === filter.groupKey)!, filter.value)}
+          onClear={() => setSelected({})}
+        />
       </div>
-    </form>
+    </Form>
   );
 }
