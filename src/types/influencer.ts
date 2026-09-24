@@ -20,5 +20,27 @@ export interface Influencer {
   activity: string;
   joinedAt: string;
   social: SocialStats;
+  // Lowest of the influencer's platform prices, in Frs.
   startingPrice: number;
 }
+
+export interface Collaboration {
+  brand: string;
+  campaign: string;
+  year: number;
+}
+
+// Everything the detail page shows on top of the card data.
+export interface InfluencerProfile extends Influencer {
+  bio: string;
+  contentStyle: string;
+  brandFit: string[];
+  collaborations: Collaboration[];
+  // Price per platform in Frs. Platforms the influencer isn't on are left out.
+  platformPricing: Partial<Record<SocialPlatform, number>>;
+  minimumBooking: string;
+  contractTerms: string[];
+  paymentMethods: string[];
+}
+
+export type InfluencerProfileDetails = Omit<InfluencerProfile, keyof Influencer>;

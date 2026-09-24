@@ -9,3 +9,8 @@ export function formatCount(value: number) {
   if (value >= 1_000) return `${+(value / 1_000).toFixed(1)}K`;
   return String(value);
 }
+
+// 100000 -> "100,000 Frs"
+export function formatPrice(value: number) {
+  return `${value.toLocaleString("en-US")} Frs`;
+}

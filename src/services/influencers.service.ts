@@ -1,6 +1,7 @@
-import type { Influencer, SocialPlatform } from "@/types/influencer";
+import type { Influencer, InfluencerProfile, SocialPlatform } from "@/types/influencer";
 import type { InfluencerQuery, InfluencerSearchOptions } from "@/types/influencer-filters";
 import { MOCK_SEARCH_OPTIONS } from "./mock/influencer-filters.mock";
+import { MOCK_PROFILE_DETAILS } from "./mock/influencer-profiles.mock";
 import { MOCK_INFLUENCERS } from "./mock/influencers.mock";
 
 export async function getInfluencerSearchOptions(): Promise<InfluencerSearchOptions> {
@@ -11,6 +12,13 @@ export async function getInfluencerSearchOptions(): Promise<InfluencerSearchOpti
 export async function getFeaturedInfluencers(): Promise<Influencer[]> {
   // TODO: replace with `fetch("/api/influencers/featured")` once the backend exists
   return MOCK_INFLUENCERS.filter((influencer) => influencer.rating >= 4.6).slice(0, 6);
+}
+
+export async function getInfluencerProfile(username: string): Promise<InfluencerProfile | null> {
+  // TODO: replace with `fetch(`/api/influencers/${username}`)` once the backend exists
+  const influencer = MOCK_INFLUENCERS.find((item) => item.username === username);
+  const details = influencer && MOCK_PROFILE_DETAILS[influencer.id];
+  return influencer && details ? { ...influencer, ...details } : null;
 }
 
 export async function searchInfluencers(query: InfluencerQuery): Promise<Influencer[]> {
