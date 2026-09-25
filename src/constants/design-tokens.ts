@@ -17,7 +17,7 @@ export const FOOTER_LINKS: NavLink[] = [
   { label: "About Us", href: "/about" },
   { label: "Post a Campaign", href: "/campaigns" },
   { label: "For Creators", href: "/for-creators" },
-  { label: "Payments & Escrow", href: "/coming-soon?title=Payments+%26+Escrow" },
+  { label: "Payments & Escrow", href: "/brand/payments" },
   { label: "Help & Support", href: "/contact" },
 ];
 
