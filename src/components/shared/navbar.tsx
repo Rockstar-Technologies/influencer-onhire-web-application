@@ -56,7 +56,7 @@ export function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
-          <Button href="/coming-soon?title=Sign+In" variant="outline">
+          <Button href="/sign-in" variant="outline">
             Sign In
           </Button>
           <Button href="/for-creators/apply/profile" variant="primary">
@@ -90,7 +90,7 @@ export function Navbar() {
             ))}
           </nav>
           <div className="mt-4 flex flex-col gap-3">
-            <Button href="/coming-soon?title=Sign+In" variant="outline" onClick={() => setOpen(false)}>
+            <Button href="/sign-in" variant="outline" onClick={() => setOpen(false)}>
               Sign In
             </Button>
             <Button href="/for-creators/apply/profile" variant="primary" onClick={() => setOpen(false)}>
