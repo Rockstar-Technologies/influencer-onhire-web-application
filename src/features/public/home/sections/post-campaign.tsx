@@ -27,7 +27,7 @@ export async function PostCampaign() {
         <Button href="/coming-soon?title=Post+a+Campaign" className="rounded-lg px-7 py-3.5">
           Post Your Campaign Now
         </Button>
-        <Button href="/coming-soon?title=Browse+Influencers" variant="outline" className="rounded-lg px-7 py-3.5">
+        <Button href="/influencers" variant="outline" className="rounded-lg px-7 py-3.5">
           Browse Influencers First
         </Button>
       </div>
