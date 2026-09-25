@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { Button } from "@/components/shared/button";
+import { CardIcon, ChartIcon, CheckCircleIcon } from "@/components/shared/icons";
+import { StatCard } from "@/components/shared/stat-card";
 import { cn } from "@/lib/utils";
 import { getEscrowSummary, listCampaignPayments } from "@/services/payments.service";
 import type { CampaignPayment, EscrowSummary, PaymentInfluencer } from "@/types/payment";
@@ -15,59 +17,6 @@ type OpenDialog =
   | { kind: "fund" }
   | { kind: "details" | "request" | "receipt"; payment: CampaignPayment }
   | null;
-
-function CardIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <rect x="3" y="5.5" width="18" height="13" rx="2" />
-      <path d="M3 10h18" />
-    </svg>
-  );
-}
-
-function CheckCircleIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <circle cx="12" cy="12" r="9" />
-      <path d="M8.5 12.5l2.5 2.5 4.5-5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function ChartIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path d="M6 18v-5M12 18V8M18 18v-8" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function StatCard({
-  label,
-  value,
-  unit,
-  icon,
-  accent,
-}: {
-  label: string;
-  value: string;
-  unit?: string;
-  icon: ReactNode;
-  accent: string;
-}) {
-  return (
-    <div className="rounded-2xl border border-border/80 bg-surface p-5 shadow-sm">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-medium text-muted">{label}</p>
-        <span className={cn("flex h-9 w-9 items-center justify-center rounded-xl", accent)}>{icon}</span>
-      </div>
-      <p className="mt-3 flex items-baseline gap-1.5 tabular-nums">
-        <span className="text-[1.75rem] font-bold leading-none tracking-tight text-heading">{value}</span>
-        {unit && <span className="text-sm font-semibold text-muted">{unit}</span>}
-      </p>
-    </div>
-  );
-}
 
 function RowAction({ payment, onOpen }: { payment: CampaignPayment; onOpen: (dialog: OpenDialog) => void }) {
   const buttonClass =

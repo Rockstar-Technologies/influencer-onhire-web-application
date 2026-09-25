@@ -4,7 +4,7 @@ import {
   listEscrowSteps,
   listHireableInfluencers,
 } from "@/services/payments.service";
-import { EscrowSteps } from "./sections/escrow-steps";
+import { EscrowSteps } from "@/components/shared/escrow-steps";
 import { PaymentsDashboard } from "./sections/payments-dashboard";
 
 export async function PaymentsPage({ query }: { query: string }) {
