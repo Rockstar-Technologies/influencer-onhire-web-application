@@ -10,6 +10,12 @@
   --color-primary-light: #eef2ff; /* indigo-50 — badge/pill backgrounds */
   --color-primary-border: #c7d2fe; /* indigo-200 — subtle accent borders */
 
+  --color-accent: #f97316;       /* orange-500 — search button */
+  --color-accent-hover: #ea580c; /* orange-600 */
+  --color-star: #f59e0b;         /* amber-500 — rating stars */
+  --color-success: #16a34a;      /* green-600 — "active" status */
+  --color-success-light: #f0fdf4; /* green-50 */
+
   --color-heading: #0f172a;   /* slate-900 — headline text */
   --color-body: #475569;      /* slate-600 — paragraph/body text */
   --color-muted: #64748b;     /* slate-500 — secondary/meta text */
@@ -30,6 +36,11 @@
   --color-primary-hover: var(--color-primary-hover);
   --color-primary-light: var(--color-primary-light);
   --color-primary-border: var(--color-primary-border);
+  --color-accent: var(--color-accent);
+  --color-accent-hover: var(--color-accent-hover);
+  --color-star: var(--color-star);
+  --color-success: var(--color-success);
+  --color-success-light: var(--color-success-light);
   --color-heading: var(--color-heading);
   --color-body: var(--color-body);
   --color-muted: var(--color-muted);
