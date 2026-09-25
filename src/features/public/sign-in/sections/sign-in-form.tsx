@@ -63,8 +63,8 @@ export function SignInForm({ initialEmail = "" }: { initialEmail?: string }) {
   return (
     <form noValidate onSubmit={handleSubmit} className="flex flex-col gap-5">
       <div>
-        <h2 className="text-xl font-bold text-heading">Log in to your account</h2>
-        <p className="mt-1 text-sm text-body">Brands and creators use the same log in.</p>
+        <h2 className="text-xl font-bold text-heading">Login to your account</h2>
+        <p className="mt-1 text-sm text-body">Brands and creators use the same login.</p>
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -148,7 +148,7 @@ export function SignInForm({ initialEmail = "" }: { initialEmail?: string }) {
         disabled={submitting}
         className="h-11 w-full rounded-full bg-primary text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {submitting ? "Logging in…" : "Log In"}
+        {submitting ? "Logging in…" : "Login"}
       </button>
 
       <p className="text-center text-sm text-body">

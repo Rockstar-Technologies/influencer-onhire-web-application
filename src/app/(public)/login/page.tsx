@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { SignInPage } from "@/features/public/sign-in/sign-in-page";
 
 export const metadata: Metadata = {
-  title: "Log In | Influencer On Hire",
+  title: "Login | Influencer On Hire",
 };
 
 export default async function Page({

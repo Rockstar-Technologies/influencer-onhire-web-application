@@ -1,7 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  redirects() {
+    return [
+      // The log-in page used to live at /sign-in; keep old links working.
+      { source: "/sign-in", destination: "/login", permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;

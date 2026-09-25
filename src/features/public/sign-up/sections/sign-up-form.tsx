@@ -106,8 +106,8 @@ export function SignUpForm({ minPasswordLength }: { minPasswordLength: number })
         error instanceof EmailTakenError ? (
           <>
             An account with this email already exists.{" "}
-            <Link href={`/sign-in?email=${encodeURIComponent(values.email.trim())}`} className="font-semibold underline">
-              Sign in instead
+            <Link href={`/login?email=${encodeURIComponent(values.email.trim())}`} className="font-semibold underline">
+              Login instead
             </Link>
             .
           </>
@@ -238,8 +238,8 @@ export function SignUpForm({ minPasswordLength }: { minPasswordLength: number })
 
       <p className="text-center text-sm text-body">
         Already have an account?{" "}
-        <Link href="/sign-in" className="font-semibold text-primary hover:text-primary-hover">
-          Sign in
+        <Link href="/login" className="font-semibold text-primary hover:text-primary-hover">
+          Login
         </Link>
       </p>
     </form>

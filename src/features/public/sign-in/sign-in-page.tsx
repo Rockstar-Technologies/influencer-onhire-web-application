@@ -5,7 +5,7 @@ export function SignInPage({ email }: { email?: string }) {
   return (
     <AuthShell
       eyebrow="Welcome back"
-      title="Log in to Influencer On Hire"
+      title="Login to Influencer On Hire"
       body="Pick up where you left off — your campaigns, requests and payments are waiting."
       perks={[
         "Brands: track campaigns and escrow payments",
