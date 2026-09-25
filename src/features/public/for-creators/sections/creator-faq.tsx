@@ -15,12 +15,9 @@ export function CreatorFaq({ faqs }: { faqs: ForCreatorsContent["faqs"] }) {
       <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1fr_1.4fr]">
         <div>
           <h2 className="text-3xl font-bold text-heading sm:text-4xl">Questions creators ask</h2>
-          <p className="mt-3 text-body">Already approved? Manage your requests and earnings from your dashboard.</p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Button href="/creator/requests">Go to Creator Dashboard</Button>
-            <Button href="/for-creators/apply/profile" variant="outline">
-              Apply Now
-            </Button>
+          <p className="mt-3 text-body">Ready to join? Creating your profile takes about 5 minutes.</p>
+          <div className="mt-6">
+            <Button href="/for-creators/apply/profile">Apply Now</Button>
           </div>
         </div>
         <div className="flex flex-col gap-3">
