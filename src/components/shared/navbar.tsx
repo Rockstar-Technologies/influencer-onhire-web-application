@@ -59,7 +59,7 @@ export function Navbar() {
           <Button href="/coming-soon?title=Sign+In" variant="outline">
             Sign In
           </Button>
-          <Button href="/coming-soon?title=Become+a+Creator" variant="primary">
+          <Button href="/for-creators/apply/profile" variant="primary">
             Become a Creator
           </Button>
         </div>
@@ -93,7 +93,7 @@ export function Navbar() {
             <Button href="/coming-soon?title=Sign+In" variant="outline" onClick={() => setOpen(false)}>
               Sign In
             </Button>
-            <Button href="/coming-soon?title=Become+a+Creator" variant="primary" onClick={() => setOpen(false)}>
+            <Button href="/for-creators/apply/profile" variant="primary" onClick={() => setOpen(false)}>
               Become a Creator
             </Button>
           </div>

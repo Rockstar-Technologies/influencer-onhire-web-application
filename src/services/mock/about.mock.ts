@@ -44,7 +44,7 @@ export const MOCK_ABOUT_CONTENT: AboutContent = {
         "Accept the campaign requests that fit your audience and schedule.",
         "Deliver, request payout, and withdraw to MTN MoMo or Orange Money.",
       ],
-      cta: { label: "Explore For Creators", href: "/creator/requests" },
+      cta: { label: "Explore For Creators", href: "/for-creators" },
     },
   ],
   values: [
@@ -73,6 +73,6 @@ export const MOCK_ABOUT_CONTENT: AboutContent = {
     title: "Ready to work together?",
     body: "Whether you're a brand with a product to launch or a creator with an audience that listens, there's a place for you here.",
     primary: { label: "Post a Campaign", href: "/campaigns/new" },
-    secondary: { label: "Become a Creator", href: "/coming-soon?title=Become+a+Creator" },
+    secondary: { label: "Become a Creator", href: "/for-creators/apply/profile" },
   },
 };

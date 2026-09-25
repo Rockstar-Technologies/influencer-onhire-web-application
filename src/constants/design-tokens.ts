@@ -9,14 +9,14 @@ export interface NavLink {
 export const NAV_LINKS: NavLink[] = [
   { label: "Browse Influencers", href: "/coming-soon?title=Browse+Influencers" },
   { label: "Post a Campaign", href: "/campaigns" },
-  { label: "For Creators", href: "/creator/requests" },
+  { label: "For Creators", href: "/for-creators" },
   { label: "For Brands", href: "/coming-soon?title=For+Brands" },
 ];
 
 export const FOOTER_LINKS: NavLink[] = [
   { label: "About Us", href: "/about" },
   { label: "Post a Campaign", href: "/campaigns" },
-  { label: "For Creators", href: "/creator/requests" },
+  { label: "For Creators", href: "/for-creators" },
   { label: "Payments & Escrow", href: "/coming-soon?title=Payments+%26+Escrow" },
   { label: "Help & Support", href: "/contact" },
 ];
