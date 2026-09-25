@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import type { BrandAccount } from "@/types/account";
+import type { DashboardAccount } from "@/types/account";
 
 function SearchIcon() {
   return (
@@ -16,7 +16,7 @@ function SearchIcon() {
 
 // Search writes to the ?q= param of the current dashboard page, which the page
 // uses to filter its own list.
-function SearchForm({ initialQuery }: { initialQuery: string }) {
+function SearchForm({ initialQuery, placeholder }: { initialQuery: string; placeholder: string }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -41,14 +41,14 @@ function SearchForm({ initialQuery }: { initialQuery: string }) {
         <SearchIcon />
       </span>
       <label htmlFor="dashboard-search" className="sr-only">
-        Search your campaigns
+        {placeholder.replace(/\.+$/, "")}
       </label>
       <input
         id="dashboard-search"
         type="search"
         value={query}
         onChange={(event) => setQuery(event.target.value)}
-        placeholder="Search your campaigns..."
+        placeholder={placeholder}
         className="min-w-0 flex-1 bg-transparent py-1.5 text-sm text-heading outline-none placeholder:text-muted"
       />
       <button
@@ -61,13 +61,23 @@ function SearchForm({ initialQuery }: { initialQuery: string }) {
   );
 }
 
-export function DashboardTopbar({ account }: { account: BrandAccount }) {
-  // Re-mount the form whenever ?q= changes (e.g. "Clear search") so the box matches the URL.
+export function DashboardTopbar({
+  account,
+  searchPlaceholder,
+  placeholdersByPath,
+}: {
+  account: DashboardAccount;
+  searchPlaceholder: string;
+  placeholdersByPath?: Record<string, string>;
+}) {
+  // Re-mount the form whenever ?q= or the page changes so the box matches the URL.
   const q = useSearchParams().get("q") ?? "";
+  const pathname = usePathname();
+  const placeholder = placeholdersByPath?.[pathname] ?? searchPlaceholder;
 
   return (
     <header className="sticky top-0 z-40 flex flex-wrap items-center gap-3 border-b border-border/80 bg-surface/90 px-4 py-2.5 backdrop-blur sm:px-6">
-      <SearchForm key={q} initialQuery={q} />
+      <SearchForm key={`${pathname}?${q}`} initialQuery={q} placeholder={placeholder} />
 
       <div className="order-1 ml-auto flex items-center gap-3 sm:order-2 sm:ml-0">
         <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-light text-xs font-bold text-primary">

@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BRAND_DASHBOARD_NAV } from "@/constants/design-tokens";
 import type { DashboardNavSection } from "@/constants/design-tokens";
 import { cn } from "@/lib/utils";
 
@@ -15,6 +14,13 @@ function NavIcon({ name }: { name: IconName }) {
       <svg {...common}>
         <rect x="3" y="5.5" width="18" height="13" rx="2" />
         <path d="M3 10h18" />
+      </svg>
+    );
+  }
+  if (name === "message") {
+    return (
+      <svg {...common}>
+        <path d="M4 5h16v11H9l-5 4z" strokeLinejoin="round" />
       </svg>
     );
   }
@@ -33,7 +39,7 @@ function NavIcon({ name }: { name: IconName }) {
   );
 }
 
-export function DashboardSidebar() {
+export function DashboardSidebar({ nav }: { nav: DashboardNavSection[] }) {
   const pathname = usePathname();
 
   return (
@@ -44,7 +50,7 @@ export function DashboardSidebar() {
       </Link>
 
       <nav className="flex gap-1 overflow-x-auto px-2 pb-3 lg:mt-5 lg:flex-col lg:gap-0 lg:overflow-visible lg:px-3">
-        {BRAND_DASHBOARD_NAV.map((section) => (
+        {nav.map((section) => (
           <div key={section.label} className="flex shrink-0 gap-1 lg:mb-5 lg:flex-col lg:gap-0.5">
             <p className="hidden px-3 pb-2 text-[11px] font-semibold uppercase tracking-widest text-slate-500 lg:block">
               {section.label}

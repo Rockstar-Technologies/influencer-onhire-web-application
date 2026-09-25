@@ -9,14 +9,14 @@ export interface NavLink {
 export const NAV_LINKS: NavLink[] = [
   { label: "Browse Influencers", href: "/coming-soon?title=Browse+Influencers" },
   { label: "Post a Campaign", href: "/campaigns" },
-  { label: "For Creators", href: "/coming-soon?title=For+Creators" },
+  { label: "For Creators", href: "/creator/requests" },
   { label: "For Brands", href: "/coming-soon?title=For+Brands" },
 ];
 
 export const FOOTER_LINKS: NavLink[] = [
   { label: "About Us", href: "/about" },
   { label: "Post a Campaign", href: "/campaigns" },
-  { label: "For Creators", href: "/coming-soon?title=For+Creators" },
+  { label: "For Creators", href: "/creator/requests" },
   { label: "Payments & Escrow", href: "/coming-soon?title=Payments+%26+Escrow" },
   { label: "Help & Support", href: "/contact" },
 ];
@@ -40,7 +40,7 @@ export const COMPACT_FOOTER_PATHS: string[] = ["/campaigns/posted", "/campaigns/
 
 export interface DashboardNavSection {
   label: string;
-  links: (NavLink & { icon: "wallet" | "user" | "home" })[];
+  links: (NavLink & { icon: "wallet" | "user" | "home" | "message" })[];
 }
 
 export const BRAND_DASHBOARD_NAV: DashboardNavSection[] = [
@@ -52,6 +52,23 @@ export const BRAND_DASHBOARD_NAV: DashboardNavSection[] = [
     label: "Discover",
     links: [
       { label: "Browse Influencers", href: "/coming-soon?title=Browse+Influencers", icon: "user" },
+      { label: "Influencer On Hire Home", href: "/", icon: "home" },
+    ],
+  },
+];
+
+export const CREATOR_DASHBOARD_NAV: DashboardNavSection[] = [
+  {
+    label: "Creator Account",
+    links: [
+      { label: "Campaign Requests", href: "/creator/requests", icon: "message" },
+      { label: "Earnings & Payouts", href: "/creator/earnings", icon: "wallet" },
+    ],
+  },
+  {
+    label: "Discover",
+    links: [
+      { label: "My Creator Profile", href: "/coming-soon?title=My+Creator+Profile", icon: "user" },
       { label: "Influencer On Hire Home", href: "/", icon: "home" },
     ],
   },
