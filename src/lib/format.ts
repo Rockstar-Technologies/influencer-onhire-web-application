@@ -38,3 +38,12 @@ export function isCameroonMobile(value: string) {
 export function formatCameroonPhone(value: string) {
   return normalizeCameroonPhone(value).replace(/(\d{3})(\d{3})(\d{3})/, "$1 $2 $3");
 }
+
+export function formatFrs(amount: number) {
+  return `${formatNumber(amount)} Frs`;
+}
+
+// 1200000 -> "1.2M", 620000 -> "620K"
+export function formatCompact(value: number) {
+  return new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(value);
+}
