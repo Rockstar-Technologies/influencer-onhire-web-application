@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { FOOTER_LINKS, LEGAL_LINKS, SOCIAL_LINKS } from "@/constants/design-tokens";
+import { FooterFrame } from "./footer-frame";
 
 function FacebookIcon() {
   return (
@@ -45,8 +46,8 @@ const SOCIAL_ICONS: Record<string, ReactNode> = {
 
 export function Footer() {
   return (
-    <footer className="bg-[#0b1220] text-slate-300">
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+    <FooterFrame
+      top={
         <div className="flex flex-col items-start justify-between gap-8 md:flex-row md:items-center">
           <Link href="/" className="flex items-center gap-2.5">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-sm font-bold text-white">
@@ -79,8 +80,9 @@ export function Footer() {
             ))}
           </div>
         </div>
-
-        <div className="mt-8 flex flex-col gap-4 border-t border-white/10 pt-6 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+      }
+      bottom={
+        <>
           <p>&copy; {new Date().getFullYear()} Influencer On Hire. All rights reserved.</p>
           <div className="flex items-center gap-5">
             {LEGAL_LINKS.map((link) => (
@@ -89,8 +91,8 @@ export function Footer() {
               </Link>
             ))}
           </div>
-        </div>
-      </div>
-    </footer>
+        </>
+      }
+    />
   );
 }

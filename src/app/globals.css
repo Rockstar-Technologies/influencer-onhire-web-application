@@ -24,6 +24,11 @@
   --color-surface-alt: #f8fafc;  /* slate-50 — footer/section backgrounds */
   --color-border: #e2e8f0;       /* slate-200 — input/card borders */
   --color-border-light: #f1f5f9; /* slate-100 — hairline dividers */
+
+  /* Status colors — form validation and campaign states */
+  --color-success: #16a34a; /* green-600 — completed fields, In Progress */
+  --color-warning: #d97706; /* amber-600 — Pending Review */
+  --color-danger: #dc2626;  /* red-600 — required/invalid fields */
 }
 
 @theme inline {
@@ -47,6 +52,9 @@
   --color-surface: var(--color-surface);
   --color-surface-alt: var(--color-surface-alt);
   --color-border: var(--color-border);
+  --color-success: var(--color-success);
+  --color-warning: var(--color-warning);
+  --color-danger: var(--color-danger);
   --color-border-light: var(--color-border-light);
 }
 
