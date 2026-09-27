@@ -1,5 +1,6 @@
-import { ComingSoonPage } from "@/features/public/coming-soon/coming-soon-page";
+import { redirect } from "next/navigation";
 
+// No dashboard yet; User Management is the admin landing page until one exists.
 export default function Page() {
-  return <ComingSoonPage title="Admin Panel" />;
+  redirect("/admin/users");
 }

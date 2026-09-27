@@ -51,7 +51,7 @@ export function InfluencerCard({ influencer }: { influencer: Influencer }) {
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-3">
-          <Button href="/coming-soon?title=Hire+Influencer" className="rounded-lg py-2.5">
+          <Button href={`/influencers/${username}/hire`} className="rounded-lg py-2.5">
             Hire
           </Button>
           <Button href={`/influencers/${username}`} variant="outline" className="rounded-lg py-2.5">

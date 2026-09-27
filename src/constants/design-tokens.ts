@@ -3,19 +3,19 @@ export interface NavLink {
   href: string;
 }
 
-// Real destinations only exist for Home, Browse Influencers, About and Contact (used as a stand-in
-// for "Help & Support"). Everything else routes to the generic coming-soon
+// Real destinations exist for Browse Influencers, Post a Campaign, About and Contact (used as a
+// stand-in for "Help & Support"). Everything else routes to the generic coming-soon
 // page since those features aren't built yet.
 export const NAV_LINKS: NavLink[] = [
   { label: "Browse Influencers", href: "/influencers" },
-  { label: "Post a Campaign", href: "/coming-soon?title=Post+a+Campaign" },
+  { label: "Post a Campaign", href: "/post-campaign" },
   { label: "For Creators", href: "/coming-soon?title=For+Creators" },
   { label: "For Brands", href: "/coming-soon?title=For+Brands" },
 ];
 
 export const FOOTER_LINKS: NavLink[] = [
   { label: "About Us", href: "/about" },
-  { label: "Post a Campaign", href: "/coming-soon?title=Post+a+Campaign" },
+  { label: "Post a Campaign", href: "/post-campaign" },
   { label: "For Creators", href: "/coming-soon?title=For+Creators" },
   { label: "Payments & Escrow", href: "/coming-soon?title=Payments+%26+Escrow" },
   { label: "Help & Support", href: "/contact" },

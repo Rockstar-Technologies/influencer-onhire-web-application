@@ -34,7 +34,7 @@ export function ProfileHeader({ profile, firstName }: { profile: InfluencerProfi
         <SocialStatList social={social} size={14} className="mt-3 flex flex-wrap gap-x-5 gap-y-2" />
       </div>
 
-      <Button href="/coming-soon?title=Hire+Influencer" className="shrink-0 self-start rounded-lg px-5 py-2.5">
+      <Button href={`/influencers/${profile.username}/hire`} className="shrink-0 self-start rounded-lg px-5 py-2.5">
         Hire {firstName}
       </Button>
     </section>

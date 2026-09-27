@@ -24,7 +24,7 @@ export async function PostCampaign() {
       </dl>
 
       <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-        <Button href="/coming-soon?title=Post+a+Campaign" className="rounded-lg px-7 py-3.5">
+        <Button href="/post-campaign" className="rounded-lg px-7 py-3.5">
           Post Your Campaign Now
         </Button>
         <Button href="/influencers" variant="outline" className="rounded-lg px-7 py-3.5">

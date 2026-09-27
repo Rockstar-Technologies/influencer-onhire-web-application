@@ -11,7 +11,13 @@ export async function getInfluencerSearchOptions(): Promise<InfluencerSearchOpti
 
 export async function getFeaturedInfluencers(): Promise<Influencer[]> {
   // TODO: replace with `fetch("/api/influencers/featured")` once the backend exists
-  return MOCK_INFLUENCERS.filter((influencer) => influencer.rating >= 4.6).slice(0, 6);
+  return MOCK_INFLUENCERS.filter(isFeatured).slice(0, 6);
+}
+
+const FEATURED_MIN_RATING = 4.6;
+
+function isFeatured(influencer: Influencer) {
+  return influencer.rating >= FEATURED_MIN_RATING;
 }
 
 export async function getInfluencerProfile(username: string): Promise<InfluencerProfile | null> {
@@ -90,6 +96,10 @@ function sortInfluencers(influencers: Influencer[], sort: string) {
     case "price-desc":
       return sorted.sort((a, b) => b.startingPrice - a.startingPrice);
     default:
-      return sorted;
+      // "Recommended": featured influencers first, then highest rated, then best success rate.
+      return sorted.sort(
+        (a, b) =>
+          Number(isFeatured(b)) - Number(isFeatured(a)) || b.rating - a.rating || b.successRate - a.successRate,
+      );
   }
 }
