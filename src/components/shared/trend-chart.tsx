@@ -5,18 +5,17 @@ interface Point {
   value: number;
 }
 
-const WIDTH = 400;
-const HEIGHT = 190;
 const PAD = { top: 16, right: 8, bottom: 28, left: 44 };
-const PLOT_W = WIDTH - PAD.left - PAD.right;
-const PLOT_H = HEIGHT - PAD.top - PAD.bottom;
 const TOOLTIP_W = 116;
+// Past roughly one label per 60 units of width they collide, so only every nth one is drawn.
+const MAX_AXIS_LABELS = 8;
+const UNITS_PER_LABEL = 60;
 
-// Rounds up to 1, 2 or 5 × 10^n so gridlines land on readable numbers.
+// Rounds up to 1, 2, 2.5 or 5 × 10^n so gridlines land on readable numbers.
 function niceMax(value: number) {
   if (value <= 0) return 1;
   const magnitude = 10 ** Math.floor(Math.log10(value));
-  const step = [1, 2, 5, 10].find((multiple) => multiple * magnitude >= value) ?? 10;
+  const step = [1, 2, 2.5, 5, 10].find((multiple) => multiple * magnitude >= value) ?? 10;
   return step * magnitude;
 }
 
@@ -26,13 +25,25 @@ export function TrendChart({
   kind,
   format,
   axisFormat = format,
+  width = 400,
+  height = 190,
+  hideTitle = false,
 }: {
   title: string;
   points: Point[];
   kind: "line" | "bar";
   format: (value: number) => string;
   axisFormat?: (value: number) => string;
+  // viewBox size; text stays readable when this is close to the rendered width.
+  width?: number;
+  height?: number;
+  hideTitle?: boolean;
 }) {
+  const WIDTH = width;
+  const HEIGHT = height;
+  const PLOT_W = WIDTH - PAD.left - PAD.right;
+  const PLOT_H = HEIGHT - PAD.top - PAD.bottom;
+  const labelEvery = Math.ceil(points.length / Math.min(MAX_AXIS_LABELS, Math.floor(WIDTH / UNITS_PER_LABEL)));
   const max = niceMax(Math.max(...points.map((point) => point.value)));
   const ticks = [0, max / 2, max];
   const slot = PLOT_W / points.length;
@@ -44,7 +55,7 @@ export function TrendChart({
 
   return (
     <figure className="min-w-0">
-      <figcaption className="text-sm font-semibold text-heading">{title}</figcaption>
+      <figcaption className={cn("text-sm font-semibold text-heading", hideTitle && "sr-only")}>{title}</figcaption>
       <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="mt-3 w-full" role="img" aria-label={`${title}: ${points.map((point) => `${point.label} ${format(point.value)}`).join(", ")}`}>
         {ticks.map((tick) => (
           <g key={tick}>
@@ -68,9 +79,11 @@ export function TrendChart({
           return (
             <g key={point.label}>
               {kind === "bar" && barHeight > 0 && <path d={barPath} className="fill-navy" />}
-              <text x={cx} y={HEIGHT - 8} textAnchor="middle" className="fill-muted text-[11px]">
-                {point.label}
-              </text>
+              {(points.length - 1 - index) % labelEvery === 0 && (
+                <text x={cx} y={HEIGHT - 8} textAnchor="middle" className="fill-muted text-[11px]">
+                  {point.label}
+                </text>
+              )}
             </g>
           );
         })}

@@ -1,6 +1,9 @@
-import { redirect } from "next/navigation";
+import type { Metadata } from "next";
+import { DashboardPage } from "@/features/admin-panel/dashboard/dashboard-page";
+import { parseRange } from "@/features/admin-panel/dashboard/dashboard-range";
 
-// No dashboard yet; User Management is the admin landing page until one exists.
-export default function Page() {
-  redirect("/admin/users");
+export const metadata: Metadata = { title: "Dashboard · Admin · Influencer On Hire" };
+
+export default async function Page({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  return <DashboardPage range={parseRange((await searchParams).range)} />;
 }

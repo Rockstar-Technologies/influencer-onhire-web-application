@@ -17,7 +17,7 @@ export async function SecurityAlerts() {
   return (
     <section aria-labelledby="alerts-heading" className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
       <div className="flex items-center justify-between gap-3">
-        <h2 id="alerts-heading" className="flex items-center gap-2 font-display text-base font-bold text-heading">
+        <h2 id="alerts-heading" className="scroll-mt-28 flex items-center gap-2 font-display text-base font-bold text-heading">
           <FiShield className="text-navy" aria-hidden />
           Security Alerts
         </h2>

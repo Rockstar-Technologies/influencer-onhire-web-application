@@ -1,3 +1,4 @@
+import type { TopInfluencer } from "@/types/dashboard";
 import type {
   AccountStatus,
   BulkAction,
@@ -75,6 +76,32 @@ export async function getUserProfile(id: string): Promise<UserProfile | null> {
       b.sentAt.localeCompare(a.sentAt),
     ),
   };
+}
+
+export async function countOpenDisputes(): Promise<number> {
+  // TODO: replace with `fetch("/api/admin/disputes?status=open&count=true")`
+  return Object.values(MOCK_DISPUTES)
+    .flat()
+    .filter((dispute) => dispute.status === "open").length;
+}
+
+// Ranked by earnings rather than followers, since follower counts are easy to inflate.
+export async function listTopInfluencers(limit: number): Promise<TopInfluencer[]> {
+  // TODO: replace with `fetch("/api/admin/influencers/top?limit=" + limit)`
+  return MOCK_PLATFORM_USERS.filter((user) => user.type === "influencer" && user.status === "active" && MOCK_PERFORMANCE[user.id])
+    .map((user) => {
+      const performance = MOCK_PERFORMANCE[user.id];
+      return {
+        id: user.id,
+        name: user.name,
+        niche: user.niche,
+        earnings: performance.lifetimeValue,
+        rating: performance.avgReviewScore,
+        successRate: performance.campaignSuccessRate,
+      };
+    })
+    .sort((a, b) => b.earnings - a.earnings)
+    .slice(0, limit);
 }
 
 // Which statuses each action may move a user out of; anything else is skipped, not an error.

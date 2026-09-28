@@ -1,6 +1,6 @@
 import { cn, formatCount, formatPrice } from "@/lib/utils";
 import type { AccountType, Dispute, TrendPoint, UserPerformance } from "@/types/user-management";
-import { TrendChart } from "./trend-chart";
+import { TrendChart } from "@/components/shared/trend-chart";
 
 function growth(first: number, last: number) {
   if (first <= 0) return null;

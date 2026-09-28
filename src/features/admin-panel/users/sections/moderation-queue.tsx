@@ -17,7 +17,7 @@ export async function ModerationQueue() {
   return (
     <section aria-labelledby="moderation-heading" className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
       <div className="flex items-center justify-between gap-3">
-        <h2 id="moderation-heading" className="flex items-center gap-2 font-display text-base font-bold text-heading">
+        <h2 id="moderation-heading" className="scroll-mt-28 flex items-center gap-2 font-display text-base font-bold text-heading">
           <FiFlag className="text-navy" aria-hidden />
           Content Moderation
         </h2>
