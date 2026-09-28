@@ -1,490 +1,400 @@
 "use client";
 
-import Image from "next/image";
-import { useEffect, useMemo, useState, useTransition, type ChangeEvent, type FormEvent } from "react";
-import { FiAlertCircle, FiChevronDown, FiImage, FiLock, FiUsers, FiX } from "react-icons/fi";
-import { FieldError, FormLabel, fieldClass } from "@/components/shared/form-field";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import type { ChangeEvent, FormEvent, ReactNode } from "react";
+import { Button } from "@/components/shared/button";
 import { cn } from "@/lib/utils";
-import type {
-  Campaign,
-  CampaignFormErrors,
-  CampaignFormField,
-  CampaignFormOptions,
-  CampaignFormValues,
-} from "@/types/campaign";
-import type { FilterOption } from "@/types/influencer-filters";
-import { estimateReach, submitCampaign } from "../actions";
 import {
-  campaignDays,
-  DELIVERABLES_MAX,
-  MAX_IMAGE_BYTES,
-  MAX_IMAGES,
-  MIN_BUDGET,
-  REQUIRED_FIELDS,
-  TITLE_MAX,
-  todayISO,
-  validateCampaign,
-} from "../campaign-form-rules";
+  createCampaign,
+  deleteCampaignDraft,
+  getCampaignDraft,
+  saveCampaignDraft,
+} from "@/services/campaigns.service";
+import type { CampaignDraft, EngagementRateOption, NewCampaignInput } from "@/types/campaign";
 
-const EMPTY_VALUES: CampaignFormValues = {
+interface FormValues {
+  title: string;
+  budget: string;
+  startDate: string;
+  endDate: string;
+  deliverables: string;
+  durationDays: string;
+  minEngagementRate: string;
+  ageRange: string;
+  location: string;
+  interests: string;
+}
+
+type FieldName = keyof FormValues;
+type FormErrors = Partial<Record<FieldName, string>>;
+
+const REQUIRED_FIELDS: FieldName[] = ["title", "budget", "startDate", "endDate", "deliverables"];
+
+const INITIAL_VALUES: FormValues = {
   title: "",
-  niche: "",
   budget: "",
   startDate: "",
   endDate: "",
   deliverables: "",
-  minEngagement: "any",
+  durationDays: "",
+  minEngagementRate: "3",
+  ageRange: "",
+  location: "",
+  interests: "",
 };
 
-interface CampaignFormProps {
-  options: CampaignFormOptions;
-  onSuccess: (campaign: Campaign) => void;
-}
+function validate(values: FormValues): FormErrors {
+  const errors: FormErrors = {};
 
-function SectionTitle({ step, children }: { step: number; children: string }) {
-  return (
-    <h3 className="flex items-center gap-2.5 text-sm font-bold text-heading">
-      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-light text-xs text-primary">
-        {step}
-      </span>
-      {children}
-    </h3>
-  );
-}
+  if (!values.title.trim()) errors.title = "Give your campaign a title.";
 
-function ChipGroup({
-  legend,
-  options,
-  selected,
-  onChange,
-}: {
-  legend: string;
-  options: FilterOption[];
-  selected: string[];
-  onChange: (next: string[]) => void;
-}) {
-  return (
-    <fieldset>
-      <legend className="mb-2 flex items-center gap-2 text-sm font-semibold text-heading">
-        {legend}
-        <span className="rounded-full bg-border-light px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted">
-          Optional
-        </span>
-      </legend>
-      <div className="flex flex-wrap gap-2">
-        {options.map((option) => (
-          <label
-            key={option.value}
-            className="cursor-pointer rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-body transition-colors hover:border-primary-border has-checked:border-primary has-checked:bg-primary has-checked:text-white has-focus-visible:ring-2 has-focus-visible:ring-primary/30"
-          >
-            <input
-              type="checkbox"
-              className="sr-only"
-              checked={selected.includes(option.value)}
-              onChange={(event) =>
-                onChange(
-                  event.target.checked ? [...selected, option.value] : selected.filter((value) => value !== option.value),
-                )
-              }
-            />
-            {option.label}
-          </label>
-        ))}
-      </div>
-    </fieldset>
-  );
-}
+  const budget = Number(values.budget.replace(/[\s,]/g, ""));
+  if (!values.budget.trim()) errors.budget = "Enter your budget in FCFA.";
+  else if (!Number.isFinite(budget) || budget <= 0) errors.budget = "Budget must be a number above 0.";
 
-export function CampaignForm({ options, onSuccess }: CampaignFormProps) {
-  const [today] = useState(() => todayISO());
-  const [values, setValues] = useState<CampaignFormValues>(EMPTY_VALUES);
-  const [ageRanges, setAgeRanges] = useState<string[]>([]);
-  const [locations, setLocations] = useState<string[]>([]);
-  const [interests, setInterests] = useState<string[]>([]);
-  const [images, setImages] = useState<File[]>([]);
-  const [imageError, setImageError] = useState("");
-  const [touched, setTouched] = useState<Partial<Record<CampaignFormField, boolean>>>({});
-  const [attempted, setAttempted] = useState(false);
-  const [serverErrors, setServerErrors] = useState<CampaignFormErrors>({});
-  const [formMessage, setFormMessage] = useState("");
-  const [refineOpen, setRefineOpen] = useState(false);
-  const [reach, setReach] = useState<number | null>(null);
-  const [pending, startTransition] = useTransition();
-
-  const clientErrors = validateCampaign(values, today);
-  const isComplete = (field: CampaignFormField) => !!values[field] && !clientErrors[field];
-  const completedCount = REQUIRED_FIELDS.filter(isComplete).length;
-  const errorFor = (field: CampaignFormField) =>
-    ((touched[field] || attempted) && clientErrors[field]) || serverErrors[field] || undefined;
-  const invalid = (field: CampaignFormField) =>
-    errorFor(field) ? { "aria-invalid": true, "aria-describedby": `${field}-error` } : {};
-
-  function setValue(field: keyof CampaignFormValues, value: string) {
-    setValues((current) => ({ ...current, [field]: value }));
-    setServerErrors((current) => ({ ...current, [field]: undefined }));
+  if (!values.startDate) errors.startDate = "Pick a start date.";
+  if (!values.endDate) errors.endDate = "Pick an end date.";
+  else if (values.startDate && values.endDate < values.startDate) {
+    errors.endDate = "End date must be on or after the start date.";
   }
-  const blur = (field: CampaignFormField) => () => setTouched((current) => ({ ...current, [field]: true }));
 
-  // Live estimate of how many verified influencers this campaign would reach.
+  if (!values.deliverables.trim()) errors.deliverables = "Describe what the influencer should deliver.";
+
+  if (values.durationDays.trim()) {
+    const days = Number(values.durationDays);
+    if (!Number.isInteger(days) || days <= 0) errors.durationDays = "Use a whole number of days, e.g. 14.";
+  }
+
+  if (values.ageRange.trim() && !/^\d{2}\s*[-–]\s*\d{2}$/.test(values.ageRange.trim())) {
+    errors.ageRange = "Use a range like 18–34.";
+  }
+
+  return errors;
+}
+
+function fromDraft(draft: CampaignDraft): FormValues {
+  return {
+    title: draft.title,
+    budget: draft.budget.toLocaleString("en-US"),
+    startDate: draft.startDate,
+    endDate: draft.endDate,
+    deliverables: draft.deliverables,
+    durationDays: draft.durationDays ? String(draft.durationDays) : "",
+    minEngagementRate: String(draft.minEngagementRate ?? 0),
+    ageRange: draft.ageRange ?? "",
+    location: draft.location ?? "",
+    interests: draft.interests ?? "",
+  };
+}
+
+function toInput(values: FormValues, imageNames: string[]): NewCampaignInput {
+  const optionalText = (value: string) => value.trim() || undefined;
+  const engagement = Number(values.minEngagementRate);
+
+  return {
+    title: values.title.trim(),
+    budget: Number(values.budget.replace(/[\s,]/g, "")),
+    startDate: values.startDate,
+    endDate: values.endDate,
+    deliverables: values.deliverables.trim(),
+    durationDays: values.durationDays.trim() ? Number(values.durationDays) : undefined,
+    minEngagementRate: engagement > 0 ? engagement : undefined,
+    ageRange: optionalText(values.ageRange),
+    location: optionalText(values.location),
+    interests: optionalText(values.interests),
+    referenceImageNames: imageNames,
+  };
+}
+
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+      <path d="M5 12.5l4.5 4.5L19 7.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function OptionalBadge({ children = "Optional" }: { children?: ReactNode }) {
+  return (
+    <span className="rounded-full border border-border bg-surface px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted">
+      {children}
+    </span>
+  );
+}
+
+interface FieldProps {
+  id: FieldName | "images";
+  label: string;
+  required?: boolean;
+  optional?: boolean;
+  error?: string;
+  valid?: boolean;
+  children: ReactNode;
+}
+
+function Field({ id, label, required, optional, error, valid, children }: FieldProps) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={id} className="flex items-center gap-2 text-sm font-semibold text-heading">
+        <span>
+          {label}
+          {required && <span className="text-danger"> *</span>}
+        </span>
+        {optional && <OptionalBadge />}
+      </label>
+      <div className="relative">
+        {children}
+        {valid && (
+          <CheckIcon className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-success" />
+        )}
+      </div>
+      {error && (
+        <p id={`${id}-error`} className="text-xs font-medium text-danger">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function controlClass(state: "idle" | "valid" | "error") {
+  return cn(
+    "w-full rounded-lg border bg-surface px-3 text-sm text-heading placeholder:text-muted/70 outline-none transition-colors",
+    "focus:border-primary focus:ring-2 focus:ring-primary/15",
+    state === "idle" && "border-border",
+    state === "valid" && "border-success/60",
+    state === "error" && "border-danger ring-2 ring-danger/10"
+  );
+}
+
+export function CampaignForm({
+  engagementOptions,
+  draftId,
+}: {
+  engagementOptions: EngagementRateOption[];
+  draftId?: string;
+}) {
+  const router = useRouter();
+  const [values, setValues] = useState<FormValues>(INITIAL_VALUES);
+  const [images, setImages] = useState<File[]>([]);
+  // Image names carried over from a draft, used until the brand picks new files.
+  const [draftImageNames, setDraftImageNames] = useState<string[]>([]);
+  const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>({});
+  const [attempted, setAttempted] = useState(false);
+  const [previewing, setPreviewing] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
   useEffect(() => {
-    if (!values.niche) return;
+    if (!draftId) return;
     let cancelled = false;
-    estimateReach({ niche: values.niche, locations, minEngagement: values.minEngagement }).then((count) => {
-      if (!cancelled) setReach(count);
+    getCampaignDraft(draftId).then((draft) => {
+      if (cancelled || !draft) return;
+      setValues(fromDraft(draft));
+      setDraftImageNames(draft.referenceImageNames);
     });
     return () => {
       cancelled = true;
     };
-  }, [values.niche, values.minEngagement, locations]);
-  const shownReach = values.niche ? reach : null;
+  }, [draftId]);
 
-  const imagePreviews = useMemo(() => images.map((file) => URL.createObjectURL(file)), [images]);
-  useEffect(() => () => imagePreviews.forEach((url) => URL.revokeObjectURL(url)), [imagePreviews]);
+  const imageNames = images.length ? images.map((file) => file.name) : draftImageNames;
+  const errors = validate(values);
+  const isValid = Object.keys(errors).length === 0;
 
-  function onImagesSelected(event: ChangeEvent<HTMLInputElement>) {
-    const picked = Array.from(event.target.files ?? []);
-    event.target.value = "";
-    const accepted = picked.filter((file) => file.type.startsWith("image/") && file.size <= MAX_IMAGE_BYTES);
-    const next = [...images, ...accepted].slice(0, MAX_IMAGES);
-    if (accepted.length < picked.length) setImageError(`Only image files up to ${MAX_IMAGE_BYTES / 1024 / 1024} MB are accepted.`);
-    else if (images.length + accepted.length > MAX_IMAGES) setImageError(`You can attach up to ${MAX_IMAGES} images.`);
-    else setImageError("");
-    setImages(next);
+  const showError = (name: FieldName) => (touched[name] || attempted) && errors[name];
+  const fieldState = (name: FieldName): "idle" | "valid" | "error" => {
+    if (showError(name)) return "error";
+    return values[name].trim() && !errors[name] ? "valid" : "idle";
+  };
+
+  const bind = (name: FieldName) => ({
+    id: name,
+    name,
+    value: values[name],
+    onChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+      setValues((current) => ({ ...current, [name]: event.target.value })),
+    onBlur: () => setTouched((current) => ({ ...current, [name]: true })),
+    "aria-invalid": Boolean(showError(name)),
+    "aria-describedby": showError(name) ? `${name}-error` : undefined,
+  });
+
+  const fieldProps = (name: FieldName) => ({
+    id: name,
+    error: showError(name) || undefined,
+    valid: fieldState(name) === "valid" && name !== "minEngagementRate",
+  });
+
+  function focusFirstError() {
+    const first = (Object.keys(INITIAL_VALUES) as FieldName[]).find((name) => errors[name]);
+    if (first) document.getElementById(first)?.focus();
   }
 
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function handlePreview() {
     setAttempted(true);
+    if (!isValid) return focusFirstError();
 
-    const firstInvalid = REQUIRED_FIELDS.find((field) => clientErrors[field]);
-    if (firstInvalid) {
-      setFormMessage("Please fix the highlighted fields and try again.");
-      document.getElementById(firstInvalid)?.focus();
-      return;
+    setPreviewing(true);
+    setSubmitError(null);
+    try {
+      const draft = await saveCampaignDraft(toInput(values, imageNames), draftId);
+      router.push(`/campaigns/preview?draft=${encodeURIComponent(draft.id)}`);
+    } catch {
+      setSubmitError("We couldn't open the preview. Check your connection and try again.");
+      setPreviewing(false);
     }
-    setFormMessage("");
-
-    const formData = new FormData();
-    for (const [field, value] of Object.entries(values)) formData.append(field, value);
-    ageRanges.forEach((value) => formData.append("ageRanges", value));
-    locations.forEach((value) => formData.append("locations", value));
-    interests.forEach((value) => formData.append("interests", value));
-    formData.append("referenceImageCount", String(images.length));
-
-    startTransition(async () => {
-      const result = await submitCampaign(formData);
-      if (result.status === "success") {
-        onSuccess(result.campaign);
-        return;
-      }
-      setServerErrors(result.errors);
-      setFormMessage(result.message);
-    });
   }
 
-  const days = campaignDays(values.startDate, values.endDate);
-  const refinements = ageRanges.length + locations.length + interests.length + images.length + (values.minEngagement !== "any" ? 1 : 0);
+  async function submit() {
+    setAttempted(true);
+    if (!isValid) return focusFirstError();
+
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      const campaign = await createCampaign(toInput(values, imageNames));
+      if (draftId) await deleteCampaignDraft(draftId);
+      router.push(`/campaigns/posted?id=${encodeURIComponent(campaign.id)}`);
+    } catch {
+      setSubmitError("We couldn't post your campaign. Check your connection and try again.");
+      setSubmitting(false);
+    }
+  }
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    void submit();
+  }
+
+  const completedRequired = REQUIRED_FIELDS.filter((name) => values[name].trim() && !errors[name]).length;
 
   return (
-    <form onSubmit={onSubmit} noValidate className="rounded-2xl border border-border bg-surface p-6 shadow-sm sm:p-8">
-      <div>
-        <div className="flex items-center justify-between text-xs font-semibold">
-          <span className="text-heading">Required details</span>
-          <span className={completedCount === REQUIRED_FIELDS.length ? "text-success" : "text-muted"}>
-            {completedCount} of {REQUIRED_FIELDS.length} complete
-          </span>
-        </div>
-        <div
-          role="progressbar"
-          aria-label="Required fields completed"
-          aria-valuemin={0}
-          aria-valuemax={REQUIRED_FIELDS.length}
-          aria-valuenow={completedCount}
-          className="mt-2 h-1.5 overflow-hidden rounded-full bg-border-light"
-        >
-          <div
-            className="h-full rounded-full bg-success transition-[width] duration-300"
-            style={{ width: `${(completedCount / REQUIRED_FIELDS.length) * 100}%` }}
-          />
-        </div>
-      </div>
+    <>
+      <form
+        noValidate
+        onSubmit={handleSubmit}
+        className="flex flex-col gap-5 rounded-2xl border border-border bg-surface p-5 sm:p-6"
+      >
+        <p className="sr-only" aria-live="polite">
+          {completedRequired} of {REQUIRED_FIELDS.length} required fields complete
+        </p>
 
-      {formMessage && (
-        <div role="alert" className="mt-6 flex items-start gap-2.5 rounded-lg bg-danger-light px-4 py-3 text-sm text-danger">
-          <FiAlertCircle className="mt-0.5 shrink-0" />
-          {formMessage}
-        </div>
-      )}
+        <Field label="Campaign Title" required {...fieldProps("title")}>
+          <input type="text" placeholder="e.g. Summer Glow Launch" className={cn(controlClass(fieldState("title")), "h-11 pr-10")} {...bind("title")} />
+        </Field>
 
-      <div className="mt-8 space-y-5">
-        <SectionTitle step={1}>Campaign basics</SectionTitle>
-
-        <div>
-          <FormLabel htmlFor="title" required complete={isComplete("title")}>
-            Campaign Title
-          </FormLabel>
-          <input
-            id="title"
-            value={values.title}
-            onChange={(event) => setValue("title", event.target.value)}
-            onBlur={blur("title")}
-            maxLength={TITLE_MAX}
-            placeholder="e.g. Summer Glow Launch"
-            className={cn(fieldClass(!!errorFor("title")), "h-11")}
-            {...invalid("title")}
-          />
-          <FieldError id="title-error" message={errorFor("title")} />
-        </div>
+        <Field label="Budget / Price (FCFA)" required {...fieldProps("budget")}>
+          <input type="text" inputMode="numeric" placeholder="e.g. 500,000" className={cn(controlClass(fieldState("budget")), "h-11 pr-10")} {...bind("budget")} />
+        </Field>
 
         <div className="grid gap-5 sm:grid-cols-2">
-          <div>
-            <FormLabel htmlFor="niche" required complete={isComplete("niche")}>
-              Niche
-            </FormLabel>
-            <div className="relative">
-              <select
-                id="niche"
-                value={values.niche}
-                onChange={(event) => setValue("niche", event.target.value)}
-                onBlur={blur("niche")}
-                className={cn(fieldClass(!!errorFor("niche")), "h-11 appearance-none pr-10", !values.niche && "text-muted")}
-                {...invalid("niche")}
-              >
-                <option value="">Select a niche</option>
-                {options.niches.map((niche) => (
-                  <option key={niche.value} value={niche.value}>
-                    {niche.label}
-                  </option>
-                ))}
-              </select>
-              <FiChevronDown className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-muted" />
-            </div>
-            <FieldError id="niche-error" message={errorFor("niche")} />
-          </div>
-
-          <div>
-            <FormLabel htmlFor="budget" required complete={isComplete("budget")}>
-              Budget / Price (FCFA)
-            </FormLabel>
-            <div className="relative">
-              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-muted">FCFA</span>
-              <input
-                id="budget"
-                inputMode="numeric"
-                autoComplete="off"
-                value={values.budget ? Number(values.budget).toLocaleString("en-US") : ""}
-                onChange={(event) => setValue("budget", event.target.value.replace(/\D/g, "").slice(0, 10))}
-                onBlur={blur("budget")}
-                placeholder="500,000"
-                className={cn(fieldClass(!!errorFor("budget")), "h-11 pl-14")}
-                {...invalid("budget")}
-              />
-            </div>
-            {errorFor("budget") ? (
-              <FieldError id="budget-error" message={errorFor("budget")} />
-            ) : (
-              <p className="mt-1.5 text-xs text-muted">Minimum {MIN_BUDGET.toLocaleString("en-US")} FCFA.</p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-8 space-y-5">
-        <SectionTitle step={2}>Timeline</SectionTitle>
-        <div className="grid gap-5 sm:grid-cols-2">
-          <div>
-            <FormLabel htmlFor="startDate" required complete={isComplete("startDate")}>
-              Start Date
-            </FormLabel>
+          <Field label="Start Date" required {...fieldProps("startDate")} valid={false}>
+            <input type="date" className={cn(controlClass(fieldState("startDate")), "h-11")} {...bind("startDate")} />
+          </Field>
+          <Field label="End Date" required {...fieldProps("endDate")} valid={false}>
             <input
-              id="startDate"
               type="date"
-              min={today}
-              value={values.startDate}
-              onChange={(event) => setValue("startDate", event.target.value)}
-              onBlur={blur("startDate")}
-              className={cn(fieldClass(!!errorFor("startDate")), "h-11")}
-              {...invalid("startDate")}
+              min={values.startDate || undefined}
+              className={cn(controlClass(fieldState("endDate")), "h-11")}
+              {...bind("endDate")}
             />
-            <FieldError id="startDate-error" message={errorFor("startDate")} />
-          </div>
-          <div>
-            <FormLabel htmlFor="endDate" required complete={isComplete("endDate")}>
-              End Date
-            </FormLabel>
-            <input
-              id="endDate"
-              type="date"
-              min={values.startDate || today}
-              value={values.endDate}
-              onChange={(event) => setValue("endDate", event.target.value)}
-              onBlur={blur("endDate")}
-              className={cn(fieldClass(!!errorFor("endDate")), "h-11")}
-              {...invalid("endDate")}
-            />
-            {errorFor("endDate") ? (
-              <FieldError id="endDate-error" message={errorFor("endDate")} />
-            ) : (
-              days && (
-                <p className="mt-1.5 text-xs font-medium text-success">
-                  Campaign runs for {days} {days === 1 ? "day" : "days"}.
-                </p>
-              )
-            )}
-          </div>
+          </Field>
         </div>
-      </div>
 
-      <div className="mt-8 space-y-5">
-        <SectionTitle step={3}>What you expect</SectionTitle>
-        <div>
-          <FormLabel htmlFor="deliverables" required complete={isComplete("deliverables")}>
-            Expectations / Deliverables
-          </FormLabel>
+        <Field label="Expectations / Deliverables" required {...fieldProps("deliverables")} valid={false}>
           <textarea
-            id="deliverables"
-            rows={4}
-            value={values.deliverables}
-            onChange={(event) => setValue("deliverables", event.target.value)}
-            onBlur={blur("deliverables")}
-            maxLength={DELIVERABLES_MAX}
+            rows={3}
             placeholder="e.g. 1 Instagram story, 2 TikTok posts, 1 YouTube mention"
-            className={cn(fieldClass(!!errorFor("deliverables")), "resize-y py-3")}
-            {...invalid("deliverables")}
+            className={cn(controlClass(fieldState("deliverables")), "resize-y py-2.5")}
+            {...bind("deliverables")}
           />
-          <div className="mt-1.5 flex items-start justify-between gap-3">
-            <FieldError id="deliverables-error" message={errorFor("deliverables")} />
-            <span className="ml-auto text-xs text-muted" aria-live="polite">
-              {values.deliverables.length}/{DELIVERABLES_MAX}
-            </span>
-          </div>
-        </div>
-      </div>
+        </Field>
 
-      <div className="mt-8 rounded-xl border border-dashed border-border bg-surface-alt">
-        <button
-          type="button"
-          onClick={() => setRefineOpen((open) => !open)}
-          aria-expanded={refineOpen}
-          aria-controls="refine-reach"
-          className="flex w-full items-center justify-between gap-3 rounded-xl p-5 text-left"
-        >
-          <span className="flex flex-wrap items-center gap-2.5">
-            <span className="text-sm font-bold text-heading">Refine Your Reach</span>
-            <span className="rounded-full border border-border bg-surface px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted">
-              Optional · Can be skipped
-            </span>
-            {refinements > 0 && (
-              <span className="rounded-full bg-primary-light px-2.5 py-0.5 text-[10px] font-bold text-primary">
-                {refinements} applied
-              </span>
+        <fieldset className="flex flex-col gap-5 rounded-xl border border-dashed border-primary-border bg-surface-alt p-4 sm:p-5">
+          <legend className="sr-only">Refine your reach (optional)</legend>
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-sm font-semibold text-heading">Refine Your Reach</p>
+            <OptionalBadge>Optional · can be skipped</OptionalBadge>
+          </div>
+
+          <Field label="Or Number of Days" optional {...fieldProps("durationDays")}>
+            <input type="text" inputMode="numeric" placeholder="e.g. 14" className={cn(controlClass(fieldState("durationDays")), "h-11 pr-10")} {...bind("durationDays")} />
+          </Field>
+
+          <Field label="Minimum Engagement Rate" optional {...fieldProps("minEngagementRate")}>
+            <select className={cn(controlClass("idle"), "h-11 cursor-pointer")} {...bind("minEngagementRate")}>
+              {engagementOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </Field>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Field label="Target Audience — Age Range" optional {...fieldProps("ageRange")}>
+              <input type="text" placeholder="e.g. 18–34" className={cn(controlClass(fieldState("ageRange")), "h-11 pr-10")} {...bind("ageRange")} />
+            </Field>
+            <Field label="Target Audience — Location" optional {...fieldProps("location")}>
+              <input type="text" placeholder="e.g. Douala, Yaoundé" className={cn(controlClass(fieldState("location")), "h-11 pr-10")} {...bind("location")} />
+            </Field>
+          </div>
+
+          <Field label="Target Audience — Interests" optional {...fieldProps("interests")}>
+            <input type="text" placeholder="e.g. Beauty, skincare, fashion" className={cn(controlClass(fieldState("interests")), "h-11 pr-10")} {...bind("interests")} />
+          </Field>
+
+          <Field id="images" label="Campaign Reference Images" optional>
+            <input
+              id="images"
+              name="images"
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={(event) => setImages(Array.from(event.target.files ?? []))}
+              className={cn(
+                controlClass(images.length ? "valid" : "idle"),
+                "py-2.5 file:mr-3 file:cursor-pointer file:rounded-md file:border file:border-border file:bg-surface-alt file:px-3 file:py-1 file:text-sm file:font-medium file:text-heading"
+              )}
+            />
+            {!images.length && draftImageNames.length > 0 && (
+              <p className="mt-1.5 text-xs text-muted">Still attached: {draftImageNames.join(", ")}</p>
             )}
-          </span>
-          <FiChevronDown className={cn("shrink-0 text-muted transition-transform", refineOpen && "rotate-180")} />
-        </button>
+          </Field>
+        </fieldset>
 
-        <div id="refine-reach" hidden={!refineOpen} className="space-y-5 border-t border-border p-5">
-          <div>
-            <FormLabel htmlFor="minEngagement" optional>
-              Minimum Engagement Rate
-            </FormLabel>
-            <div className="relative">
-              <select
-                id="minEngagement"
-                value={values.minEngagement}
-                onChange={(event) => setValue("minEngagement", event.target.value)}
-                className={cn(fieldClass(!!errorFor("minEngagement")), "h-11 appearance-none pr-10")}
-              >
-                {options.engagementLevels.map((level) => (
-                  <option key={level.value} value={level.value}>
-                    {level.label}
-                  </option>
-                ))}
-              </select>
-              <FiChevronDown className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-muted" />
-            </div>
-            <FieldError id="minEngagement-error" message={errorFor("minEngagement")} />
-          </div>
-
-          <ChipGroup legend="Target audience — age range" options={options.ageRanges} selected={ageRanges} onChange={setAgeRanges} />
-          <ChipGroup legend="Target audience — location" options={options.locations} selected={locations} onChange={setLocations} />
-          <ChipGroup legend="Target audience — interests" options={options.interests} selected={interests} onChange={setInterests} />
-
-          <div>
-            <FormLabel htmlFor="referenceImages" optional>
-              Campaign Reference Images
-            </FormLabel>
-            <label
-              htmlFor="referenceImages"
-              className="flex cursor-pointer flex-col items-center gap-1.5 rounded-lg border border-dashed border-border bg-surface px-4 py-6 text-center text-xs text-muted transition-colors hover:border-primary-border has-focus-visible:ring-2 has-focus-visible:ring-primary/30"
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-wrap gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => void handlePreview()}
+              disabled={previewing || submitting}
+              className="disabled:cursor-not-allowed disabled:opacity-60"
             >
-              <FiImage size={20} className="text-primary" />
-              <span className="font-semibold text-heading">Click to add images</span>
-              <span>
-                Up to {MAX_IMAGES} images, {MAX_IMAGE_BYTES / 1024 / 1024} MB each
-              </span>
-              <input
-                id="referenceImages"
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={onImagesSelected}
-                className="sr-only"
-              />
-            </label>
-            {imageError && <FieldError id="referenceImages-error" message={imageError} />}
-            {images.length > 0 && (
-              <ul className="mt-3 flex flex-wrap gap-3">
-                {images.map((file, index) => (
-                  <li key={`${file.name}-${index}`} className="relative h-16 w-16 overflow-hidden rounded-lg border border-border">
-                    <Image src={imagePreviews[index]} alt={file.name} fill unoptimized sizes="64px" className="object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => setImages((current) => current.filter((_, position) => position !== index))}
-                      aria-label={`Remove ${file.name}`}
-                      className="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-heading/80 text-white hover:bg-heading"
-                    >
-                      <FiX size={12} />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
+              {previewing ? "Opening preview…" : "Preview Campaign"}
+            </Button>
+            <Button type="submit" disabled={submitting || previewing} className="disabled:cursor-not-allowed disabled:opacity-60">
+              {submitting ? "Posting…" : "Post Your Campaign Now"}
+            </Button>
           </div>
-        </div>
-      </div>
-
-      {shownReach !== null && (
-        <p
-          aria-live="polite"
-          className="mt-6 flex items-start gap-2.5 rounded-lg bg-primary-light px-4 py-3 text-sm text-body"
-        >
-          <FiUsers className="mt-0.5 shrink-0 text-primary" />
-          {shownReach > 0 ? (
-            <span>
-              Right now this would reach <strong className="text-heading">{shownReach}</strong> verified{" "}
-              {shownReach === 1 ? "influencer" : "influencers"}.
-            </span>
-          ) : (
-            <span>No verified influencers match these criteria yet. Try widening the location or engagement.</span>
+          {attempted && !isValid && (
+            <p className="text-sm font-medium text-danger" role="alert">
+              Fill in the fields marked in red to continue.
+            </p>
           )}
-        </p>
-      )}
-
-      <div className="mt-6">
-        <button
-          type="submit"
-          disabled={pending}
-          className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-primary text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-hover disabled:cursor-wait disabled:opacity-70"
-        >
-          {pending && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" aria-hidden />}
-          {pending ? "Posting campaign..." : "Post Your Campaign Now"}
-        </button>
-        <p className="mt-3 flex items-start justify-center gap-1.5 text-center text-xs text-muted">
-          <FiLock className="mt-0.5 shrink-0" />
-          No charge until an influencer accepts and funds are placed in escrow.
-        </p>
-      </div>
-    </form>
+          {submitError && (
+            <p className="text-sm font-medium text-danger" role="alert">
+              {submitError}
+            </p>
+          )}
+          <p className="text-xs text-muted">
+            By posting, your campaign is sent to matching influencers for review — no charge until an influencer accepts
+            and funds are placed in escrow.
+          </p>
+        </div>
+      </form>
+    </>
   );
 }
