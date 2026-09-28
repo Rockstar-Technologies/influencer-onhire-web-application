@@ -7,7 +7,7 @@ export interface NavLink {
 // for "Help & Support"). Everything else routes to the generic coming-soon
 // page since those features aren't built yet.
 export const NAV_LINKS: NavLink[] = [
-  { label: "Browse Influencers", href: "//influencers" },
+  { label: "Browse Influencers", href: "/influencers" },
   { label: "Post a Campaign", href: "/campaigns" },
   { label: "For Creators", href: "/for-creators" },
   { label: "For Brands", href: "/coming-soon?title=For+Brands" },
