@@ -20,7 +20,7 @@ export interface Influencer {
   activity: string;
   joinedAt: string;
   social: SocialStats;
-  // Lowest of the influencer's platform prices, in Frs.
+  // Lowest of the influencer's platform prices, in CFA.
   startingPrice: number;
 }
 
@@ -36,7 +36,7 @@ export interface InfluencerProfile extends Influencer {
   contentStyle: string;
   brandFit: string[];
   collaborations: Collaboration[];
-  // Price per platform in Frs. Platforms the influencer isn't on are left out.
+  // Price per platform in CFA. Platforms the influencer isn't on are left out.
   platformPricing: Partial<Record<SocialPlatform, number>>;
   minimumBooking: string;
   contractTerms: string[];

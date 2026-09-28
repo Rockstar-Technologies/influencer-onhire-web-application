@@ -57,7 +57,6 @@ export async function getUserStats(): Promise<UserStats> {
     brands: users.filter((user) => user.type === "brand").length,
     pendingApproval: users.filter((user) => user.status === "pending").length,
     suspended: users.filter((user) => user.status === "suspended").length,
-    inEscrow: users.reduce((sum, user) => sum + user.wallet.inEscrow, 0),
   };
 }
 

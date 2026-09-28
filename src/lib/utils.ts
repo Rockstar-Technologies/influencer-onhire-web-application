@@ -20,9 +20,9 @@ export function initials(name: string) {
     .toUpperCase();
 }
 
-// 100000 -> "100,000 Frs"
+// 100000 -> "100,000 CFA"
 export function formatPrice(value: number) {
-  return `${value.toLocaleString("en-US")} Frs`;
+  return `${value.toLocaleString("en-US")} CFA`;
 }
 
 // ISO timestamp -> "Just now", "10 min ago", "3 hours ago", "Yesterday", "4 days ago", "12 Sep"

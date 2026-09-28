@@ -1,9 +1,10 @@
 import { FiClock, FiLock, FiSlash, FiUsers } from "react-icons/fi";
+import { getPaymentSummary } from "@/services/payments.service";
 import { getUserStats } from "@/services/user-management.service";
 import { StatCardGrid, type StatCard } from "../../stat-cards";
 
 export async function UserStats() {
-  const stats = await getUserStats();
+  const [stats, payments] = await Promise.all([getUserStats(), getPaymentSummary()]);
   const cards: StatCard[] = [
     {
       label: "Total Users",
@@ -42,11 +43,12 @@ export async function UserStats() {
     },
     {
       label: "Held in Escrow",
-      value: stats.inEscrow.toLocaleString("en-US"),
-      unit: "Frs",
+      value: payments.heldInEscrow.toLocaleString("en-US"),
+      unit: "CFA",
       hint: "Released when work is approved",
       icon: FiLock,
       tone: "warning",
+      href: "/admin/payments",
     },
   ];
 

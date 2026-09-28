@@ -10,9 +10,6 @@ export const MOCK_PERIOD_KPIS: Record<DashboardRange, { activeCampaigns: PeriodV
   "90d": { activeCampaigns: { current: 37, previous: 40 }, previousRevenue: 11_750_000 },
 };
 
-// Escrow payments whose release date has passed without the brand approving delivery.
-export const MOCK_OVERDUE_PAYMENTS = 4;
-
 function labelDay(daysAgo: number) {
   return new Date(now - daysAgo * DAY_MS).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 }

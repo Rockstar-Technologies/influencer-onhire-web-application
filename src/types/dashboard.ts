@@ -10,7 +10,7 @@ export interface DashboardKpis {
   // Platform fees earned, not the gross money moving through escrow.
   platformRevenue: PeriodValue;
   inEscrow: number;
-  overduePayments: number;
+  payoutRequests: number;
   openTickets: number;
   urgentTickets: number;
 }
