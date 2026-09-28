@@ -6,7 +6,7 @@ import { Button } from "@/components/shared/button";
 import { Modal } from "@/components/shared/modal";
 import { cn } from "@/lib/utils";
 import { listMyCampaigns } from "@/services/campaigns.service";
-import { fundCampaign } from "@/services/payments.service";
+import { fundCampaign } from "@/services/campaign-payments.service";
 import type { CampaignPayment, PaymentInfluencer, PaymentMethod } from "@/types/payment";
 import { METHOD_LABELS } from "../payment-format";
 

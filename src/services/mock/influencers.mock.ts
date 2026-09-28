@@ -1,8 +1,13 @@
 import type { Influencer } from "@/types/influencer";
+import { MOCK_PROFILE_DETAILS } from "./influencer-profiles.mock";
 
 const unsplash = (id: string) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=800&q=80`;
 
-export const MOCK_INFLUENCERS: Influencer[] = [
+// startingPrice is derived from the profile's platform prices so the card and
+// the detail page can never disagree.
+const lowestPrice = (id: string) => Math.min(...Object.values(MOCK_PROFILE_DETAILS[id].platformPricing));
+
+const INFLUENCERS: Omit<Influencer, "startingPrice">[] = [
   {
     id: "1",
     username: "francis.ngannou",
@@ -14,11 +19,10 @@ export const MOCK_INFLUENCERS: Influencer[] = [
     language: "Bilingual",
     rating: 4.9,
     successRate: 97,
-    engagementRate: 6.8,
+    engagementRate: 6.5,
     activity: "Active this week",
     joinedAt: "2025-02-10",
     social: { facebook: 1_200_000, instagram: 8_400_000, tiktok: 3_100_000, youtube: 620_000 },
-    startingPrice: 2_000_000,
   },
   {
     id: "2",
@@ -31,11 +35,10 @@ export const MOCK_INFLUENCERS: Influencer[] = [
     language: "French",
     rating: 4.7,
     successRate: 93,
-    engagementRate: 5.4,
+    engagementRate: 6.8,
     activity: "Active today",
     joinedAt: "2025-04-22",
     social: { facebook: 210_000, instagram: 1_500_000, tiktok: 890_000, youtube: 95_000 },
-    startingPrice: 850_000,
   },
   {
     id: "3",
@@ -52,7 +55,6 @@ export const MOCK_INFLUENCERS: Influencer[] = [
     activity: "Active 3 days ago",
     joinedAt: "2025-06-05",
     social: { facebook: 85_000, instagram: 320_000, tiktok: 150_000, youtube: 40_000 },
-    startingPrice: 450_000,
   },
   {
     id: "4",
@@ -69,7 +71,6 @@ export const MOCK_INFLUENCERS: Influencer[] = [
     activity: "Active today",
     joinedAt: "2025-03-14",
     social: { facebook: 65_000, instagram: 480_000, tiktok: 310_000, youtube: 90_000 },
-    startingPrice: 900_000,
   },
   {
     id: "5",
@@ -86,7 +87,6 @@ export const MOCK_INFLUENCERS: Influencer[] = [
     activity: "Active this week",
     joinedAt: "2025-09-01",
     social: { facebook: 40_000, instagram: 260_000, tiktok: 175_000, youtube: 28_000 },
-    startingPrice: 400_000,
   },
   {
     id: "6",
@@ -103,7 +103,6 @@ export const MOCK_INFLUENCERS: Influencer[] = [
     activity: "Active 2 days ago",
     joinedAt: "2025-07-19",
     social: { facebook: 30_000, instagram: 340_000, tiktok: 220_000, youtube: 15_000 },
-    startingPrice: 550_000,
   },
   {
     id: "7",
@@ -120,7 +119,6 @@ export const MOCK_INFLUENCERS: Influencer[] = [
     activity: "Active today",
     joinedAt: "2025-01-28",
     social: { facebook: 396_000, instagram: 290_000, tiktok: 400_000, youtube: 60_000 },
-    startingPrice: 1_200_000,
   },
   {
     id: "8",
@@ -137,7 +135,6 @@ export const MOCK_INFLUENCERS: Influencer[] = [
     activity: "Active today",
     joinedAt: "2026-05-11",
     social: { facebook: 8_000, instagram: 32_000, tiktok: 41_000, youtube: 0 },
-    startingPrice: 150_000,
   },
   {
     id: "9",
@@ -154,7 +151,6 @@ export const MOCK_INFLUENCERS: Influencer[] = [
     activity: "Active 5 days ago",
     joinedAt: "2026-02-03",
     social: { facebook: 12_000, instagram: 58_000, tiktok: 0, youtube: 22_000 },
-    startingPrice: 250_000,
   },
   {
     id: "10",
@@ -171,7 +167,6 @@ export const MOCK_INFLUENCERS: Influencer[] = [
     activity: "Active this week",
     joinedAt: "2025-11-20",
     social: { facebook: 95_000, instagram: 120_000, tiktok: 0, youtube: 48_000 },
-    startingPrice: 600_000,
   },
   {
     id: "11",
@@ -188,7 +183,6 @@ export const MOCK_INFLUENCERS: Influencer[] = [
     activity: "Active today",
     joinedAt: "2026-07-30",
     social: { facebook: 0, instagram: 21_000, tiktok: 27_000, youtube: 0 },
-    startingPrice: 100_000,
   },
   {
     id: "12",
@@ -205,6 +199,10 @@ export const MOCK_INFLUENCERS: Influencer[] = [
     activity: "Active 2 days ago",
     joinedAt: "2026-03-17",
     social: { facebook: 18_000, instagram: 145_000, tiktok: 60_000, youtube: 0 },
-    startingPrice: 350_000,
   },
 ];
+
+export const MOCK_INFLUENCERS: Influencer[] = INFLUENCERS.map((influencer) => ({
+  ...influencer,
+  startingPrice: lowestPrice(influencer.id),
+}));

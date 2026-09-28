@@ -10,7 +10,7 @@ export const NAV_LINKS: NavLink[] = [
   { label: "Browse Influencers", href: "/influencers" },
   { label: "Post a Campaign", href: "/campaigns" },
   { label: "For Creators", href: "/for-creators" },
-  { label: "For Brands", href: "/coming-soon?title=For+Brands" },
+  { label: "For Brands", href: "/for-brands" },
 ];
 
 export const FOOTER_LINKS: NavLink[] = [
@@ -46,7 +46,7 @@ export interface DashboardNavSection {
 export const BRAND_DASHBOARD_NAV: DashboardNavSection[] = [
   {
     label: "Brand Account",
-    links: [{ label: "Payments & Escrow", href: "/brand/payments", icon: "wallet" }],
+    links: [{ label: "Payments & Escrow", href: "/brand/campaign-payments", icon: "wallet" }],
   },
   {
     label: "Discover",

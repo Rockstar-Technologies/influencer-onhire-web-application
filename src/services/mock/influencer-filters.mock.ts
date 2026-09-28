@@ -61,9 +61,9 @@ export const MOCK_SEARCH_OPTIONS: InfluencerSearchOptions = {
       label: "Budget (starting price)",
       mode: "single",
       options: [
-        { value: "0-500000", label: "Under 500,000 Frs" },
-        { value: "500000-1000000", label: "500,000 – 1,000,000 Frs" },
-        { value: "1000000+", label: "1,000,000+ Frs" },
+        { value: "0-500000", label: "Under 500,000 CFA" },
+        { value: "500000-1000000", label: "500,000 – 1,000,000 CFA" },
+        { value: "1000000+", label: "1,000,000+ CFA" },
       ],
     },
     {

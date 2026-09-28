@@ -1,34 +1,13 @@
 import Image from "next/image";
-import { FaFacebook, FaInstagram, FaStar, FaStarHalfStroke, FaTiktok, FaYoutube } from "react-icons/fa6";
 import { FiGlobe, FiMapPin } from "react-icons/fi";
 import { Button } from "@/components/shared/button";
-import { formatCount } from "@/lib/utils";
+import { SocialStatList } from "@/components/shared/social-stats";
+import { Stars } from "@/components/shared/stars";
+import { formatPrice } from "@/lib/utils";
 import type { Influencer } from "@/types/influencer";
 
-function Stars({ rating }: { rating: number }) {
-  const full = Math.floor(rating);
-  const half = rating - full >= 0.5;
-  return (
-    <span className="flex items-center gap-0.5 text-star" aria-hidden>
-      {Array.from({ length: full }, (_, i) => (
-        <FaStar key={i} size={11} />
-      ))}
-      {half && <FaStarHalfStroke size={11} />}
-    </span>
-  );
-}
-
-function SocialStat({ Icon, color, value }: { Icon: typeof FaFacebook; color: string; value: number }) {
-  return (
-    <span className="flex items-center gap-2 text-xs font-semibold text-heading">
-      <Icon size={16} style={{ color }} />
-      {formatCount(value)}
-    </span>
-  );
-}
-
 export function InfluencerCard({ influencer }: { influencer: Influencer }) {
-  const { name, niche, location, imageUrl, language, rating, activity, social, startingPrice } = influencer;
+  const { username, name, niche, location, imageUrl, language, rating, activity, social, startingPrice } = influencer;
 
   return (
     <article className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
@@ -64,23 +43,18 @@ export function InfluencerCard({ influencer }: { influencer: Influencer }) {
           {activity}
         </span>
 
-        <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-3">
-          <SocialStat Icon={FaFacebook} color="#1877f2" value={social.facebook} />
-          <SocialStat Icon={FaInstagram} color="#e4405f" value={social.instagram} />
-          <SocialStat Icon={FaTiktok} color="#000000" value={social.tiktok} />
-          <SocialStat Icon={FaYoutube} color="#ff0000" value={social.youtube} />
-        </div>
+        <SocialStatList social={social} className="mt-5 grid grid-cols-2 gap-x-4 gap-y-3" />
 
         <div className="mt-5 flex items-center justify-between border-t border-border pt-4">
           <span className="text-[11px] font-medium uppercase tracking-wide text-muted">Starting at</span>
-          <span className="text-sm font-bold text-heading">From {startingPrice.toLocaleString("en-US")} Frs</span>
+          <span className="text-sm font-bold text-heading">From {formatPrice(startingPrice)}</span>
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-3">
-          <Button href="/coming-soon?title=Hire+Influencer" className="rounded-lg py-2.5">
+          <Button href={`/influencers/${username}/hire`} className="rounded-lg py-2.5">
             Hire
           </Button>
-          <Button href="/coming-soon?title=Influencer+Details" variant="outline" className="rounded-lg py-2.5">
+          <Button href={`/influencers/${username}`} variant="outline" className="rounded-lg py-2.5">
             Details
           </Button>
         </div>

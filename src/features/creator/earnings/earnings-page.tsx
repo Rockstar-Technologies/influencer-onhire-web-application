@@ -1,4 +1,4 @@
-import { EscrowSteps } from "@/components/shared/escrow-steps";
+import { EscrowSteps } from "@/components/shared/campaign-escrow-steps";
 import {
   getEarningsSummary,
   getMinimumWithdrawal,
