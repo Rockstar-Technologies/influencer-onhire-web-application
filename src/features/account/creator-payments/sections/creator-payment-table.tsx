@@ -5,7 +5,7 @@ import { FiCheckCircle, FiChevronDown, FiClock } from "react-icons/fi";
 import { DeliveryReport } from "@/components/shared/delivery-report";
 import { EscrowBadge } from "@/components/shared/escrow-badge";
 import { InfoTip } from "@/components/shared/info-tip";
-import { cn, formatDate, formatPrice, maskPhone } from "@/lib/utils";
+import { cn, formatDate, formatPrice } from "@/lib/utils";
 import type { CreatorPaymentView } from "@/types/payments";
 import { CashoutDialog } from "./cashout-dialog";
 
@@ -77,7 +77,7 @@ export function CreatorPaymentTable({ payments }: { payments: CreatorPaymentView
                     )}
                     {payment.status === "released" && payment.releasedAt && (
                       <span className="inline-flex items-center gap-1.5 text-xs font-medium text-success-strong">
-                        <FiCheckCircle aria-hidden /> Paid {formatDate(payment.releasedAt)}
+                        <FiCheckCircle aria-hidden /> In balance since {formatDate(payment.releasedAt)}
                       </span>
                     )}
                   </td>
@@ -98,17 +98,10 @@ export function CreatorPaymentTable({ payments }: { payments: CreatorPaymentView
                               <dd>−{formatPrice(payment.split.fee)}</dd>
                             </div>
                             <div className="flex justify-between gap-4 border-t border-dashed border-border pt-1.5 font-semibold text-heading">
-                              <dt>{payment.status === "released" ? "Paid out to you" : "Guaranteed payout locked"}</dt>
+                              <dt>{payment.status === "released" ? "Added to your balance" : "Guaranteed payout locked"}</dt>
                               <dd>{formatPrice(payment.split.net)}</dd>
                             </div>
                           </dl>
-                          {payment.payoutTo && (
-                            <p className="mt-3 text-sm text-body">
-                              {payment.status === "released" ? "Sent to" : "Will be sent to"}{" "}
-                              <span className="font-semibold text-heading">{payment.payoutTo.method}</span>{" "}
-                              <span className="tabular-nums">{maskPhone(payment.payoutTo.phone)}</span>
-                            </p>
-                          )}
                         </div>
                         {payment.report ? (
                           <DeliveryReport report={payment.report} />

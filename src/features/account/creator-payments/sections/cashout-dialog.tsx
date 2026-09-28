@@ -69,7 +69,7 @@ export function CashoutDialog({ payment }: { payment: CreatorPaymentView }) {
               <dd>−{formatPrice(payment.split.fee)}</dd>
             </div>
             <div className="flex justify-between gap-4 border-t border-dashed border-border pt-1.5 font-semibold text-heading">
-              <dt>You&apos;ll receive</dt>
+              <dt>Added to your balance</dt>
               <dd>{formatPrice(payment.split.net)}</dd>
             </div>
           </dl>
@@ -118,37 +118,10 @@ export function CashoutDialog({ payment }: { payment: CreatorPaymentView }) {
             )}
           </div>
 
-          <fieldset>
-            <legend className="mb-2 text-sm font-semibold text-heading">Send my money to</legend>
-            <div className="grid grid-cols-2 gap-2">
-              {(["MTN MoMo", "Orange Money"] as const).map((method) => (
-                <label
-                  key={method}
-                  className="flex cursor-pointer items-center gap-2 rounded-lg border border-border px-3.5 py-2.5 text-sm font-medium text-heading has-checked:border-navy has-checked:bg-info-light has-focus-visible:ring-2 has-focus-visible:ring-navy/20"
-                >
-                  <input type="radio" name="method" value={method} defaultChecked={(values?.method ?? "MTN MoMo") === method} className="accent-navy" />
-                  {method}
-                </label>
-              ))}
-            </div>
-            <FieldError id={`${prefix}-method-error`} message={errors.method} />
-          </fieldset>
-
-          <div>
-            <FormLabel htmlFor={`${prefix}-phone`} required>
-              Mobile money number
-            </FormLabel>
-            <input
-              id={`${prefix}-phone`}
-              name="phone"
-              inputMode="tel"
-              defaultValue={values?.phone}
-              placeholder="6XX XXX XXX"
-              className={cn(fieldClass(!!errors.phone), "h-11 tabular-nums")}
-              {...describe("phone")}
-            />
-            <FieldError id={`${prefix}-phone-error`} message={errors.phone} />
-          </div>
+          <p className="text-xs text-muted">
+            Once the platform confirms your delivery, {formatPrice(payment.split.net)} is added to your balance. You can then withdraw it to MTN MoMo or
+            Orange Money.
+          </p>
 
           <div className="flex justify-end gap-3 border-t border-border pt-5">
             <button type="button" onClick={() => dialogRef.current?.close()} className="rounded-lg border border-border px-4 py-2.5 text-sm font-semibold text-heading hover:bg-surface-alt">

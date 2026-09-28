@@ -10,9 +10,10 @@ import type {
   PaymentQuery,
   PaymentSplit,
   PaymentSummary,
-  PayoutDestination,
+  CreatorWallet,
+  Withdrawal,
 } from "@/types/payments";
-import { MOCK_MONTHLY_PAYMENTS, MOCK_PAYMENTS } from "./mock/payments.mock";
+import { MOCK_MONTHLY_PAYMENTS, MOCK_PAYMENTS, MOCK_WITHDRAWALS } from "./mock/payments.mock";
 import { getActiveAccount, sendUserMessage } from "./user-management.service";
 
 export const PLATFORM_FEE_RATE = 0.2;
@@ -72,13 +73,10 @@ export async function releasePayment(id: string): Promise<EscrowPayment | null> 
   payment.releasedAt = new Date().toISOString();
 
   const { net } = splitPayment(payment.gross);
-  const destination = payment.payoutTo
-    ? `${payment.payoutTo.method} number ending ${payment.payoutTo.phone.slice(-3)}`
-    : "mobile money account";
   await sendUserMessage(
     [payment.creator.id],
     "Payment released",
-    `${net.toLocaleString("en-US")} CFA for "${payment.campaign}" has been sent to your ${destination}.`,
+    `${net.toLocaleString("en-US")} CFA for "${payment.campaign}" has been added to your balance. You can withdraw it to mobile money any time.`,
   );
   await sendUserMessage(
     [payment.brand.id],
@@ -125,7 +123,6 @@ export async function listCreatorPayments(creatorId: string): Promise<CreatorPay
       requestedAt: payment.requestedAt,
       releasedAt: payment.releasedAt,
       report: payment.report,
-      payoutTo: payment.payoutTo,
     }));
 }
 
@@ -138,7 +135,7 @@ export function summarizeBrandPayments(payments: BrandPaymentView[]): BrandPayme
 export function summarizeCreatorPayments(payments: CreatorPaymentView[]): CreatorPaymentSummary {
   const sum = (status?: CreatorPaymentView["status"]) =>
     payments.filter((payment) => !status || payment.status === status).reduce((total, payment) => total + payment.split.net, 0);
-  return { onHold: sum("held"), awaitingRelease: sum("requested"), paidOut: sum("released"), totalEarnings: sum() };
+  return { onHold: sum("held"), awaitingRelease: sum("requested"), released: sum("released"), totalEarnings: sum() };
 }
 
 export async function fundCampaign(input: {
@@ -180,7 +177,6 @@ export async function requestCashout(input: {
   creatorId: string;
   paymentId: string;
   report: Omit<DeliveryReport, "submittedAt">;
-  payoutTo: PayoutDestination;
 }): Promise<EscrowPayment | null> {
   // TODO: replace with `fetch("/api/creator/payments/" + paymentId + "/cashout", { method: "POST", ... })`
   const payment = MOCK_PAYMENTS.find((candidate) => candidate.id === input.paymentId);
@@ -190,7 +186,6 @@ export async function requestCashout(input: {
   payment.status = "requested";
   payment.requestedAt = submittedAt;
   payment.report = { ...input.report, submittedAt };
-  payment.payoutTo = input.payoutTo;
 
   await sendUserMessage(
     [payment.brand.id],
@@ -198,4 +193,57 @@ export async function requestCashout(input: {
     `${payment.creator.name} finished "${payment.campaign}" and requested cashout. You can read their report on your Payments page.`,
   );
   return payment;
+}
+
+// --- creator balance and withdrawals ---
+
+export const MIN_WITHDRAWAL = 1_000;
+
+export async function getCreatorWallet(creatorId: string): Promise<CreatorWallet> {
+  // TODO: replace with `fetch("/api/creator/wallet")`
+  const released = MOCK_PAYMENTS.filter((payment) => payment.creator.id === creatorId && payment.status === "released").reduce(
+    (sum, payment) => sum + splitPayment(payment.gross).net,
+    0,
+  );
+  const mine = MOCK_WITHDRAWALS.filter((withdrawal) => withdrawal.creatorId === creatorId);
+  const total = (status: Withdrawal["status"]) => mine.filter((w) => w.status === status).reduce((sum, w) => sum + w.amount, 0);
+  const processing = total("processing");
+  const withdrawn = total("completed");
+  return { available: released - processing - withdrawn, processing, withdrawn };
+}
+
+export async function listWithdrawals(creatorId: string): Promise<Withdrawal[]> {
+  // TODO: replace with `fetch("/api/creator/withdrawals")`
+  return MOCK_WITHDRAWALS.filter((withdrawal) => withdrawal.creatorId === creatorId).sort((a, b) => b.requestedAt.localeCompare(a.requestedAt));
+}
+
+// Returns null when the amount is more than the creator can withdraw right now.
+export async function requestWithdrawal(input: {
+  creatorId: string;
+  amount: number;
+  method: PaymentMethod;
+  phone: string;
+}): Promise<Withdrawal | null> {
+  // TODO: replace with `fetch("/api/creator/withdrawals", { method: "POST", ... })` — the backend must check the balance
+  // and record the withdrawal in one transaction, then send the mobile money transfer.
+  const { available } = await getCreatorWallet(input.creatorId);
+  if (input.amount < MIN_WITHDRAWAL || input.amount > available) return null;
+
+  const withdrawal: Withdrawal = {
+    id: `w-${MOCK_WITHDRAWALS.length + 301}`,
+    creatorId: input.creatorId,
+    amount: input.amount,
+    method: input.method,
+    phone: input.phone,
+    status: "processing",
+    requestedAt: new Date().toISOString(),
+  };
+  MOCK_WITHDRAWALS.push(withdrawal);
+
+  await sendUserMessage(
+    [input.creatorId],
+    "Withdrawal on its way",
+    `${input.amount.toLocaleString("en-US")} CFA is being sent to your ${input.method} number ending ${input.phone.slice(-3)}. It usually arrives within 24 hours.`,
+  );
+  return withdrawal;
 }

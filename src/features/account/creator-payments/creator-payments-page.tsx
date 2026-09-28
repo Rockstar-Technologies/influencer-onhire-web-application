@@ -15,7 +15,7 @@ export async function CreatorPaymentsPage({ creator }: { creator: PlatformUser }
   const cards: StatCard[] = [
     { label: "On Hold for You", value: amount(summary.onHold), unit: "CFA", hint: `${onHold} ${onHold === 1 ? "campaign" : "campaigns"} ready to deliver`, icon: FiLock, tone: "navy" },
     { label: "Awaiting Release", value: amount(summary.awaitingRelease), unit: "CFA", hint: `${count("requested")} cashout ${count("requested") === 1 ? "request" : "requests"} in review`, icon: FiClock, tone: "warning" },
-    { label: "Paid Out", value: amount(summary.paidOut), unit: "CFA", hint: "Sent to your mobile money", icon: FiCheckCircle, tone: "success" },
+    { label: "Released to Balance", value: amount(summary.released), unit: "CFA", hint: "Ready to withdraw to mobile money", icon: FiCheckCircle, tone: "success" },
     { label: "Total Earnings", value: amount(summary.totalEarnings), unit: "CFA", hint: "Take-home pay, after fees", icon: FiTrendingUp, tone: "success" },
   ];
 

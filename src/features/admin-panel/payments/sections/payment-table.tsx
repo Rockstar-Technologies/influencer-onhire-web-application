@@ -191,12 +191,6 @@ export function PaymentTable({ rows }: { rows: Row[] }) {
                           {row.report ? (
                             <div className="sm:col-span-2">
                               <DeliveryReport report={row.report} />
-                              {row.payoutTo && (
-                                <p className="mt-3 text-sm text-body">
-                                  Cashout to <span className="font-semibold text-heading">{row.payoutTo.method}</span>{" "}
-                                  <span className="tabular-nums text-heading">{row.payoutTo.phone.replace(/(\d{3})(\d{3})(\d{3})/, "$1 $2 $3")}</span>
-                                </p>
-                              )}
                             </div>
                           ) : (
                             <p className="text-sm text-muted sm:col-span-2">No delivery report yet. The creator submits one when they request cashout.</p>
