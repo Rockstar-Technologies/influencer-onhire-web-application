@@ -1,6 +1,19 @@
-import type { EscrowPayment, MonthlyPaymentStat, PaymentQuery, PaymentSplit, PaymentSummary } from "@/types/payments";
+import type {
+  BrandPaymentSummary,
+  BrandPaymentView,
+  CreatorPaymentSummary,
+  CreatorPaymentView,
+  DeliveryReport,
+  EscrowPayment,
+  MonthlyPaymentStat,
+  PaymentMethod,
+  PaymentQuery,
+  PaymentSplit,
+  PaymentSummary,
+  PayoutDestination,
+} from "@/types/payments";
 import { MOCK_MONTHLY_PAYMENTS, MOCK_PAYMENTS } from "./mock/payments.mock";
-import { sendUserMessage } from "./user-management.service";
+import { getActiveAccount, sendUserMessage } from "./user-management.service";
 
 export const PLATFORM_FEE_RATE = 0.2;
 
@@ -10,6 +23,10 @@ export function splitPayment(gross: number): PaymentSplit {
   return { gross, fee, net: gross - fee };
 }
 
+const byNewest = (a: EscrowPayment, b: EscrowPayment) => b.fundedAt.localeCompare(a.fundedAt);
+
+// --- admin ---
+
 export async function listPayments(query: PaymentQuery): Promise<EscrowPayment[]> {
   // TODO: replace with `fetch("/api/admin/payments?" + params)` once the backend exists
   const term = query.q.trim().toLowerCase();
@@ -18,7 +35,7 @@ export async function listPayments(query: PaymentQuery): Promise<EscrowPayment[]
       (query.status === "all" || payment.status === query.status) &&
       (!term ||
         [payment.invoice, payment.campaign, payment.brand.name, payment.creator.name].some((value) => value.toLowerCase().includes(term))),
-  ).sort((a, b) => b.fundedAt.localeCompare(a.fundedAt));
+  ).sort(byNewest);
 }
 
 export async function getPaymentSummary(): Promise<PaymentSummary> {
@@ -55,10 +72,130 @@ export async function releasePayment(id: string): Promise<EscrowPayment | null> 
   payment.releasedAt = new Date().toISOString();
 
   const { net } = splitPayment(payment.gross);
+  const destination = payment.payoutTo
+    ? `${payment.payoutTo.method} number ending ${payment.payoutTo.phone.slice(-3)}`
+    : "mobile money account";
   await sendUserMessage(
     [payment.creator.id],
     "Payment released",
-    `${net.toLocaleString("en-US")} CFA for "${payment.campaign}" has been sent to your ${payment.method} account.`,
+    `${net.toLocaleString("en-US")} CFA for "${payment.campaign}" has been sent to your ${destination}.`,
+  );
+  await sendUserMessage(
+    [payment.brand.id],
+    "Payment released to creator",
+    `Your deposit for "${payment.campaign}" has been released to ${payment.creator.name}.`,
+  );
+  return payment;
+}
+
+// --- brand and creator dashboards ---
+// Each view is shaped on the server so fields an account must not see never reach the browser.
+
+export async function listBrandPayments(brandId: string): Promise<BrandPaymentView[]> {
+  // TODO: replace with `fetch("/api/brand/payments")`, scoped to the signed-in brand by the backend
+  return MOCK_PAYMENTS.filter((payment) => payment.brand.id === brandId)
+    .sort(byNewest)
+    .map((payment) => ({
+      id: payment.id,
+      invoice: payment.invoice,
+      campaign: payment.campaign,
+      creatorName: payment.creator.name,
+      deposited: payment.gross,
+      method: payment.method,
+      status: payment.status,
+      fundedAt: payment.fundedAt,
+      requestedAt: payment.requestedAt,
+      releasedAt: payment.releasedAt,
+      report: payment.report,
+    }));
+}
+
+export async function listCreatorPayments(creatorId: string): Promise<CreatorPaymentView[]> {
+  // TODO: replace with `fetch("/api/creator/payments")`, scoped to the signed-in creator by the backend
+  return MOCK_PAYMENTS.filter((payment) => payment.creator.id === creatorId)
+    .sort(byNewest)
+    .map((payment) => ({
+      id: payment.id,
+      invoice: payment.invoice,
+      campaign: payment.campaign,
+      brandName: payment.brand.name,
+      split: splitPayment(payment.gross),
+      status: payment.status,
+      fundedAt: payment.fundedAt,
+      requestedAt: payment.requestedAt,
+      releasedAt: payment.releasedAt,
+      report: payment.report,
+      payoutTo: payment.payoutTo,
+    }));
+}
+
+export function summarizeBrandPayments(payments: BrandPaymentView[]): BrandPaymentSummary {
+  const sum = (status?: BrandPaymentView["status"]) =>
+    payments.filter((payment) => !status || payment.status === status).reduce((total, payment) => total + payment.deposited, 0);
+  return { totalDeposited: sum(), onHold: sum("held"), awaitingRelease: sum("requested"), released: sum("released") };
+}
+
+export function summarizeCreatorPayments(payments: CreatorPaymentView[]): CreatorPaymentSummary {
+  const sum = (status?: CreatorPaymentView["status"]) =>
+    payments.filter((payment) => !status || payment.status === status).reduce((total, payment) => total + payment.split.net, 0);
+  return { onHold: sum("held"), awaitingRelease: sum("requested"), paidOut: sum("released"), totalEarnings: sum() };
+}
+
+export async function fundCampaign(input: {
+  brandId: string;
+  creatorId: string;
+  campaign: string;
+  amount: number;
+  method: PaymentMethod;
+}): Promise<EscrowPayment | null> {
+  // TODO: replace with `fetch("/api/brand/payments", { method: "POST", ... })` — the backend collects the mobile money payment first
+  const [brand, creator] = await Promise.all([getActiveAccount(input.brandId), getActiveAccount(input.creatorId)]);
+  if (!brand || brand.type !== "brand" || !creator || creator.type !== "influencer") return null;
+
+  const number = Math.max(0, ...MOCK_PAYMENTS.map((payment) => Number(payment.invoice.slice(4)))) + 1;
+  const payment: EscrowPayment = {
+    id: `p-${number}`,
+    invoice: `INV-${number}`,
+    campaign: input.campaign,
+    brand: { id: brand.id, name: brand.name },
+    creator: { id: creator.id, name: creator.name },
+    gross: input.amount,
+    method: input.method,
+    status: "held",
+    fundedAt: new Date().toISOString(),
+  };
+  MOCK_PAYMENTS.push(payment);
+
+  const { net } = splitPayment(payment.gross);
+  await sendUserMessage(
+    [creator.id],
+    "Payment on hold for you",
+    `${brand.name} funded "${payment.campaign}". ${net.toLocaleString("en-US")} CFA is held in escrow for you until you deliver and request cashout.`,
+  );
+  return payment;
+}
+
+// Only the creator on the payment can request cashout, and only while the money is still on hold.
+export async function requestCashout(input: {
+  creatorId: string;
+  paymentId: string;
+  report: Omit<DeliveryReport, "submittedAt">;
+  payoutTo: PayoutDestination;
+}): Promise<EscrowPayment | null> {
+  // TODO: replace with `fetch("/api/creator/payments/" + paymentId + "/cashout", { method: "POST", ... })`
+  const payment = MOCK_PAYMENTS.find((candidate) => candidate.id === input.paymentId);
+  if (!payment || payment.creator.id !== input.creatorId || payment.status !== "held") return null;
+
+  const submittedAt = new Date().toISOString();
+  payment.status = "requested";
+  payment.requestedAt = submittedAt;
+  payment.report = { ...input.report, submittedAt };
+  payment.payoutTo = input.payoutTo;
+
+  await sendUserMessage(
+    [payment.brand.id],
+    "Delivery report submitted",
+    `${payment.creator.name} finished "${payment.campaign}" and requested cashout. You can read their report on your Payments page.`,
   );
   return payment;
 }

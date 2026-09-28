@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { getDashboardKpis } from "@/services/dashboard.service";
 import type { DashboardRange, PeriodValue } from "@/types/dashboard";
-import { StatCardGrid, type StatCard } from "../../stat-cards";
+import { StatCardGrid, type StatCard } from "@/components/shared/stat-cards";
 import { RANGES } from "../dashboard-range";
 
 // Arrows are only for change against the previous period; plain counts get a warning icon instead.

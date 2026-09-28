@@ -1,7 +1,7 @@
 import { FiClock, FiLock, FiSlash, FiUsers } from "react-icons/fi";
 import { getPaymentSummary } from "@/services/payments.service";
 import { getUserStats } from "@/services/user-management.service";
-import { StatCardGrid, type StatCard } from "../../stat-cards";
+import { StatCardGrid, type StatCard } from "@/components/shared/stat-cards";
 
 export async function UserStats() {
   const [stats, payments] = await Promise.all([getUserStats(), getPaymentSummary()]);

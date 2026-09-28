@@ -2,41 +2,22 @@
 
 import Link from "next/link";
 import { Fragment, useState } from "react";
-import { FiChevronDown, FiInfo } from "react-icons/fi";
-import { cn, formatPrice } from "@/lib/utils";
+import { FiChevronDown } from "react-icons/fi";
+import { DeliveryReport } from "@/components/shared/delivery-report";
+import { EscrowBadge } from "@/components/shared/escrow-badge";
+import { InfoTip } from "@/components/shared/info-tip";
+import { cn, formatDate, formatPrice } from "@/lib/utils";
 import type { EscrowPayment, PaymentSplit } from "@/types/payments";
 import type { ActionResult } from "@/types/user-management";
 import { ResultMessage } from "../../users/sections/result-message";
 import { useAdminAction } from "../../users/use-admin-action";
 import { releasePaymentAction } from "../actions";
-import { EscrowBadge } from "./escrow-badge";
 
 type Row = EscrowPayment & { split: PaymentSplit };
-
-function HeaderTip({ id, children }: { id: string; children: string }) {
-  return (
-    <span className="group/tip relative ml-1 inline-flex align-middle normal-case tracking-normal">
-      <button type="button" aria-describedby={id} aria-label="More information" className="rounded-full text-muted hover:text-navy focus-visible:text-navy">
-        <FiInfo size={13} />
-      </button>
-      <span
-        role="tooltip"
-        id={id}
-        className="pointer-events-none invisible absolute right-0 top-full z-10 mt-2 w-64 rounded-lg bg-heading px-3 py-2 text-left text-xs font-medium leading-relaxed text-white opacity-0 shadow-lg transition-opacity group-hover/tip:visible group-hover/tip:opacity-100 group-focus-within/tip:visible group-focus-within/tip:opacity-100"
-      >
-        {children}
-      </span>
-    </span>
-  );
-}
 
 function waitingLabel(requestedAt: string) {
   const days = Math.floor((Date.now() - new Date(requestedAt).getTime()) / (24 * 60 * 60_000));
   return days < 1 ? "Requested today" : `Waiting ${days} ${days === 1 ? "day" : "days"} for release`;
-}
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
 export function PaymentTable({ rows }: { rows: Row[] }) {
@@ -79,11 +60,11 @@ export function PaymentTable({ rows }: { rows: Row[] }) {
               <th scope="col" className={th}>Campaign</th>
               <th scope="col" className={cn(th, "text-right")}>
                 Gross deposit
-                <HeaderTip id="tip-gross">The full amount the brand paid into escrow. This is the only figure the brand sees.</HeaderTip>
+                <InfoTip id="tip-gross">The full amount the brand paid into escrow. This is the only figure the brand sees.</InfoTip>
               </th>
               <th scope="col" className={cn(th, "text-right")}>
                 Platform earnings
-                <HeaderTip id="tip-fee">The 20% service fee. It counts as revenue once the payment is released; until then it shows as pending.</HeaderTip>
+                <InfoTip id="tip-fee">The 20% service fee. It counts as revenue once the payment is released; until then it shows as pending.</InfoTip>
               </th>
               <th scope="col" className={cn(th, "text-right")}>Net payout</th>
               <th scope="col" className={th}>Escrow status</th>
@@ -207,6 +188,19 @@ export function PaymentTable({ rows }: { rows: Row[] }) {
                               <p className="mt-2 text-xs font-medium text-warning">{waitingLabel(row.requestedAt)}</p>
                             )}
                           </div>
+                          {row.report ? (
+                            <div className="sm:col-span-2">
+                              <DeliveryReport report={row.report} />
+                              {row.payoutTo && (
+                                <p className="mt-3 text-sm text-body">
+                                  Cashout to <span className="font-semibold text-heading">{row.payoutTo.method}</span>{" "}
+                                  <span className="tabular-nums text-heading">{row.payoutTo.phone.replace(/(\d{3})(\d{3})(\d{3})/, "$1 $2 $3")}</span>
+                                </p>
+                              )}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-muted sm:col-span-2">No delivery report yet. The creator submits one when they request cashout.</p>
+                          )}
                         </div>
                       </td>
                     </tr>

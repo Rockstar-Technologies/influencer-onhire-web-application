@@ -1,7 +1,7 @@
 import { FiArrowDownCircle, FiArrowUpCircle, FiLock, FiTrendingUp } from "react-icons/fi";
 import { formatPrice } from "@/lib/utils";
 import { getPaymentSummary } from "@/services/payments.service";
-import { StatCardGrid, type StatCard } from "../../stat-cards";
+import { StatCardGrid, type StatCard } from "@/components/shared/stat-cards";
 
 export async function PaymentStats() {
   const summary = await getPaymentSummary();

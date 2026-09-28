@@ -25,6 +25,16 @@ export function formatPrice(value: number) {
   return `${value.toLocaleString("en-US")} CFA`;
 }
 
+// ISO timestamp -> "12 Sept 2026"
+export function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+}
+
+// Cameroon mobile money number, masked for display: "677845210" -> "6•• ••• 210"
+export function maskPhone(phone: string) {
+  return `${phone.slice(0, 1)}•• ••• ${phone.slice(-3)}`;
+}
+
 // ISO timestamp -> "Just now", "10 min ago", "3 hours ago", "Yesterday", "4 days ago", "12 Sep"
 export function formatRelativeTime(iso: string, now = Date.now()) {
   const minutes = Math.floor((now - new Date(iso).getTime()) / 60_000);

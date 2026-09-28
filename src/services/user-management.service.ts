@@ -77,6 +77,16 @@ export async function getUserProfile(id: string): Promise<UserProfile | null> {
   };
 }
 
+// Only active accounts can sign in; pending, suspended and rejected ones are turned away.
+export async function getActiveAccount(id: string): Promise<PlatformUser | null> {
+  // TODO: replace with the account loaded from the auth session
+  return MOCK_PLATFORM_USERS.find((user) => user.id === id && user.status === "active") ?? null;
+}
+
+export async function listActiveAccounts(type: PlatformUser["type"]): Promise<PlatformUser[]> {
+  return MOCK_PLATFORM_USERS.filter((user) => user.type === type && user.status === "active");
+}
+
 export async function countOpenDisputes(): Promise<number> {
   // TODO: replace with `fetch("/api/admin/disputes?status=open&count=true")`
   return Object.values(MOCK_DISPUTES)
