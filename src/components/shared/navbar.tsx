@@ -56,10 +56,10 @@ export function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
-          <Button href="/sign-in" variant="outline">
-            Sign In
+          <Button href="/login" variant="outline">
+            Login
           </Button>
-          <Button href="/coming-soon?title=Become+a+Creator" variant="primary">
+          <Button href="/for-creators/apply/profile" variant="primary">
             Become a Creator
           </Button>
         </div>
@@ -90,10 +90,10 @@ export function Navbar() {
             ))}
           </nav>
           <div className="mt-4 flex flex-col gap-3">
-            <Button href="/sign-in" variant="outline" onClick={() => setOpen(false)}>
-              Sign In
+            <Button href="/login" variant="outline" onClick={() => setOpen(false)}>
+              Login
             </Button>
-            <Button href="/coming-soon?title=Become+a+Creator" variant="primary" onClick={() => setOpen(false)}>
+            <Button href="/for-creators/apply/profile" variant="primary" onClick={() => setOpen(false)}>
               Become a Creator
             </Button>
           </div>

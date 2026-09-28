@@ -1,81 +1,114 @@
-import type { FilterOption } from "./influencer-filters";
-
-export interface CampaignFormOptions {
-  niches: FilterOption[];
-  locations: FilterOption[];
-  ageRanges: FilterOption[];
-  interests: FilterOption[];
-  engagementLevels: FilterOption[];
-}
-
-export interface CampaignLifecycleStep {
-  label: string;
-  tone: "warning" | "primary" | "success";
-}
-
-export interface CampaignFaq {
-  question: string;
-  answer: string;
-}
-
-// Static help content shown next to the form.
-export interface CampaignGuidance {
-  lifecycle: CampaignLifecycleStep[];
-  lifecycleNote: string;
-  smartMatching: string[];
-  securePoints: string[];
-  faqs: CampaignFaq[];
-}
-
-// What the brand fills in. Values are strings straight from the form.
-export interface CampaignInput {
+export interface CampaignStep {
+  id: string;
   title: string;
-  niche: string;
+  description: string;
+}
+
+export interface CampaignOverview {
+  influencerReach: string;
+  steps: CampaignStep[];
+}
+
+export interface PreviewCreator {
+  id: string;
+  name: string;
+  platform: string;
+  price: number;
+}
+
+export interface PreviewPackage {
+  name: string;
+  price: number;
+}
+
+export interface CampaignPreview {
+  creators: PreviewCreator[];
+  featured: {
+    name: string;
+    niches: string[];
+    packages: PreviewPackage[];
+  };
+}
+
+export type CampaignStatus = "pending_review" | "accepted" | "in_progress";
+
+export interface NewCampaignInput {
+  title: string;
   budget: number;
   startDate: string;
   endDate: string;
   deliverables: string;
-  minEngagement: string;
-  ageRanges: string[];
-  locations: string[];
-  interests: string[];
-  referenceImageCount: number;
+  durationDays?: number;
+  minEngagementRate?: number;
+  ageRange?: string;
+  location?: string;
+  interests?: string;
+  referenceImageNames: string[];
 }
 
-export interface Campaign extends CampaignInput {
-  id: string;
-  reference: string;
-  status: "pending_review";
-  // Verified influencers the campaign was sent to.
+export interface CampaignMatchSummary {
   matchedCount: number;
-  createdAt: string;
-}
-
-export interface ReachCriteria {
-  niche: string;
+  niches: string[];
   locations: string[];
-  minEngagement: string;
+  minEngagementRate?: number;
 }
 
-// --- form state (shared by the server action and the client form) ---
+export interface Campaign extends NewCampaignInput {
+  id: string;
+  status: CampaignStatus;
+  createdAt: string;
+  match: CampaignMatchSummary;
+}
 
-export type CampaignRequiredField = "title" | "niche" | "budget" | "startDate" | "endDate" | "deliverables";
-
-export type CampaignFormField = CampaignRequiredField | "minEngagement";
-
-export type CampaignFormErrors = Partial<Record<CampaignFormField, string>>;
-
-export interface CampaignFormValues {
-  title: string;
+export interface MatchableInfluencer {
+  id: string;
+  name: string;
   niche: string;
-  // Digits only, e.g. "500000".
-  budget: string;
-  startDate: string;
-  endDate: string;
-  deliverables: string;
-  minEngagement: string;
+  city: string;
+  engagementRate: number;
+  verified: boolean;
+  active: boolean;
+  hasConflictingDeal: boolean;
 }
 
-export type CampaignSubmitResult =
-  | { status: "error"; errors: CampaignFormErrors; message: string }
-  | { status: "success"; campaign: Campaign };
+export interface EngagementRateOption {
+  value: number;
+  label: string;
+}
+
+export interface FaqItem {
+  question: string;
+  answer: string;
+}
+
+export interface PostCampaignGuide {
+  statusFlow: { status: CampaignStatus; label: string }[];
+  nextStepsNote: string;
+  smartMatching: string[];
+  secureByDesign: string[];
+  faqs: FaqItem[];
+}
+
+export interface CampaignDraft extends NewCampaignInput {
+  id: string;
+  updatedAt: string;
+}
+
+export type MatchStrength = "strong" | "good";
+
+export interface MatchedInfluencer {
+  id: string;
+  name: string;
+  initials: string;
+  niche: string;
+  city: string;
+  engagementRate: number;
+  strength: MatchStrength;
+}
+
+export interface CampaignMatchPreview {
+  summary: CampaignMatchSummary;
+  topMatches: MatchedInfluencer[];
+  // Set when the first location alone had too few matches and the search was widened.
+  broadened?: { primaryLocation: string; addedLocations: string[] };
+}
