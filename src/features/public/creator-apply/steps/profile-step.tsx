@@ -15,7 +15,8 @@ type Errors = Partial<Record<keyof CreatorProfileBasics, string>>;
 
 function validate(values: CreatorProfileBasics): Errors {
   const errors: Errors = {};
-  if (values.fullName.trim().split(/\s+/).length < 2) errors.fullName = "Enter your first and last name.";
+  // One name is fine — many creators go by a single stage name.
+  if (values.fullName.trim().length < 2) errors.fullName = "Enter your creator name.";
   if (!values.niche) errors.niche = "Choose the niche you're known for.";
   if (!values.city) errors.city = "Choose your city.";
   if (values.bio.trim().length < MIN_BIO) errors.bio = `Write at least ${MIN_BIO} characters so brands get to know you.`;
@@ -96,8 +97,13 @@ export function ProfileStep({ options }: { options: CreatorApplicationOptions })
         </div>
       </div>
 
-      <Field id="apply-fullName" label="Full name" error={errors.fullName}>
-        <input id="apply-fullName" value={values.fullName} onChange={set("fullName")} placeholder="e.g. Francis Ngannou" className={controlClass(Boolean(errors.fullName)) + " h-11"} />
+      <Field
+        id="apply-fullName"
+        label="Creator name"
+        hint="Your real name or the name your audience knows you by — one name is fine."
+        error={errors.fullName}
+      >
+        <input id="apply-fullName" value={values.fullName} onChange={set("fullName")} placeholder="e.g. Francis Ngannou or Tenor" className={controlClass(Boolean(errors.fullName)) + " h-11"} />
       </Field>
 
       <div className="grid gap-5 sm:grid-cols-2">
