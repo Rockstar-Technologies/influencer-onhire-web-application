@@ -57,7 +57,6 @@ export async function getUserStats(): Promise<UserStats> {
     brands: users.filter((user) => user.type === "brand").length,
     pendingApproval: users.filter((user) => user.status === "pending").length,
     suspended: users.filter((user) => user.status === "suspended").length,
-    inEscrow: users.reduce((sum, user) => sum + user.wallet.inEscrow, 0),
   };
 }
 
@@ -76,6 +75,16 @@ export async function getUserProfile(id: string): Promise<UserProfile | null> {
       b.sentAt.localeCompare(a.sentAt),
     ),
   };
+}
+
+// Only active accounts can sign in; pending, suspended and rejected ones are turned away.
+export async function getActiveAccount(id: string): Promise<PlatformUser | null> {
+  // TODO: replace with the account loaded from the auth session
+  return MOCK_PLATFORM_USERS.find((user) => user.id === id && user.status === "active") ?? null;
+}
+
+export async function listActiveAccounts(type: PlatformUser["type"]): Promise<PlatformUser[]> {
+  return MOCK_PLATFORM_USERS.filter((user) => user.type === type && user.status === "active");
 }
 
 export async function countOpenDisputes(): Promise<number> {

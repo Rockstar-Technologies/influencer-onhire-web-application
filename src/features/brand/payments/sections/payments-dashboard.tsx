@@ -7,7 +7,7 @@ import { Button } from "@/components/shared/button";
 import { CardIcon, ChartIcon, CheckCircleIcon } from "@/components/shared/icons";
 import { StatCard } from "@/components/shared/stat-card";
 import { cn } from "@/lib/utils";
-import { getEscrowSummary, listCampaignPayments } from "@/services/payments.service";
+import { getEscrowSummary, listCampaignPayments } from "@/services/campaign-payments.service";
 import type { CampaignPayment, EscrowSummary, PaymentInfluencer } from "@/types/payment";
 import { METHOD_LABELS, formatAmount, formatDate, formatNumber } from "../payment-format";
 import { FundCampaignDialog } from "./fund-campaign-dialog";

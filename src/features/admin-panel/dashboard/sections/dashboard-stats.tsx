@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { getDashboardKpis } from "@/services/dashboard.service";
 import type { DashboardRange, PeriodValue } from "@/types/dashboard";
-import { StatCardGrid, type StatCard } from "../../stat-cards";
+import { StatCardGrid, type StatCard } from "@/components/shared/stat-cards";
 import { RANGES } from "../dashboard-range";
 
 // Arrows are only for change against the previous period; plain counts get a warning icon instead.
@@ -53,7 +53,7 @@ export async function DashboardStats({ range }: { range: DashboardRange }) {
     {
       label: "Platform Revenue",
       value: kpis.platformRevenue.current.toLocaleString("en-US"),
-      unit: "Frs",
+      unit: "CFA",
       hint: <Change value={kpis.platformRevenue} range={range} />,
       icon: FiTrendingUp,
       tone: "success",
@@ -61,11 +61,11 @@ export async function DashboardStats({ range }: { range: DashboardRange }) {
     {
       label: "Held in Escrow",
       value: kpis.inEscrow.toLocaleString("en-US"),
-      unit: "Frs",
-      hint: kpis.overduePayments ? <Warning tone="danger">{kpis.overduePayments} payments overdue</Warning> : "Nothing overdue",
+      unit: "CFA",
+      hint: kpis.payoutRequests ? <Warning tone="danger">{kpis.payoutRequests} payouts to release</Warning> : "No payouts waiting",
       icon: FiLock,
       tone: "warning",
-      href: "/admin/users",
+      href: "/admin/payments",
     },
     {
       label: "Open Support Tickets",

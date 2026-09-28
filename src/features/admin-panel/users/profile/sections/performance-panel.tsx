@@ -8,7 +8,7 @@ function growth(first: number, last: number) {
   return `${percent >= 0 ? "+" : ""}${percent}%`;
 }
 
-// Full values like "1,200,000 Frs" are too wide for axis labels.
+// Full values like "1,200,000 CFA" are too wide for axis labels.
 const shortNumber = (value: number) => (value === 0 ? "0" : formatCount(value));
 
 export function PerformancePanel({

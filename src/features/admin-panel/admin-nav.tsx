@@ -30,7 +30,7 @@ const NAV: NavItem[] = [
   { label: "Overview", icon: FiGrid, href: "/admin", exact: true, search: { action: "/admin/users", placeholder: "Search users by name or email..." } },
   { label: "Users", icon: FiUsers, href: "/admin/users", search: { action: "/admin/users", placeholder: "Search users by name or email..." } },
   { label: "Campaigns", icon: FiSpeaker },
-  { label: "Finance", icon: FiCreditCard },
+  { label: "Payments", icon: FiCreditCard, href: "/admin/payments", search: { action: "/admin/payments", placeholder: "Search invoices, campaigns, brands..." } },
   { label: "Support", icon: FiLifeBuoy, href: "/admin/support", search: { action: "/admin/support", placeholder: "Search tickets..." } },
   { label: "Disputes", icon: FiAlertTriangle },
   { label: "Reports", icon: FiBarChart2 },

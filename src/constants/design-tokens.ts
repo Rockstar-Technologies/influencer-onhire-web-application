@@ -46,7 +46,7 @@ export interface DashboardNavSection {
 export const BRAND_DASHBOARD_NAV: DashboardNavSection[] = [
   {
     label: "Brand Account",
-    links: [{ label: "Payments & Escrow", href: "/brand/payments", icon: "wallet" }],
+    links: [{ label: "Payments & Escrow", href: "/brand/campaign-payments", icon: "wallet" }],
   },
   {
     label: "Discover",

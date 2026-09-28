@@ -43,7 +43,6 @@ export interface UserStats {
   brands: number;
   pendingApproval: number;
   suspended: number;
-  inEscrow: number;
 }
 
 // --- per-user insights ---

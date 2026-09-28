@@ -3,8 +3,8 @@ import {
   listCampaignPayments,
   listEscrowSteps,
   listHireableInfluencers,
-} from "@/services/payments.service";
-import { EscrowSteps } from "@/components/shared/escrow-steps";
+} from "@/services/campaign-payments.service";
+import { EscrowSteps } from "@/components/shared/campaign-escrow-steps";
 import { PaymentsDashboard } from "./sections/payments-dashboard";
 
 export async function PaymentsPage({ query }: { query: string }) {

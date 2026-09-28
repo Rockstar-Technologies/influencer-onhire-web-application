@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 interface CollapsiblePanelProps {
   title: string;
-  // Short line shown under the title while collapsed, e.g. "From 100,000 Frs".
+  // Short line shown under the title while collapsed, e.g. "From 100,000 CFA".
   summary: string;
   defaultOpen?: boolean;
   children: ReactNode;

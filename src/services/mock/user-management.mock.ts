@@ -173,7 +173,7 @@ export const MOCK_DOCUMENTS: Record<string, ComplianceDocument[]> = {
 // Every automatic user-facing message lands here so admins can see what a user was told.
 export const MOCK_NOTIFICATIONS: UserNotification[] = [
   { id: "n-1", userId: "u-106", title: "Your account has been suspended", body: "Your account is under review following a reported dispute. Contact support to appeal.", sentAt: minutesAgo(9 * DAY) },
-  { id: "n-2", userId: "u-101", title: "Payment released", body: "280,000 Frs for “App launch reel” has been released to your wallet.", sentAt: minutesAgo(9 * DAY) },
+  { id: "n-2", userId: "u-101", title: "Payment released", body: "280,000 CFA for “App launch reel” has been released to your wallet.", sentAt: minutesAgo(9 * DAY) },
   { id: "n-3", userId: "u-101", title: "New campaign invite", body: "Shea Radiance invited you to “Autumn Glow”.", sentAt: minutesAgo(4 * DAY) },
 ];
 
@@ -185,7 +185,7 @@ export const MOCK_ALERTS: SecurityAlert[] = [
 
 export const MOCK_FLAGS: ModerationFlag[] = [
   { id: "f-1", userId: "u-102", userName: "James Mwangi", field: "bio", excerpt: "DM me for guaranteed 10x crypto returns 🚀", reason: "Possible financial scam promotion", reportedAt: minutesAgo(3 * HOUR) },
-  { id: "f-2", userId: "u-110", userName: "Wanderlust Tours", field: "campaign-description", excerpt: "Creators must pay a 50,000 Frs registration fee before joining…", reason: "Charging creators to apply violates platform policy", reportedAt: minutesAgo(1 * DAY) },
+  { id: "f-2", userId: "u-110", userName: "Wanderlust Tours", field: "campaign-description", excerpt: "Creators must pay a 50,000 CFA registration fee before joining…", reason: "Charging creators to apply violates platform policy", reportedAt: minutesAgo(1 * DAY) },
   { id: "f-3", userId: "u-106", userName: "Tariq Bello", field: "media", excerpt: "beach-promo-final.mp4", reason: "Reported by 3 users as containing copyrighted music", reportedAt: minutesAgo(2 * DAY) },
 ];
 
