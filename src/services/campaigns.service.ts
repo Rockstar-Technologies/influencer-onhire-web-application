@@ -7,6 +7,7 @@ import type {
   CampaignPreview,
   EngagementRateOption,
   MatchableInfluencer,
+  MatchFilterOptions,
   NewCampaignInput,
   PostCampaignGuide,
 } from "@/types/campaign";
@@ -38,6 +39,15 @@ export async function getPostCampaignGuide(): Promise<PostCampaignGuide> {
 export async function listEngagementRateOptions(): Promise<EngagementRateOption[]> {
   // TODO: replace with `return fetch("/api/campaigns/engagement-rates").then(r => r.json())`
   return MOCK_ENGAGEMENT_RATE_OPTIONS;
+}
+
+export async function listMatchFilterOptions(): Promise<MatchFilterOptions> {
+  // TODO: replace with `return fetch("/api/campaigns/match-filters").then(r => r.json())`
+  const unique = (values: string[]) => Array.from(new Set(values)).sort((a, b) => a.localeCompare(b));
+  return {
+    niches: unique(MOCK_MATCHABLE_INFLUENCERS.map((inf) => inf.niche)),
+    cities: unique(MOCK_MATCHABLE_INFLUENCERS.map((inf) => inf.city)),
+  };
 }
 
 function splitList(value?: string) {

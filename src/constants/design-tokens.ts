@@ -10,7 +10,7 @@ export const NAV_LINKS: NavLink[] = [
   { label: "Browse Influencers", href: "/coming-soon?title=Browse+Influencers" },
   { label: "Post a Campaign", href: "/campaigns" },
   { label: "For Creators", href: "/for-creators" },
-  { label: "For Brands", href: "/coming-soon?title=For+Brands" },
+  { label: "For Brands", href: "/for-brands" },
 ];
 
 export const FOOTER_LINKS: NavLink[] = [
