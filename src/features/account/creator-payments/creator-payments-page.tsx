@@ -1,12 +1,13 @@
 import { FiCheckCircle, FiClock, FiLock, FiTrendingUp } from "react-icons/fi";
 import { EscrowSteps } from "@/components/shared/escrow-steps";
 import { StatCardGrid, type StatCard } from "@/components/shared/stat-cards";
-import { listCreatorPayments, summarizeCreatorPayments } from "@/services/payments.service";
+import { getCreatorWallet, listCreatorPayments, listWithdrawals, MIN_WITHDRAWAL, summarizeCreatorPayments } from "@/services/payments.service";
 import type { PlatformUser } from "@/types/user-management";
 import { CreatorPaymentTable } from "./sections/creator-payment-table";
+import { WalletPanel } from "./sections/wallet-panel";
 
 export async function CreatorPaymentsPage({ creator }: { creator: PlatformUser }) {
-  const payments = await listCreatorPayments(creator.id);
+  const [payments, wallet, withdrawals] = await Promise.all([listCreatorPayments(creator.id), getCreatorWallet(creator.id), listWithdrawals(creator.id)]);
   const summary = summarizeCreatorPayments(payments);
   const amount = (value: number) => value.toLocaleString("en-US");
   const count = (status: string) => payments.filter((payment) => payment.status === status).length;
@@ -15,7 +16,7 @@ export async function CreatorPaymentsPage({ creator }: { creator: PlatformUser }
   const cards: StatCard[] = [
     { label: "On Hold for You", value: amount(summary.onHold), unit: "CFA", hint: `${onHold} ${onHold === 1 ? "campaign" : "campaigns"} ready to deliver`, icon: FiLock, tone: "navy" },
     { label: "Awaiting Release", value: amount(summary.awaitingRelease), unit: "CFA", hint: `${count("requested")} cashout ${count("requested") === 1 ? "request" : "requests"} in review`, icon: FiClock, tone: "warning" },
-    { label: "Released to Balance", value: amount(summary.released), unit: "CFA", hint: "Ready to withdraw to mobile money", icon: FiCheckCircle, tone: "success" },
+    { label: "Released to Balance", value: amount(summary.released), unit: "CFA", hint: "Includes money you've withdrawn", icon: FiCheckCircle, tone: "success" },
     { label: "Total Earnings", value: amount(summary.totalEarnings), unit: "CFA", hint: "Take-home pay, after fees", icon: FiTrendingUp, tone: "success" },
   ];
 
@@ -38,11 +39,13 @@ export async function CreatorPaymentsPage({ creator }: { creator: PlatformUser }
         steps={[
           { title: "Brand pays", body: "The brand pays the campaign budget into escrow with MTN MoMo or Orange Money." },
           { title: "On hold for you", body: "Your take-home pay is locked while you create and post the content." },
-          { title: "Report & cash out", body: "Submit a delivery report with links to your posts and choose where to receive your money." },
+          { title: "Report & cash out", body: "Submit a delivery report with links to your posts. Once approved, the pay lands in your balance to withdraw." },
         ]}
       />
 
       <StatCardGrid cards={cards} />
+
+      <WalletPanel wallet={wallet} withdrawals={withdrawals} minimum={MIN_WITHDRAWAL} />
 
       <section aria-labelledby="creator-payments-heading" className="rounded-2xl border border-border bg-surface p-5 shadow-sm sm:p-6">
         <h2 id="creator-payments-heading" className="font-display text-base font-bold text-heading">
