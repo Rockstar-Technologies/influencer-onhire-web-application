@@ -15,6 +15,19 @@
   --color-star: #f59e0b;         /* amber-500 — rating stars */
   --color-success: #16a34a;      /* green-600 — "active" status */
   --color-success-light: #f0fdf4; /* green-50 */
+  --color-danger: #dc2626;       /* red-600 — required marks, form errors */
+  --color-danger-light: #fef2f2; /* red-50 — error banner background */
+  --color-warning: #b45309;      /* amber-700 — pending status text */
+  --color-warning-light: #fffbeb; /* amber-50 — pending status background */
+  --color-info: #1d4ed8;         /* blue-700 — "normal" priority text */
+  --color-info-light: #eff6ff;   /* blue-50 */
+  /* Darker text shades for small status badges on their -light backgrounds (WCAG AA 4.5:1) */
+  --color-success-strong: #15803d; /* green-700 */
+  --color-danger-strong: #b91c1c;  /* red-700 */
+
+  /* Admin panel */
+  --color-navy: #1e3a8a;         /* blue-900 — admin primary buttons */
+  --color-navy-hover: #172554;   /* blue-950 */
 
   --color-heading: #0f172a;   /* slate-900 — headline text */
   --color-body: #475569;      /* slate-600 — paragraph/body text */
@@ -36,6 +49,9 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  /* Admin panel fonts, loaded in src/lib/fonts.ts */
+  --font-display: var(--font-jakarta);
+  --font-body: var(--font-inter);
 
   --color-primary: var(--color-primary);
   --color-primary-hover: var(--color-primary-hover);
@@ -46,6 +62,16 @@
   --color-star: var(--color-star);
   --color-success: var(--color-success);
   --color-success-light: var(--color-success-light);
+  --color-danger: var(--color-danger);
+  --color-danger-light: var(--color-danger-light);
+  --color-warning: var(--color-warning);
+  --color-warning-light: var(--color-warning-light);
+  --color-info: var(--color-info);
+  --color-info-light: var(--color-info-light);
+  --color-success-strong: var(--color-success-strong);
+  --color-danger-strong: var(--color-danger-strong);
+  --color-navy: var(--color-navy);
+  --color-navy-hover: var(--color-navy-hover);
   --color-heading: var(--color-heading);
   --color-body: var(--color-body);
   --color-muted: var(--color-muted);
