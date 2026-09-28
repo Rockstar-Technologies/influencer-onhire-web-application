@@ -112,3 +112,8 @@ export interface CampaignMatchPreview {
   // Set when the first location alone had too few matches and the search was widened.
   broadened?: { primaryLocation: string; addedLocations: string[] };
 }
+
+export interface MatchFilterOptions {
+  niches: string[];
+  cities: string[];
+}

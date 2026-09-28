@@ -84,6 +84,28 @@
   --color-border-light: var(--color-border-light);
 }
 
+@theme {
+  /* Page transition — see app/(public)/template.tsx */
+  --animate-page-enter: page-enter 0.4s ease-out both;
+
+  @keyframes page-enter {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-page-enter {
+    animation: none;
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
