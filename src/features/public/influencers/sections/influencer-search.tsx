@@ -68,7 +68,7 @@ export function InfluencerSearch({ options, query, children }: InfluencerSearchP
         </label>
         <button
           type="submit"
-          className="h-11 rounded-lg bg-accent px-5 text-sm font-semibold text-white transition-colors hover:bg-accent-hover"
+          className="h-11 rounded-lg bg-primary px-6 text-sm font-semibold text-white transition-colors hover:bg-primary-hover"
         >
           Search
         </button>

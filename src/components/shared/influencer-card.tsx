@@ -10,9 +10,9 @@ export function InfluencerCard({ influencer }: { influencer: Influencer }) {
   const { username, name, niche, location, imageUrl, language, rating, activity, social, startingPrice } = influencer;
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
-      <div className="relative h-64 w-full bg-surface-alt">
-        <Image src={imageUrl} alt={name} fill sizes="(min-width: 1024px) 360px, 100vw" className="object-cover" />
+    <article className="group overflow-hidden rounded-2xl border border-border bg-surface shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-ink/10">
+      <div className="relative h-64 w-full overflow-hidden bg-surface-alt">
+        <Image src={imageUrl} alt={name} fill sizes="(min-width: 1024px) 360px, 100vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
         <span className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-heading shadow-sm">
           {language === "Bilingual" ? (
             <FiGlobe className="text-sky-500" size={12} />
