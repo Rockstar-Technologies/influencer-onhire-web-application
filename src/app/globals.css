@@ -4,14 +4,21 @@
   --background: #ffffff;
   --foreground: #171717;
 
-  /* Brand palette — extracted from hero reference image */
-  --color-primary: #4f46e5;       /* indigo-600 — buttons, links, "ON HIRE" */
-  --color-primary-hover: #4338ca; /* indigo-700 — hover/active state */
-  --color-primary-light: #eef2ff; /* indigo-50 — badge/pill backgrounds */
-  --color-primary-border: #c7d2fe; /* indigo-200 — subtle accent borders */
+  /* Brand palette — taken from the Cameroon flag. Green carries the UI, gold highlights,
+     red is kept for the hero wordmark so it never reads as an error state. */
+  --color-primary: #00704f;       /* deep flag green — buttons, links (white text 6.1:1) */
+  --color-primary-hover: #005a40;
+  --color-primary-light: #ebf6f1; /* badge/pill backgrounds */
+  --color-primary-border: #b3dcc9; /* subtle accent borders */
 
-  --color-accent: #f97316;       /* orange-500 — search button */
-  --color-accent-hover: #ea580c; /* orange-600 */
+  --color-accent: #f2c230;       /* gold — highlights on dark sections; pair with dark text */
+  --color-accent-hover: #e0ad12;
+
+  /* Exact flag colors, for the hero wordmark and flag stripes only */
+  --color-flag-green: #007a5e;
+  --color-flag-red: #ce1126;
+  --color-flag-yellow: #fcd116;
+  --color-ink: #0b1f18;          /* near-black green — dark premium sections */
   --color-star: #f59e0b;         /* amber-500 — rating stars */
   --color-success: #16a34a;      /* green-600 — "active" status */
   --color-success-light: #f0fdf4; /* green-50 */
@@ -59,6 +66,10 @@
   --color-primary-border: var(--color-primary-border);
   --color-accent: var(--color-accent);
   --color-accent-hover: var(--color-accent-hover);
+  --color-flag-green: var(--color-flag-green);
+  --color-flag-red: var(--color-flag-red);
+  --color-flag-yellow: var(--color-flag-yellow);
+  --color-ink: var(--color-ink);
   --color-star: var(--color-star);
   --color-success: var(--color-success);
   --color-success-light: var(--color-success-light);

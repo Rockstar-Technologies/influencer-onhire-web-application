@@ -43,7 +43,7 @@ export function HeroSearch({ options }: { options: InfluencerSearchOptions }) {
   }
 
   return (
-    <Form action="/influencers" className="mt-10 w-full rounded-2xl border border-border bg-surface p-5 text-left shadow-sm">
+    <Form action="/influencers" className="mt-10 w-full rounded-2xl border border-border bg-surface p-5 text-left shadow-xl shadow-ink/5">
       {activeFilters.map((filter) => (
         <input key={`${filter.groupKey}-${filter.value}`} type="hidden" name={filter.groupKey} value={filter.value} />
       ))}
@@ -57,7 +57,7 @@ export function HeroSearch({ options }: { options: InfluencerSearchOptions }) {
         />
         <button
           type="submit"
-          className="h-10 rounded-lg bg-accent px-5 text-sm font-semibold text-white transition-colors hover:bg-accent-hover"
+          className="h-10 rounded-lg bg-primary px-6 text-sm font-semibold text-white transition-colors hover:bg-primary-hover"
         >
           Search
         </button>
