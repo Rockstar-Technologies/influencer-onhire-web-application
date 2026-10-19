@@ -9,16 +9,13 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: vi.fn(), refres
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("@/features/auth/actions", () => ({ signInAction: vi.fn(), signUpAction: vi.fn(), signOutAction: vi.fn() }));
 vi.mock("@/features/account/creator-payments/actions", () => ({ withdrawAction: vi.fn(), requestCashoutAction: vi.fn() }));
-vi.mock("@/features/admin-panel/users/actions", () => ({ inviteTeamMemberAction: vi.fn(), userStatusAction: vi.fn() }));
 vi.mock("@/features/admin-panel/support/actions", () => ({ createTicketAction: vi.fn() }));
 
 const { EscrowBadge } = await import("@/components/shared/escrow-badge");
 const { WithdrawalHistory } = await import("@/features/creator/earnings/sections/withdrawal-history");
 const { RequestHistory } = await import("@/features/creator/requests/request-history");
-const { AccountStatusBadge, AccountTypeTag, ComplianceIndicator } = await import("@/features/admin-panel/users/sections/user-badges");
 const { StatusBadge: TicketStatusBadge } = await import("@/features/admin-panel/support/sections/ticket-badges");
 const { WithdrawDialog } = await import("@/features/account/creator-payments/sections/withdraw-dialog");
-const { InviteForm } = await import("@/features/admin-panel/users/sections/invite-form");
 const { NewTicketDialog } = await import("@/features/admin-panel/support/sections/new-ticket-dialog");
 
 const withdrawal = (status: string, id = status) => ({ id, date: "2026-01-02", amount: 5000, method: "mtn_momo", phone: "670000001", status }) as never;
@@ -71,24 +68,7 @@ describe("creator request (offer) statuses", () => {
   });
 });
 
-describe("admin badges", () => {
-  it.each(v.ACCOUNT_STATUS.values)("account status %s has a label", (status) => {
-    const { container } = render(<AccountStatusBadge status={status} />);
-    expect(container.textContent).toBe(labels.ACCOUNT_STATUS_LABELS[status]);
-  });
-
-  it("the account type tag keeps the admin wording: a creator is shown as 'influencer'", () => {
-    const { container, rerender } = render(<AccountTypeTag type="creator" />);
-    expect(container.textContent).toBe("influencer");
-    rerender(<AccountTypeTag type="brand" />);
-    expect(container.textContent).toBe("brand");
-  });
-
-  it.each(["verified", "in_review", "rejected", "missing"] as const)("compliance indicator %s renders", (status) => {
-    const { container } = render(<ComplianceIndicator status={status} />);
-    expect(container.textContent?.trim().length).toBeGreaterThan(0);
-  });
-
+describe("support ticket badges (still sample data until the support module is connected)", () => {
   it.each(v.TICKET_STATUS.values)("ticket status %s renders", (status) => {
     const { container } = render(<TicketStatusBadge status={status} />);
     // The ticket screen capitalises each word ("In Progress"); only the code (in_progress) must map to it.
@@ -102,12 +82,6 @@ describe("form values must match what the API accepts", () => {
   it("the withdrawal form offers exactly the API's payout networks, by code", () => {
     render(<WithdrawDialog available={10_000} minimum={1_000} />);
     expect(optionValues('input[name="method"]')).toEqual([...v.PAYMENT_METHOD.values]);
-  });
-
-  it("the team invite form offers exactly the API's admin roles, by code, with the familiar labels", () => {
-    render(<InviteForm />);
-    expect(optionValues("select[name='role'] option")).toEqual([...v.ADMIN_ROLE.values]);
-    expect([...document.querySelectorAll("select[name='role'] option")].map((o) => o.textContent)).toEqual(["Super Admin", "Campaign Manager", "Finance", "Support Agent"]);
   });
 
   it("the support ticket form sends API account types and priorities", () => {

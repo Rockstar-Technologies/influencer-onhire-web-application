@@ -315,3 +315,145 @@ export const brandPaymentSchema = z.object({
 });
 export type BrandPayment = z.infer<typeof brandPaymentSchema>;
 export const paymentListSchema = z.array(brandPaymentSchema);
+
+// ---- administration (verified against the running API: backend docs/ADMIN_ACCOUNT_MANAGEMENT.md, CAMPAIGN_MANAGEMENT.md, PAYMENTS_DELIVERY_RELEASE.md) ----------
+const isoText = z.string();
+
+export const adminUserListItemSchema = z.object({
+  id: z.uuid(),
+  email: z.string(),
+  fullName: z.string(),
+  phone: z.string().nullable(),
+  role: z.enum(["brand", "creator", "admin"]),
+  status: z.enum(["pending", "active", "suspended", "rejected"]),
+  isFlagged: z.boolean(),
+  lastActiveAt: isoText.nullable(),
+  createdAt: isoText,
+  username: z.string().nullable().optional(),
+  applicationStatus: z.string().nullable().optional(),
+});
+export type AdminUserListItem = z.infer<typeof adminUserListItemSchema>;
+export const adminUserListSchema = z.array(adminUserListItemSchema);
+
+export const adminUserDetailSchema = adminUserListItemSchema.extend({
+  updatedAt: isoText,
+  brandProfile: z.object({ industry: z.string().nullable(), city: z.string().nullable() }).optional(),
+  creatorProfile: z.object({ username: z.string(), displayName: z.string(), city: z.string().nullable(), joinedAt: isoText }).optional(),
+  applications: z.array(z.object({ id: z.uuid(), status: z.string(), createdAt: isoText, submittedAt: isoText.nullable(), reviewedAt: isoText.nullable() })).optional(),
+  adminRole: z.unknown().optional(),
+});
+export type AdminUserDetail = z.infer<typeof adminUserDetailSchema>;
+export const adminUserEnvelopeSchema = z.object({ user: adminUserDetailSchema });
+
+export const adminApplicationListItemSchema = z.object({
+  id: z.uuid(),
+  status: z.string(),
+  displayName: z.string().nullable(),
+  createdAt: isoText,
+  submittedAt: isoText.nullable(),
+  reviewedAt: isoText.nullable(),
+  applicant: z.object({ id: z.uuid(), email: z.string(), fullName: z.string() }),
+});
+export type AdminApplicationListItem = z.infer<typeof adminApplicationListItemSchema>;
+export const adminApplicationListSchema = z.array(adminApplicationListItemSchema);
+
+export const adminApplicationDetailSchema = z.object({
+  id: z.uuid(),
+  status: z.string(),
+  createdAt: isoText,
+  submittedAt: isoText.nullable(),
+  reviewedAt: isoText.nullable(),
+  reviewedBy: z.string().nullable(),
+  reviewNote: z.string().nullable(),
+  applicant: z.object({ id: z.uuid(), email: z.string(), fullName: z.string(), phone: z.string().nullable(), accountStatus: z.string() }),
+  profile: z.object({
+    displayName: z.string().nullable(),
+    photoFileId: z.string().nullable(),
+    city: z.object({ slug: z.string(), name: z.string() }).nullable(),
+    bio: z.string().nullable(),
+    contentStyle: z.string().nullable(),
+    language: z.string().nullable(),
+    engagementRatePct: z.number().nullable(),
+    minimumBooking: z.object({ code: z.string(), label: z.string(), days: z.number().int() }).nullable(),
+    deliverables: z.string().nullable(),
+    revisionsRounds: z.number().int().nullable(),
+    usageRightsMonths: z.number().int().nullable(),
+    depositTerms: z.string().nullable(),
+  }),
+  niches: z.array(z.object({ slug: z.string(), name: z.string(), isPrimary: z.boolean() })),
+  platforms: z.array(z.object({ code: z.string(), name: z.string(), handle: z.string(), followers: z.number().int(), priceXaf: z.number().int() })),
+  collaborations: z.array(z.object({ position: z.number().int(), brandName: z.string(), description: z.string().nullable(), year: z.number().int() })),
+  brandFit: z.array(z.string()),
+  /** Payout details are only ever the network and the last three digits. */
+  payoutMethods: z.array(z.object({ method: z.string(), methodName: z.string(), last3: z.string() })),
+});
+export type AdminApplicationDetail = z.infer<typeof adminApplicationDetailSchema>;
+export const adminApplicationEnvelopeSchema = z.object({ application: adminApplicationDetailSchema });
+
+export const adminCampaignListItemSchema = z.object({
+  id: z.uuid(),
+  reference: z.string(),
+  title: z.string(),
+  niche: z.object({ slug: z.string(), name: z.string() }),
+  budgetXaf: z.number().int(),
+  startDate: z.string(),
+  endDate: z.string(),
+  status: z.string(),
+  submittedAt: isoText.nullable(),
+  reviewedAt: isoText.nullable(),
+  createdAt: isoText,
+  updatedAt: isoText,
+  brand: z.object({ id: z.uuid(), name: z.string() }),
+});
+export type AdminCampaignListItem = z.infer<typeof adminCampaignListItemSchema>;
+export const adminCampaignListSchema = z.array(adminCampaignListItemSchema);
+
+export const adminCampaignDetailSchema = adminCampaignListItemSchema.extend({
+  deliverables: z.string(),
+  minEngagement: z.object({ pct: z.number(), label: z.string() }).nullable(),
+  cities: z.array(z.object({ slug: z.string(), name: z.string() })),
+  interests: z.array(z.object({ slug: z.string(), name: z.string() })),
+  ageRanges: z.array(z.object({ code: z.string(), label: z.string() })),
+  imageFileIds: z.array(z.string()),
+  reviewNote: z.string().nullable(),
+  cancelledAt: isoText.nullable(),
+  reviewedBy: z.string().nullable().optional(),
+});
+export type AdminCampaignDetail = z.infer<typeof adminCampaignDetailSchema>;
+export const adminCampaignEnvelopeSchema = z.object({ campaign: adminCampaignDetailSchema });
+
+/** A payment as staff see it: with the platform fee and the creator's net (frozen when the payment was confirmed). */
+export const adminPaymentSchema = z.object({
+  id: z.uuid(),
+  reference: z.string(),
+  status: z.string(),
+  amountXaf: z.number().int(),
+  fundedAt: isoText,
+  simulated: z.boolean(),
+  requestedAt: isoText.nullable(),
+  releasedAt: isoText.nullable(),
+  delivery: z.object({ reportedAt: isoText.nullable(), acknowledgedAt: isoText.nullable(), disputeDeadline: isoText.nullable(), disputeWindowOpen: z.boolean(), releaseEligible: z.boolean() }),
+  dispute: z
+    .object({ id: z.uuid(), status: z.string().nullable(), reason: z.string().nullable(), openedAt: isoText.nullable(), resolvedAt: isoText.nullable(), awaitingPolicyDecision: z.boolean() })
+    .loose()
+    .nullable(),
+  actions: z.object({ canRelease: z.boolean() }).loose(),
+  engagement: z.object({ offerId: z.uuid(), origin: z.string(), campaign: z.object({ id: z.uuid(), reference: z.string(), title: z.string() }).nullable() }),
+  feeXaf: z.number().int(),
+  netXaf: z.number().int(),
+  feeRatePct: z.number(),
+  brand: z.object({ id: z.uuid(), name: z.string() }),
+  creator: z.object({ id: z.uuid(), username: z.string(), displayName: z.string() }),
+});
+export type AdminPayment = z.infer<typeof adminPaymentSchema>;
+export const adminPaymentListSchema = z.array(adminPaymentSchema);
+export const adminPaymentDetailSchema = adminPaymentSchema.extend({
+  deliveryReport: z.unknown().nullable().optional(),
+  collection: z
+    .object({ provider: z.string(), simulated: z.boolean(), status: z.string(), completedAt: isoText.nullable(), payer: z.object({ method: z.string(), last3: z.string() }) })
+    .loose()
+    .nullable()
+    .optional(),
+});
+export type AdminPaymentDetail = z.infer<typeof adminPaymentDetailSchema>;
+export const adminPaymentEnvelopeSchema = z.object({ payment: adminPaymentDetailSchema });

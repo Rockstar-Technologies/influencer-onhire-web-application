@@ -14,6 +14,10 @@ export function SupportPage({ query }: { query: TicketQuery }) {
         <NewTicketDialog />
       </div>
 
+      <p role="note" className="rounded-xl border border-warning/30 bg-warning-light px-4 py-3 text-sm font-medium text-warning">
+        Sample data: support tickets are not connected to the live service yet, so nothing here is real and nothing you do here is saved.
+      </p>
+
       <SupportStats />
       <TicketTable query={query} />
     </div>

@@ -374,3 +374,52 @@ describe("funding is real, server-side and never simulated by the frontend", () 
     for (const f of FILES) expect(stripComments(f.text), f.rel).not.toMatch(/PAYMENTS_SIMULATION_MODE|auto_succeed|auto_fail|670000001|670000002|670000003/);
   });
 });
+
+describe("administration is real, permissioned and honest", () => {
+  const ADMIN = FILES.filter((f) => f.rel.startsWith("src/features/admin/"));
+
+  it("the legacy mock admin modules are gone (users, payments, dashboard), including their actions and services", () => {
+    for (const gone of ["src/features/admin-panel/users", "src/features/admin-panel/payments", "src/features/admin-panel/dashboard", "src/services/dashboard.service.ts"]) {
+      expect(FILES.some((f) => f.rel === gone || f.rel.startsWith(`${gone}/`)), gone).toBe(false);
+    }
+  });
+
+  it("admin code imports no mock or service module and browser code never calls the API", () => {
+    expect(ADMIN.length).toBeGreaterThan(15);
+    for (const f of ADMIN) {
+      expect(importsOf(f.text).filter((i) => /\/services\/|\/mock\//.test(i)), f.rel).toEqual([]);
+      if (isClientComponent(f.text)) expect(f.text, f.rel).not.toMatch(/callApi|callWithSession|from "@\/lib\/api\/(?:client|config)"|\bfetch\(/);
+    }
+  });
+
+  it("every admin Server Action checks the exact permission first", () => {
+    const actions = ADMIN.find((f) => f.rel.endsWith("actions.ts"))!;
+    expect(actions.text).toContain('authorizeAction({ role: "admin", permission }');
+    const expected: Record<string, string> = { moderateUserAction: "users.moderate", decideApplicationAction: "applications.review", decideCampaignAction: "campaigns.review", releasePaymentAction: "payments.release" };
+    for (const [name, permission] of Object.entries(expected)) {
+      const body = actions.text.slice(actions.text.indexOf(`export async function ${name}`));
+      expect(body.indexOf(`await gate("${permission}")`), name).toBeGreaterThan(-1);
+      expect(body.indexOf(`await gate("${permission}")`), name).toBeLessThan(body.indexOf("callWithSession"));
+    }
+  });
+
+  it("no action input can carry a status, an actor, a reviewer or a permission", () => {
+    const schemas = ADMIN.find((f) => f.rel.endsWith("schemas.ts"))!;
+    expect(stripComments(schemas.text)).not.toMatch(/status|actor|reviewer|permission|role/i);
+  });
+
+  it("each admin page requires the exact permission before rendering", () => {
+    const pages: [string, string][] = [["users", "users.view"], ["applications", "applications.review"], ["campaigns", "campaigns.review"], ["payments", "payments.view"]];
+    for (const [route, permission] of pages) {
+      for (const file of [`src/app/admin/${route}/page.tsx`, `src/app/admin/${route}/[id]/page.tsx`]) {
+        const page = FILES.find((f) => f.rel === file)!;
+        expect(page.text, file).toContain(`"${permission}"`);
+        expect(page.text, file).toMatch(/await requireAdmin\(/);
+      }
+    }
+  });
+
+  it("no admin screen offers what the API cannot do: bulk actions, flags, messages, invitations, revenue figures", () => {
+    for (const f of ADMIN) expect(stripComments(f.text), f.rel).not.toMatch(/bulk|toggleFlag|sendUserMessage|inviteTeamMember|platform revenue|Total revenue/i);
+  });
+});

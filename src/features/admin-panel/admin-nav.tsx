@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import type { IconType } from "react-icons";
 import {
   FiAlertTriangle,
+  FiCheckSquare,
   FiBarChart2,
   FiCreditCard,
   FiGrid,
@@ -16,30 +17,36 @@ import {
   FiUsers,
 } from "react-icons/fi";
 import { cn } from "@/lib/utils";
+import type { PermissionCode } from "@/lib/domain/vocabulary";
 
 interface NavItem {
   label: string;
   icon: IconType;
   // Missing href means the module isn't built yet.
   href?: string;
+  /** The API permission that opens this area; the link is hidden without it (the API and each page check it again). */
+  permission?: PermissionCode;
   exact?: boolean;
   search?: { action: string; placeholder: string };
 }
 
 const NAV: NavItem[] = [
-  { label: "Overview", icon: FiGrid, href: "/admin", exact: true, search: { action: "/admin/users", placeholder: "Search users by name or email..." } },
-  { label: "Users", icon: FiUsers, href: "/admin/users", search: { action: "/admin/users", placeholder: "Search users by name or email..." } },
-  { label: "Campaigns", icon: FiSpeaker },
-  { label: "Payments", icon: FiCreditCard, href: "/admin/payments", search: { action: "/admin/payments", placeholder: "Search invoices, campaigns, brands..." } },
-  { label: "Support", icon: FiLifeBuoy, href: "/admin/support", search: { action: "/admin/support", placeholder: "Search tickets..." } },
+  { label: "Overview", icon: FiGrid, href: "/admin", exact: true },
+  { label: "Users", icon: FiUsers, href: "/admin/users", permission: "users.view", search: { action: "/admin/users", placeholder: "Search users by name or email..." } },
+  { label: "Applications", icon: FiCheckSquare, href: "/admin/applications", permission: "applications.review", search: { action: "/admin/applications", placeholder: "Search applicants..." } },
+  { label: "Campaigns", icon: FiSpeaker, href: "/admin/campaigns", permission: "campaigns.review", search: { action: "/admin/campaigns", placeholder: "Search campaign titles..." } },
+  { label: "Payments", icon: FiCreditCard, href: "/admin/payments", permission: "payments.view" },
+  { label: "Support", icon: FiLifeBuoy, href: "/admin/support", permission: "tickets.manage", search: { action: "/admin/support", placeholder: "Search tickets..." } },
   { label: "Disputes", icon: FiAlertTriangle },
   { label: "Reports", icon: FiBarChart2 },
   { label: "Settings", icon: FiSettings },
 ];
 
-function useActiveItem() {
+const allowed = (permissions: readonly PermissionCode[]) => NAV.filter((item) => !item.permission || permissions.includes(item.permission));
+
+function useActiveItem(items: NavItem[] = NAV) {
   const pathname = usePathname();
-  return NAV.find((item) => item.href && (item.exact ? pathname === item.href : pathname.startsWith(item.href))) ?? NAV[0];
+  return items.find((item) => item.href && (item.exact ? pathname === item.href : pathname.startsWith(item.href))) ?? items[0] ?? NAV[0];
 }
 
 function NavEntry({ item, active, compact }: { item: NavItem; active: boolean; compact?: boolean }) {
@@ -74,13 +81,14 @@ function NavEntry({ item, active, compact }: { item: NavItem; active: boolean; c
   );
 }
 
-export function AdminSidebar() {
-  const active = useActiveItem();
+export function AdminSidebar({ permissions }: { permissions: readonly PermissionCode[] }) {
+  const items = allowed(permissions);
+  const active = useActiveItem(items);
   return (
     <aside className="hidden w-60 shrink-0 border-r border-border bg-surface lg:block">
       <nav aria-label="Admin modules" className="sticky top-16 flex flex-col gap-1 p-4">
         <p className="px-3 pb-2 text-[11px] font-bold uppercase tracking-wider text-muted">Modules</p>
-        {NAV.map((item) => (
+        {items.map((item) => (
           <NavEntry key={item.label} item={item} active={item === active} />
         ))}
       </nav>
@@ -89,20 +97,22 @@ export function AdminSidebar() {
 }
 
 // Below lg the sidebar becomes a scrollable strip under the header. Unbuilt modules are left out to save room.
-export function AdminMobileNav() {
-  const active = useActiveItem();
+export function AdminMobileNav({ permissions }: { permissions: readonly PermissionCode[] }) {
+  const items = allowed(permissions);
+  const active = useActiveItem(items);
   return (
     <nav aria-label="Admin modules" className="flex gap-1 overflow-x-auto border-b border-border bg-surface px-4 py-2 lg:hidden">
-      {NAV.filter((item) => item.href).map((item) => (
+      {items.filter((item) => item.href).map((item) => (
         <NavEntry key={item.label} item={item} active={item === active} compact />
       ))}
     </nav>
   );
 }
 
-export function AdminSearch() {
-  const active = useActiveItem();
-  const search = active.search ?? NAV[0].search!;
+export function AdminSearch({ permissions }: { permissions: readonly PermissionCode[] }) {
+  const active = useActiveItem(allowed(permissions));
+  const search = active.search;
+  if (!search) return <div className="mx-auto hidden min-w-0 flex-1 sm:block" />;
   return (
     <Form
       action={search.action}

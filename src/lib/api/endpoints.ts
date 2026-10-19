@@ -1,5 +1,14 @@
+import { z } from "zod";
 import type { ZodType } from "zod";
 import {
+  adminApplicationEnvelopeSchema,
+  adminApplicationListSchema,
+  adminCampaignEnvelopeSchema,
+  adminCampaignListSchema,
+  adminPaymentEnvelopeSchema,
+  adminPaymentListSchema,
+  adminUserEnvelopeSchema,
+  adminUserListSchema,
   applicationOptionsSchema,
   applicationStateSchema,
   authUserDataSchema,
@@ -99,6 +108,24 @@ export const ENDPOINTS = {
   brandFund: endpoint({ name: "brandFund", method: "POST", path: "/brand/offers/:id/fund", auth: "session", idempotent: true, schema: fundResultSchema }),
   brandFunding: endpoint({ name: "brandFunding", method: "GET", path: "/brand/offers/:id/funding", auth: "session", schema: fundingEnvelopeSchema }),
   brandPayments: endpoint({ name: "brandPayments", method: "GET", path: "/brand/payments", query: ["status", "cursor", "limit"], auth: "session", schema: paymentListSchema }),
+
+  // Administration (every route needs an explicit permission, checked by the API): users, creator applications, campaign review, payments.
+  adminUsers: endpoint({ name: "adminUsers", method: "GET", path: "/admin/users", query: ["q", "role", "status", "flagged", "sort", "dir", "limit", "cursor"], auth: "session", schema: adminUserListSchema }),
+  adminUser: endpoint({ name: "adminUser", method: "GET", path: "/admin/users/:id", auth: "session", schema: adminUserEnvelopeSchema }),
+  adminUserSuspend: endpoint({ name: "adminUserSuspend", method: "POST", path: "/admin/users/:id/suspend", auth: "session", schema: adminUserEnvelopeSchema }),
+  adminUserReactivate: endpoint({ name: "adminUserReactivate", method: "POST", path: "/admin/users/:id/reactivate", auth: "session", schema: adminUserEnvelopeSchema }),
+  adminUserReject: endpoint({ name: "adminUserReject", method: "POST", path: "/admin/users/:id/reject", auth: "session", schema: adminUserEnvelopeSchema }),
+  adminApplications: endpoint({ name: "adminApplications", method: "GET", path: "/admin/creator-applications", query: ["q", "status", "sort", "dir", "limit", "cursor"], auth: "session", schema: adminApplicationListSchema }),
+  adminApplication: endpoint({ name: "adminApplication", method: "GET", path: "/admin/creator-applications/:id", auth: "session", schema: adminApplicationEnvelopeSchema }),
+  adminApplicationApprove: endpoint({ name: "adminApplicationApprove", method: "POST", path: "/admin/creator-applications/:id/approve", auth: "session", schema: z.unknown() }),
+  adminApplicationReject: endpoint({ name: "adminApplicationReject", method: "POST", path: "/admin/creator-applications/:id/reject", auth: "session", schema: z.unknown() }),
+  adminCampaigns: endpoint({ name: "adminCampaigns", method: "GET", path: "/admin/campaigns", query: ["q", "status", "sort", "dir", "limit", "cursor"], auth: "session", schema: adminCampaignListSchema }),
+  adminCampaign: endpoint({ name: "adminCampaign", method: "GET", path: "/admin/campaigns/:id", auth: "session", schema: adminCampaignEnvelopeSchema }),
+  adminCampaignApprove: endpoint({ name: "adminCampaignApprove", method: "POST", path: "/admin/campaigns/:id/approve", auth: "session", schema: z.unknown() }),
+  adminCampaignReject: endpoint({ name: "adminCampaignReject", method: "POST", path: "/admin/campaigns/:id/reject", auth: "session", schema: z.unknown() }),
+  adminPayments: endpoint({ name: "adminPayments", method: "GET", path: "/admin/payments", query: ["status", "disputed", "releasable", "invoice", "dir", "limit", "cursor"], auth: "session", schema: adminPaymentListSchema }),
+  adminPayment: endpoint({ name: "adminPayment", method: "GET", path: "/admin/payments/:id", auth: "session", schema: adminPaymentEnvelopeSchema }),
+  adminPaymentRelease: endpoint({ name: "adminPaymentRelease", method: "POST", path: "/admin/payments/:id/release", auth: "session", schema: z.unknown() }),
 
   applicationReapply: endpoint({ name: "applicationReapply", method: "POST", path: "/creator/applications/reapply", auth: "session", schema: reapplyResultSchema }),
 } as const;

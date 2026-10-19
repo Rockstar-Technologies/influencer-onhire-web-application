@@ -239,7 +239,7 @@ test.describe("authorization", () => {
     await expect(page).toHaveURL(`${APP}/admin?denied=permission`); // tickets.manage is not
   });
 
-  test("the CSV export requires dashboard.export", async ({ browser }) => {
+  test("the export requires dashboard.export (and answers 501: nothing real to export)", async ({ browser }) => {
     const manager = await browser.newContext();
     const managerPage = await manager.newPage();
     await signIn(managerPage, ACCOUNTS.manager);
@@ -254,10 +254,10 @@ test.describe("authorization", () => {
     await signIn(financePage, ACCOUNTS.finance);
     await expect(financePage).toHaveURL(`${APP}/admin`);
     const allowed = await finance.request.get(`${APP}/admin/export?range=30d`);
-    expect(allowed.status()).toBe(200);
-    expect(allowed.headers()["content-type"]).toContain("text/csv");
+    // The permission is honoured, but the API has no export source and the app no longer invents sample data: an honest 501.
+    expect(allowed.status()).toBe(501);
     expect(allowed.headers()["cache-control"]).toBe("no-store");
-    expect(await allowed.text()).toContain("Influencer On Hire dashboard report");
+    expect(await allowed.json()).toEqual({ error: "export_not_available" });
     await finance.close();
   });
 

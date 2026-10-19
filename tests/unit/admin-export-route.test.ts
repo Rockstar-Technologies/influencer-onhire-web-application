@@ -14,14 +14,13 @@ const session = (role: "brand" | "creator" | "admin", permissions: PermissionCod
   expiresAt: null,
 });
 
-const request = () => new Request("http://localhost:3000/admin/export?range=30d");
 
 beforeEach(() => vi.mocked(getSession).mockReset());
 
 describe("GET /admin/export", () => {
   it("answers 401 to an anonymous caller and returns no data", async () => {
     vi.mocked(getSession).mockResolvedValue(null);
-    const response = await route.GET(request());
+    const response = await route.GET();
     expect(response.status).toBe(401);
     expect(await response.text()).not.toContain("Platform revenue");
     expect(response.headers.get("cache-control")).toBe("no-store");
@@ -33,18 +32,19 @@ describe("GET /admin/export", () => {
     ["an administrator without dashboard.export", session("admin", ["dashboard.view", "payments.view"])],
   ])("answers 403 to %s", async (_name, who) => {
     vi.mocked(getSession).mockResolvedValue(who);
-    const response = await route.GET(request());
+    const response = await route.GET();
     expect(response.status).toBe(403);
     expect(await response.text()).not.toContain("Platform revenue");
   });
 
-  it("exports the CSV for an administrator holding dashboard.export, never cached", async () => {
+  it("tells an administrator holding dashboard.export that there is nothing to export (no invented data), never cached", async () => {
     vi.mocked(getSession).mockResolvedValue(session("admin", ["dashboard.export"]));
-    const response = await route.GET(request());
-    expect(response.status).toBe(200);
-    expect(response.headers.get("content-type")).toContain("text/csv");
+    const response = await route.GET();
+    expect(response.status).toBe(501);
     expect(response.headers.get("cache-control")).toBe("no-store");
-    expect(await response.text()).toContain("Influencer On Hire dashboard report");
+    const text = await response.text();
+    expect(JSON.parse(text)).toEqual({ error: "export_not_available" });
+    expect(text).not.toMatch(/revenue|campaign|Influencer On Hire dashboard report/i);
   });
 
   it("refuses every state-changing method", async () => {

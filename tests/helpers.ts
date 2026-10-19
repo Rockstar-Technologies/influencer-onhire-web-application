@@ -292,3 +292,72 @@ export function brandPayment(overrides: Partial<BrandPayment> = {}): BrandPaymen
     ...overrides,
   };
 }
+
+// ---- admin fixtures (shapes captured from the running API's /admin/* routes) ----------------------------------------------------------------
+import type { AdminApplicationDetail, AdminApplicationListItem, AdminCampaignDetail, AdminCampaignListItem, AdminPaymentDetail, AdminUserDetail, AdminUserListItem } from "@/lib/api/schemas";
+
+export const TARGET_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+
+export function adminUserItem(overrides: Partial<AdminUserListItem> = {}): AdminUserListItem {
+  return { id: TARGET_ID, email: "kevin@example.test", fullName: "Kevin Brand", phone: "670000009", role: "brand", status: "active", isFlagged: false, lastActiveAt: "2026-10-19T10:00:00.000Z", createdAt: "2026-10-01T10:00:00.000Z", ...overrides };
+}
+export function adminUserDetail(overrides: Partial<AdminUserDetail> = {}): AdminUserDetail {
+  return { ...adminUserItem(), updatedAt: "2026-10-19T10:00:00.000Z", brandProfile: { industry: null, city: null }, ...overrides } as AdminUserDetail;
+}
+export function adminApplicationItem(overrides: Partial<AdminApplicationListItem> = {}): AdminApplicationListItem {
+  return { id: TARGET_ID, status: "under_review", displayName: "Amina Beauty", createdAt: "2026-10-01T10:00:00.000Z", submittedAt: "2026-10-02T10:00:00.000Z", reviewedAt: null, applicant: { id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", email: "amina@example.test", fullName: "Amina K" }, ...overrides };
+}
+export function adminApplicationDetail(overrides: Partial<AdminApplicationDetail> = {}): AdminApplicationDetail {
+  return {
+    id: TARGET_ID,
+    status: "under_review",
+    createdAt: "2026-10-01T10:00:00.000Z",
+    submittedAt: "2026-10-02T10:00:00.000Z",
+    reviewedAt: null,
+    reviewedBy: null,
+    reviewNote: null,
+    applicant: { id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", email: "amina@example.test", fullName: "Amina K", phone: "670000001", accountStatus: "pending" },
+    profile: { displayName: "Amina Beauty", photoFileId: null, city: { slug: "douala", name: "Douala" }, bio: "I make beauty reels for audiences in Douala.", contentStyle: null, language: null, engagementRatePct: null, minimumBooking: { code: "2-weeks", label: "2 weeks", days: 14 }, deliverables: "1 reel + 3 stories", revisionsRounds: 2, usageRightsMonths: 6, depositTerms: "full_in_escrow" },
+    niches: [{ slug: "beauty", name: "Beauty", isPrimary: true }],
+    platforms: [{ code: "instagram", name: "Instagram", handle: "@amina.beauty", followers: 25000, priceXaf: 85000 }],
+    collaborations: [{ position: 1, brandName: "MTN Cameroon", description: "Brand ambassador", year: 2024 }],
+    brandFit: ["Beauty & Skincare"],
+    payoutMethods: [{ method: "mtn_momo", methodName: "MTN MoMo", last3: "456" }],
+    ...overrides,
+  };
+}
+export function adminCampaignItem(overrides: Partial<AdminCampaignListItem> = {}): AdminCampaignListItem {
+  return { id: TARGET_ID, reference: "CMP-9", title: "Summer Glow Launch", niche: { slug: "beauty", name: "Beauty" }, budgetXaf: 500000, startDate: "2031-03-01", endDate: "2031-03-31", status: "pending_review", submittedAt: "2026-10-02T10:00:00.000Z", reviewedAt: null, createdAt: "2026-10-01T10:00:00.000Z", updatedAt: "2026-10-02T10:00:00.000Z", brand: { id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc", name: "Glow Cosmetics" }, ...overrides };
+}
+export function adminCampaignDetail(overrides: Partial<AdminCampaignDetail> = {}): AdminCampaignDetail {
+  return { ...adminCampaignItem(), deliverables: "1 reel and 3 stories", minEngagement: { pct: 3, label: "3%+" }, cities: [{ slug: "douala", name: "Douala" }], interests: [], ageRanges: [], imageFileIds: [], reviewNote: null, cancelledAt: null, ...overrides };
+}
+export function adminPaymentDetail(overrides: Partial<AdminPaymentDetail> = {}): AdminPaymentDetail {
+  return {
+    id: TARGET_ID,
+    reference: "INV-8",
+    status: "requested",
+    amountXaf: 85000,
+    fundedAt: "2026-10-19T10:00:00.000Z",
+    simulated: true,
+    requestedAt: "2026-10-19T12:00:00.000Z",
+    releasedAt: null,
+    delivery: { reportedAt: "2026-10-19T12:00:00.000Z", acknowledgedAt: "2026-10-19T13:00:00.000Z", disputeDeadline: null, disputeWindowOpen: false, releaseEligible: true },
+    dispute: null,
+    actions: { canRelease: true },
+    engagement: { offerId: OFFER_ID, origin: "direct_hire", campaign: null },
+    feeXaf: 17000,
+    netXaf: 68000,
+    feeRatePct: 20,
+    brand: { id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc", name: "Fresh Brand" },
+    creator: { id: "dddddddd-dddd-4ddd-8ddd-dddddddddddd", username: "amina.beauty", displayName: "Amina Beauty" },
+    deliveryReport: null,
+    collection: { provider: "fake", simulated: true, status: "succeeded", completedAt: "2026-10-19T10:00:01.000Z", payer: { method: "mtn_momo", last3: "456" } },
+    ...overrides,
+  };
+}
+
+/** `GET /auth/me` for an administrator holding exactly these permission codes. */
+export function adminMe(permissions: string[], user: Record<string, unknown> = {}) {
+  return jsonResponse(200, { data: { user: apiUser({ role: "admin", phone: null, id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee", ...user }), session: { expiresAt: "2026-12-31T00:00:00.000Z" }, permissions } });
+}

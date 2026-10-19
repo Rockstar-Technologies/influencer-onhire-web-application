@@ -4,9 +4,10 @@ import { inter, jakarta } from "@/lib/fonts";
 import { initials } from "@/lib/utils";
 import { signOutAction } from "@/features/auth/actions";
 import type { ApiUser } from "@/lib/api/schemas";
+import type { PermissionCode } from "@/lib/domain/vocabulary";
 import { AdminMobileNav, AdminSearch, AdminSidebar } from "./admin-nav";
 
-export function AdminShell({ admin, children }: { admin: ApiUser; children: ReactNode }) {
+export function AdminShell({ admin, permissions, children }: { admin: ApiUser; permissions: readonly PermissionCode[]; children: ReactNode }) {
   return (
     <div className={`${inter.variable} ${jakarta.variable} flex flex-1 flex-col bg-surface-alt font-body text-body`}>
       <header className="sticky top-0 z-20 border-b border-border bg-surface">
@@ -21,7 +22,7 @@ export function AdminShell({ admin, children }: { admin: ApiUser; children: Reac
             </span>
           </Link>
 
-          <AdminSearch />
+          <AdminSearch permissions={permissions} />
 
           <div className="ml-auto flex shrink-0 items-center gap-3 sm:ml-0">
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-info-light text-xs font-bold text-navy">
@@ -38,11 +39,11 @@ export function AdminShell({ admin, children }: { admin: ApiUser; children: Reac
             </form>
           </div>
         </div>
-        <AdminMobileNav />
+        <AdminMobileNav permissions={permissions} />
       </header>
 
       <div className="flex flex-1">
-        <AdminSidebar />
+        <AdminSidebar permissions={permissions} />
         <main className="min-w-0 flex-1 px-4 py-8 sm:px-6">{children}</main>
       </div>
     </div>

@@ -1,20 +1,11 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { UserDetailPage } from "@/features/admin/user-detail-page";
 import { requireAdmin } from "@/lib/auth/session";
-import { UserProfilePage } from "@/features/admin-panel/users/profile/user-profile-page";
-import { getUserProfile } from "@/services/user-management.service";
 
-type Params = Promise<{ id: string }>;
+export const metadata: Metadata = { title: "User · Admin · Influencer On Hire" };
 
-export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
-  await requireAdmin("/admin/users", "users.view");
-  const profile = await getUserProfile((await params).id);
-  return { title: `${profile?.user.name ?? "User"} · Admin · Influencer On Hire` };
-}
-
-export default async function Page({ params }: { params: Params }) {
-  await requireAdmin("/admin/users", "users.view");
-  const profile = await getUserProfile((await params).id);
-  if (!profile) notFound();
-  return <UserProfilePage profile={profile} />;
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const session = await requireAdmin(`/admin/users/${encodeURIComponent(id)}`, "users.view");
+  return <UserDetailPage id={id} viewer={{ id: session.user.id, permissions: session.permissions }} />;
 }
