@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { AGE_RANGE, APPLICATION_STATUS, CAMPAIGN_STATUS, DEPOSIT_TERMS, HIRE_DURATION, LANGUAGE, PAYMENT_METHOD, PLATFORM } from "@/lib/domain/vocabulary";
+import { AGE_RANGE, APPLICATION_STATUS, CAMPAIGN_STATUS, DEPOSIT_TERMS, HIRE_DURATION, LANGUAGE, OFFER_INITIATOR, OFFER_ORIGIN, OFFER_STATUS, PAYMENT_METHOD, PLATFORM } from "@/lib/domain/vocabulary";
 
 /** Shapes of the Express API's responses (see backend docs/AUTHENTICATION.md). Unknown extra fields are ignored, not trusted. */
 export const userSchema = z.object({
@@ -163,3 +163,82 @@ export type CampaignView = z.infer<typeof campaignViewSchema>;
 
 export const campaignEnvelopeSchema = z.object({ campaign: campaignViewSchema });
 export const campaignDeleteSchema = z.object({ id: z.uuid(), deleted: z.literal(true) });
+
+// ---- offers, invitations and direct hires (verified against the running API, backend docs/DIRECT_HIRING.md) ------------------------------
+const offerPlatform = z.object({ code: z.string(), name: z.string() });
+
+/**
+ * One offer as the API returns it. `origin` + `initiator` say what it is: a direct hire (`direct_hire`, brand), a platform invitation to a
+ * campaign (`campaign_match`, platform) or a creator's own application (`campaign_match`, creator). Creators also get `brandName`; brands get `creator`.
+ */
+export const offerViewSchema = z.object({
+  id: z.uuid(),
+  reference: z.string(),
+  origin: z.enum(OFFER_ORIGIN.values),
+  status: z.enum(OFFER_STATUS.values),
+  initiator: z.enum(OFFER_INITIATOR.values),
+  priceXaf: z.number().int(),
+  platform: offerPlatform.nullable(),
+  pitch: z.string().nullable(),
+  window: z.object({ startDate: z.string(), endDate: z.string() }).nullable(),
+  fundingDeadline: z.string().nullable(),
+  respondedAt: z.string().nullable(),
+  createdAt: z.string(),
+  campaign: z
+    .object({
+      id: z.uuid(),
+      reference: z.string(),
+      title: z.string(),
+      status: z.string(),
+      maxBudgetXaf: z.number().int(),
+      startDate: z.string(),
+      endDate: z.string(),
+      brandName: z.string().optional(),
+    })
+    .nullable(),
+  hire: z
+    .object({
+      contactName: z.string().nullable(),
+      location: z.string().nullable(),
+      socialHandle: z.string().nullable(),
+      promotion: z.string().nullable(),
+      durationDays: z.number().int().nullable(),
+      durationLabel: z.string().nullable(),
+      paymentMethod: z.object({ code: z.string(), name: z.string() }),
+    })
+    .nullable(),
+  /** Creator view only. */
+  brandName: z.string().optional(),
+  /** Brand view only: public facts about the creator (no e-mail, phone or ids). */
+  creator: z
+    .object({
+      username: z.string(),
+      displayName: z.string(),
+      photoFileId: z.string().nullable(),
+      city: z.string().nullable(),
+      platformHandle: z.string().nullable(),
+      platformFollowers: z.number().int().nullable(),
+      listedRateXaf: z.number().int().nullable(),
+    })
+    .optional(),
+});
+export type OfferView = z.infer<typeof offerViewSchema>;
+export const offerListSchema = z.array(offerViewSchema);
+export const offerEnvelopeSchema = z.object({ offer: offerViewSchema });
+export const declineReasonsSchema = z.array(z.object({ id: z.number().int().positive(), label: z.string() }));
+export type DeclineReason = z.infer<typeof declineReasonsSchema>[number];
+
+/** The parts of GET /creators/:username that the hire form needs (brand sessions only). */
+export const hireCreatorSchema = z.object({
+  creator: z.object({
+    username: z.string(),
+    displayName: z.string(),
+    photoFileId: z.string().nullable(),
+    city: z.object({ slug: z.string(), name: z.string() }),
+    primaryNiche: z.string(),
+    minimumBooking: z.object({ code: z.string(), label: z.string(), days: z.number().int() }),
+    platforms: z.array(z.object({ platform: z.enum(PLATFORM.values), name: z.string(), handle: z.string(), followers: z.number().int(), priceXaf: z.number().int() })),
+    acceptedPaymentMethods: z.array(z.object({ code: z.enum(PAYMENT_METHOD.values), name: z.string() })),
+  }),
+});
+export type HireCreator = z.infer<typeof hireCreatorSchema>["creator"];

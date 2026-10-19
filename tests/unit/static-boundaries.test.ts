@@ -255,3 +255,42 @@ describe("brand campaigns are no longer backed by mock services", () => {
     expect(stripComments(schemas.text)).not.toMatch(/brandId|ownerId|userId|reviewedBy|reviewNote|status\s*:/);
   });
 });
+
+describe("offers, invitations and direct hires are no longer backed by mock services", () => {
+  const OFFER_FILES = FILES.filter((f) => f.rel.startsWith("src/features/offers/") || f.rel.startsWith("src/features/creator/requests/"));
+
+  it("the legacy mock hire and request services, types and components are gone", () => {
+    for (const gone of ["src/features/public/hire", "src/services/hire-requests.service.ts", "src/services/mock/hire-requests.mock.ts", "src/services/creator.service.ts", "src/services/mock/creator.mock.ts", "src/types/hire-request.ts", "src/types/campaign-request.ts"]) {
+      expect(FILES.some((f) => f.rel === gone || f.rel.startsWith(`${gone}/`)), gone).toBe(false);
+    }
+  });
+
+  it("offer code imports no mock or service module", () => {
+    expect(OFFER_FILES.length).toBeGreaterThan(10);
+    for (const f of OFFER_FILES) expect(importsOf(f.text).filter((i) => /\/services\/|\/mock\//.test(i)), f.rel).toEqual([]);
+  });
+
+  it("offer browser code never calls the API itself; only Server Actions do", () => {
+    for (const f of OFFER_FILES.filter((file) => isClientComponent(file.text))) {
+      expect(f.text, f.rel).not.toMatch(/callApi|callWithSession|from "@\/lib\/api\/(?:client|config)"|\bfetch\(/);
+    }
+  });
+
+  it("every offer Server Action checks the session and role first, and accepts no owner, price or status", () => {
+    const actions = FILES.find((f) => f.rel === "src/features/offers/actions.ts")!;
+    expect(actions.text).toContain("authorizeAction({ role }");
+    for (const name of ["submitHireAction", "answerOfferAction", "decideOfferAction"]) {
+      const body = actions.text.slice(actions.text.indexOf(`export async function ${name}`));
+      expect(body.indexOf("await gate("), name).toBeGreaterThan(-1);
+      expect(body.indexOf("await gate("), name).toBeLessThan(body.indexOf("callWithSession"));
+    }
+    const schemas = FILES.find((f) => f.rel === "src/features/offers/schemas.ts")!;
+    expect(stripComments(schemas.text)).not.toMatch(/brandId|creatorId|ownerId|userId|priceXaf|status\s*:/);
+  });
+
+  it("the hire and inbox screens make no promise the platform cannot keep (no 48-hour reply, no negotiated price, no workload, no auto-suggestions)", () => {
+    for (const f of OFFER_FILES) {
+      expect(stripComments(f.text), f.rel).not.toMatch(/48 hours|agree on the final price|polite auto-message|suggest other matching|Why you matched|activeCampaigns|maxActiveCampaigns/);
+    }
+  });
+});

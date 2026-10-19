@@ -101,7 +101,7 @@ test.describe("sign-in, session and sign-out", () => {
   test("each role lands on its own home", async ({ browser }) => {
     const homes: Array<[string, RegExp]> = [
       [ACCOUNTS.activeCreator, /\/creator\/requests$/],
-      [ACCOUNTS.pendingCreator, /\/for-creators\/apply\/profile$/],
+      [ACCOUNTS.pendingCreator, /\/for-creators\/apply\/(profile|submitted)$/], // a pending creator lands in the application area; a submitted application redirects on to its status page
       [ACCOUNTS.manager, /\/admin$/],
     ];
     for (const [email, url] of homes) {

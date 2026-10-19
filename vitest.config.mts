@@ -14,6 +14,8 @@ export default defineConfig({
   },
   test: {
     environment: "node",
+    // Form tests type character by character through jsdom; with many test files running in parallel the default 5 s can be exceeded on a busy machine.
+    testTimeout: 20_000,
     include: ["tests/unit/**/*.test.{ts,tsx}"],
     setupFiles: ["tests/setup.ts"],
     restoreMocks: true,

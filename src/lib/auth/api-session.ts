@@ -12,6 +12,7 @@ import { getForwardedClientIp, readSessionToken } from "./session";
 export interface SessionCallOptions {
   body?: unknown;
   id?: string;
+  username?: string;
   query?: Record<string, string | number | undefined>;
 }
 
@@ -22,7 +23,7 @@ export async function callWithSession<TData>(endpoint: Endpoint<TData>, body?: u
     session,
     clientIp: await getForwardedClientIp(),
     ...(body === undefined ? {} : { body }),
-    ...(extra.id === undefined ? {} : { params: { id: extra.id } }),
+    ...(extra.id === undefined && extra.username === undefined ? {} : { params: { ...(extra.id === undefined ? {} : { id: extra.id }), ...(extra.username === undefined ? {} : { username: extra.username }) } }),
     ...(extra.query === undefined ? {} : { query: extra.query }),
   });
 }

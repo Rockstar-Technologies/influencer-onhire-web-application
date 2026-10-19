@@ -9,15 +9,21 @@ import { TEST_CONFIG, TOKEN, apiUser, errorBody, fakeFetch, jsonResponse, sessio
 const deps = (fetchImpl: typeof fetch, config = TEST_CONFIG) => ({ config, fetchImpl, newRequestId: () => "req-test-0001" });
 
 describe("endpoint allowlist", () => {
-  it("lists exactly the allowed operations (auth, creator application wizard, brand campaigns) with fixed paths", () => {
+  it("lists exactly the allowed operations (auth, creator application wizard, brand campaigns, offers and hires) with fixed paths", () => {
     expect(Object.values(ENDPOINTS).map((e) => `${e.method} ${e.path}`).sort()).toEqual([
       "DELETE /brand/campaigns/:id",
       "GET /auth/me",
       "GET /brand/campaigns",
       "GET /brand/campaigns/:id",
       "GET /brand/campaigns/options",
+      "GET /brand/offers",
+      "GET /brand/offers/:id",
       "GET /creator/applications/current",
       "GET /creator/applications/options",
+      "GET /creator/offers",
+      "GET /creator/offers/:id",
+      "GET /creator/offers/decline-reasons",
+      "GET /creators/:username",
       "PATCH /brand/campaigns/:id",
       "POST /auth/login",
       "POST /auth/logout",
@@ -25,21 +31,39 @@ describe("endpoint allowlist", () => {
       "POST /brand/campaigns",
       "POST /brand/campaigns/:id/cancel",
       "POST /brand/campaigns/:id/submit",
+      "POST /brand/offers",
+      "POST /brand/offers/:id/accept",
+      "POST /brand/offers/:id/cancel",
+      "POST /brand/offers/:id/decline",
       "POST /creator/applications/current/submit",
       "POST /creator/applications/reapply",
+      "POST /creator/offers/:id/accept",
+      "POST /creator/offers/:id/decline",
       "PUT /creator/applications/current/audience",
       "PUT /creator/applications/current/profile",
       "PUT /creator/applications/current/rates",
     ]);
   });
 
-  it("the only variable path part is a UUID `:id`, and only the brand's own campaign routes have one (the owner is never in a path)", () => {
+  it("the only variable path parts are a UUID `:id` (an offer or campaign) and a creator `:username`; the owner is never in a path", () => {
     for (const operation of Object.values(ENDPOINTS)) {
       expect(operation.path, operation.name).not.toMatch(/\{|\[|\*/);
-      const variable = operation.path.match(/:[a-z]+/g) ?? [];
-      expect(variable.every((part) => part === ":id")).toBe(true);
-      if (variable.length) expect(operation.path.startsWith("/brand/campaigns/")).toBe(true);
+      const variable: string[] = operation.path.match(/:[a-z]+/g) ?? [];
+      expect(variable.every((part) => part === ":id" || part === ":username")).toBe(true);
+      if (variable.includes(":username")) expect(operation.path).toBe("/creators/:username");
+      if (variable.includes(":id")) expect(/^\/(?:brand\/(?:campaigns|offers)|creator\/offers)\//.test(operation.path), operation.path).toBe(true);
     }
+  });
+
+  it("a `:username` is filled only with a valid username, an `:id` only with a UUID", () => {
+    expect(buildApiPath(ENDPOINTS.hireCreator, { username: "kevin.fitness" })).toBe("/creators/kevin.fitness");
+    for (const bad of ["..", "a/b", "ab", "x".repeat(31), "kevin fitness", "kevin?x=1", ""]) {
+      expect(() => buildApiPath(ENDPOINTS.hireCreator, { username: bad }), bad).toThrow();
+    }
+    expect(() => buildApiPath(ENDPOINTS.hireCreator, {})).toThrow();
+    expect(() => buildApiPath(ENDPOINTS.me, { username: "kevin.fitness" })).toThrow();
+    expect(() => buildApiPath(ENDPOINTS.brandOfferAccept, { id: "not-a-uuid" })).toThrow();
+    expect(buildApiPath(ENDPOINTS.brandOfferAccept, { id: "44444444-4444-4444-8444-444444444444" })).toBe("/brand/offers/44444444-4444-4444-8444-444444444444/accept");
   });
 
   it("accepts only the frozen table objects, not copies or look-alikes", () => {

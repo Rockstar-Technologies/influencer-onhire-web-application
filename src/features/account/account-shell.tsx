@@ -14,7 +14,7 @@ export async function AccountShell({ account, children }: { account: ApiUser; ch
   const path = (await headers()).get(REQUEST_PATH_HEADER) ?? "";
   const links = [
     { href: `${area}/payments`, label: "Payments" },
-    ...(isBrand ? [{ href: "/brand/campaigns", label: "Campaigns" }, { href: "/influencers", label: "Find influencers" }] : []),
+    ...(isBrand ? [{ href: "/brand/campaigns", label: "Campaigns" }, { href: "/brand/offers", label: "Hires" }, { href: "/influencers", label: "Find influencers" }] : []),
   ];
 
   return (

@@ -137,3 +137,45 @@ export async function managerToken(request: APIRequestContext): Promise<string> 
   const header = response.headersArray().find((h) => h.name.toLowerCase() === "set-cookie" && h.value.startsWith("ioh_session="))!;
   return header.value.split(";")[0]!.split("=")[1]!;
 }
+
+// ---- offers: approved creators and campaigns created through the real API ---------------------------------------------------------------
+import type { Browser } from "@playwright/test";
+
+export interface ApprovedCreator {
+  email: string;
+  username: string;
+}
+
+/**
+ * Signs a brand-new creator up, completes the application in the browser, has the campaign manager approve it, and returns the creator's
+ * email and public username. Every test gets its own creator, so nothing depends on data left by another test.
+ */
+export async function approvedCreator(browser: Browser, request: APIRequestContext): Promise<ApprovedCreator> {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  const email = await signUpCreator(page);
+  await fillProfile(page);
+  await fillAudience(page);
+  await fillRates(page);
+  await page.getByRole("button", { name: "Submit My Profile" }).click();
+  await page.waitForURL(`${APP}/for-creators/apply/submitted`);
+  const id = (await applicationOf(request, await tokenOf(context))).application.id;
+  expect((await apiSend(request, await managerToken(request), "post", `/admin/creator-applications/${id}/approve`, {})).status).toBe(200);
+  await context.close();
+
+  const fresh = await browser.newContext();
+  const login = await fresh.request.post(`${API_MAIN}/auth/login`, { data: { email, password: PASSWORD } });
+  const header = login.headersArray().find((h) => h.name.toLowerCase() === "set-cookie" && h.value.startsWith("ioh_session="))!;
+  const token = header.value.split(";")[0]!.split("=")[1]!;
+  const profile = await request.get(`${API_MAIN}/creator/profile`, { headers: { Cookie: `ioh_session=${token}` } });
+  const username = ((await profile.json()) as { data: { profile: { username: string } } }).data.profile.username;
+  await fresh.close();
+  return { email, username };
+}
+
+/** A brand's session token obtained straight from the API (not through the app), for checking server-side state. */
+export async function apiToken(request: APIRequestContext, email: string): Promise<string> {
+  const response = await request.post(`${API_MAIN}/auth/login`, { data: { email, password: PASSWORD } });
+  const header = response.headersArray().find((h) => h.name.toLowerCase() === "set-cookie" && h.value.startsWith("ioh_session="))!;
+  return header.value.split(";")[0]!.split("=")[1]!;
+}

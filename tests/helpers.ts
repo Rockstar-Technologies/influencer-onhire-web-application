@@ -163,3 +163,70 @@ export function campaignListItem(overrides: Partial<CampaignListItem> = {}): Cam
   void [deliverables, minEngagement, cities, interests, ageRanges, imageFileIds, reviewNote, cancelledAt];
   return item;
 }
+
+// ---- offers fixtures (shapes captured from the running API's /brand/offers and /creator/offers) --------------------------------------------
+import type { HireCreator, OfferView } from "@/lib/api/schemas";
+
+export const OFFER_ID = "44444444-4444-4444-8444-444444444444";
+
+/** A pending direct hire as a creator sees it. */
+export function offerView(overrides: Partial<OfferView> = {}): OfferView {
+  return {
+    id: OFFER_ID,
+    reference: "HR-12",
+    origin: "direct_hire",
+    status: "pending",
+    initiator: "brand",
+    priceXaf: 30000,
+    platform: { code: "tiktok", name: "TikTok" },
+    pitch: null,
+    window: null,
+    fundingDeadline: null,
+    respondedAt: null,
+    createdAt: new Date(Date.now() - 86_400_000).toISOString(),
+    campaign: null,
+    hire: { contactName: "Marketing Team", location: "Douala", socialHandle: "@acmefoods", promotion: "A new snack line", durationDays: 7, durationLabel: "1 week", paymentMethod: { code: "mtn_momo", name: "MTN MoMo" } },
+    brandName: "Acme Foods",
+    ...overrides,
+  };
+}
+
+/** A platform invitation to a campaign as a creator sees it. */
+export function invitationView(overrides: Partial<OfferView> = {}): OfferView {
+  return offerView({
+    id: "55555555-5555-4555-8555-555555555555",
+    reference: "HR-13",
+    origin: "campaign_match",
+    initiator: "platform",
+    hire: null,
+    campaign: { id: CAMPAIGN_ID, reference: "CMP-7", title: "Summer Glow Launch", status: "open", maxBudgetXaf: 500000, startDate: "2031-03-01", endDate: "2031-03-31", brandName: "Acme Foods" },
+    ...overrides,
+  });
+}
+
+/** The brand's view of an offer: the creator's public facts instead of `brandName`. */
+export function brandOfferView(overrides: Partial<OfferView> = {}): OfferView {
+  const { brandName, ...rest } = offerView();
+  void brandName;
+  return { ...rest, creator: { username: "kevin.fitness", displayName: "Kevin Fitness", photoFileId: null, city: "Yaoundé", platformHandle: "@kevin_fitness", platformFollowers: 120000, listedRateXaf: 30000 }, ...overrides };
+}
+
+export function hireCreator(overrides: Partial<HireCreator> = {}): HireCreator {
+  return {
+    username: "kevin.fitness",
+    displayName: "Kevin Fitness",
+    photoFileId: null,
+    city: { slug: "yaounde", name: "Yaoundé" },
+    primaryNiche: "fitness",
+    minimumBooking: { code: "1-week", label: "1 week", days: 7 },
+    platforms: [
+      { platform: "tiktok", name: "TikTok", handle: "@kevin_fitness", followers: 120000, priceXaf: 30000 },
+      { platform: "instagram", name: "Instagram", handle: "@kevin.fit", followers: 40000, priceXaf: 45000 },
+    ],
+    acceptedPaymentMethods: [
+      { code: "mtn_momo", name: "MTN MoMo" },
+      { code: "orange_money", name: "Orange Money" },
+    ],
+    ...overrides,
+  };
+}

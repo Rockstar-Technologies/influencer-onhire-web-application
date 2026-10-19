@@ -9,7 +9,6 @@ vi.mock("@/lib/auth/action-access", () => ({
 vi.mock("@/services/user-management.service");
 vi.mock("@/services/payments.service", async () => ({ ...(await vi.importActual<object>("@/services/payments.service")), releasePayment: vi.fn(), requestCashout: vi.fn(), requestWithdrawal: vi.fn(), fundCampaign: vi.fn() }));
 vi.mock("@/services/support.service");
-vi.mock("@/services/hire-requests.service");
 vi.mock("@/services/influencers.service");
 
 const { authorizeAction } = await import("@/lib/auth/action-access");
@@ -18,11 +17,9 @@ const support = await import("@/features/admin-panel/support/actions");
 const adminPayments = await import("@/features/admin-panel/payments/actions");
 const brandPayments = await import("@/features/account/brand-payments/actions");
 const creatorPayments = await import("@/features/account/creator-payments/actions");
-const hire = await import("@/features/public/hire/actions");
 const userService = await import("@/services/user-management.service");
 const paymentsService = await import("@/services/payments.service");
 const supportService = await import("@/services/support.service");
-const hireService = await import("@/services/hire-requests.service");
 
 const authorize = vi.mocked(authorizeAction);
 const DENIED = { ok: false, message: "denied", reason: "wrong_role" } as const;
@@ -35,7 +32,6 @@ function form(entries: Record<string, string>): FormData {
 const VALID_FUND = { creatorId: "c1", campaign: "My campaign", amount: "50000", method: "mtn_momo", phone: "670000001" };
 const VALID_CASHOUT = { paymentId: "p1", summary: "I delivered the agreed reel and three stories.", links: "https://example.com/post" };
 const VALID_WITHDRAW = { amount: "5000", method: "mtn_momo", phone: "670000001" };
-const VALID_HIRE = { fullName: "Jane Brand", location: "Douala, Cameroon", socialHandle: "", promotion: "", paymentMethod: "MTN MoMo", duration: "1 week" };
 const VALID_TICKET = { subject: "Payment question", message: "The brand asks about a release.", fromName: "Acme", fromRole: "brand", priority: "normal" };
 const VALID_INVITE = { name: "New Admin", email: "new@admin.example", role: "support_agent" };
 
@@ -56,7 +52,6 @@ const CASES: Case[] = [
   { name: "fund a campaign", requirement: { role: "brand" }, run: () => brandPayments.fundCampaignAction({ status: "idle" }, form(VALID_FUND)), service: () => paymentsService.fundCampaign },
   { name: "request a cashout", requirement: { role: "creator" }, run: () => creatorPayments.requestCashoutAction({ status: "idle" }, form(VALID_CASHOUT)), service: () => paymentsService.requestCashout },
   { name: "withdraw funds", requirement: { role: "creator" }, run: () => creatorPayments.withdrawAction({ status: "idle" }, form(VALID_WITHDRAW)), service: () => paymentsService.requestWithdrawal },
-  { name: "send a hire request", requirement: { role: "brand" }, run: () => hire.submitHireRequest("amina", { status: "idle", values: {} } as never, form(VALID_HIRE)), service: () => hireService.createHireRequest },
 ];
 
 beforeEach(() => {

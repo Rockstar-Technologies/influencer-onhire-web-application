@@ -9,9 +9,9 @@ export const metadata: Metadata = {
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string | string[]; cursor?: string | string[] }>;
 }) {
   await requireCreator("/creator/requests");
-  const { q } = await searchParams;
-  return <CampaignRequestsPage query={q ?? ""} />;
+  const { q, cursor } = await searchParams;
+  return <CampaignRequestsPage query={typeof q === "string" ? q : ""} {...(typeof cursor === "string" ? { cursor } : {})} />;
 }

@@ -3,6 +3,7 @@ import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import * as v from "@/lib/domain/vocabulary";
 import * as labels from "@/lib/domain/labels";
+import { offerView } from "../helpers";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: vi.fn(), refresh: vi.fn(), push: vi.fn() }), usePathname: () => "/", useSearchParams: () => new URLSearchParams() }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
@@ -14,7 +15,7 @@ vi.mock("@/features/admin-panel/support/actions", () => ({ createTicketAction: v
 
 const { EscrowBadge } = await import("@/components/shared/escrow-badge");
 const { WithdrawalHistory } = await import("@/features/creator/earnings/sections/withdrawal-history");
-const { RequestHistory } = await import("@/features/creator/requests/sections/request-history");
+const { RequestHistory } = await import("@/features/creator/requests/request-history");
 const { AccountStatusBadge, AccountTypeTag, ComplianceIndicator } = await import("@/features/admin-panel/users/sections/user-badges");
 const { StatusBadge: TicketStatusBadge } = await import("@/features/admin-panel/support/sections/ticket-badges");
 const { FundCampaignDialog } = await import("@/features/account/brand-payments/sections/fund-campaign-dialog");
@@ -23,8 +24,7 @@ const { InviteForm } = await import("@/features/admin-panel/users/sections/invit
 const { NewTicketDialog } = await import("@/features/admin-panel/support/sections/new-ticket-dialog");
 
 const withdrawal = (status: string, id = status) => ({ id, date: "2026-01-02", amount: 5000, method: "mtn_momo", phone: "670000001", status }) as never;
-const request = (status: string) =>
-  ({ id: status, campaignTitle: `Campaign ${status}`, brandName: "Brand", niche: "beauty", city: "douala", budget: 1000, durationDays: 7, deliverablesSummary: "x", matchReasons: [], receivedAt: "2026-01-02", status }) as never;
+const request = (status: string) => offerView({ id: "44444444-4444-4444-8444-444444444444", status: status as never });
 
 describe("payment statuses render for every API value and survive an unknown one", () => {
   it.each(v.PAYMENT_STATUS.values)("EscrowBadge shows a readable label for %s", (status) => {
@@ -62,13 +62,13 @@ describe("withdrawal statuses", () => {
 
 describe("creator request (offer) statuses", () => {
   it.each(v.OFFER_STATUS.values.filter((status) => status !== "pending"))("history labels %s correctly (a withdrawn or expired request is not 'Declined')", (status) => {
-    render(<RequestHistory requests={[request(status)]} />);
+    render(<RequestHistory offers={[request(status)]} />);
     expect(screen.getAllByRole("row")[1]!.textContent).toContain(labels.OFFER_STATUS_LABELS[status]);
     if (status !== "declined") expect(screen.getAllByRole("row")[1]!.textContent).not.toContain("Declined");
   });
 
   it("an unknown offer status is shown as Unknown", () => {
-    render(<RequestHistory requests={[request("lapsed")]} />);
+    render(<RequestHistory offers={[request("lapsed")]} />);
     expect(screen.getAllByRole("row")[1]!.textContent).toContain("Unknown");
   });
 });

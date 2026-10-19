@@ -72,6 +72,15 @@ describe.skipIf(!present)("frontend vocabulary matches the backend repository", 
     sameSet(v.PERMISSION.values, codesIn(/export const permissions[\s\S]*?\];/));
   });
 
+  it("the hire durations (labels and day counts) kept in the app equal the backend seed", async () => {
+    const seed = readFileSync(path.join(BACKEND, "src/db/seeds/reference-data.ts"), "utf8");
+    const block = /export const campaignDurations[\s\S]*?\];/.exec(seed)?.[0] ?? "";
+    const backend = [...block.matchAll(/code: "([^"]+)", label: "([^"]+)", days: (\d+)/g)].map((m) => ({ value: m[1], label: m[2], days: Number(m[3]) }));
+    const { HIRE_DURATIONS } = await import("@/features/offers/durations");
+    expect(backend.length).toBeGreaterThan(0);
+    expect([...HIRE_DURATIONS]).toEqual(backend);
+  });
+
   it("the backend's engagement levels are 3, 5 and 7 percent", () => {
     const seed = readFileSync(path.join(BACKEND, "src/db/seeds/reference-data.ts"), "utf8");
     const block = /export const engagementLevels[\s\S]*?\];/.exec(seed)?.[0] ?? "";

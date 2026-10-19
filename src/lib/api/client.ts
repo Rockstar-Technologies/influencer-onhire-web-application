@@ -13,7 +13,7 @@ import type { UpstreamSessionCookie } from "./session-cookie";
 export interface CallOptions {
   body?: unknown;
   /** The campaign (or other resource) UUID for operations whose path ends in `:id`. */
-  params?: { id?: string };
+  params?: { id?: string; username?: string };
   /** Query-string values; only the keys the operation lists are accepted. */
   query?: Record<string, string | number | undefined>;
   /** The user's session token (from this application's cookie). Sent only to endpoints that accept a session. */

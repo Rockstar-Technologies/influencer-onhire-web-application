@@ -7,8 +7,12 @@ import {
   campaignEnvelopeSchema,
   campaignListSchema,
   campaignOptionsSchema,
+  declineReasonsSchema,
   emptyDataSchema,
+  hireCreatorSchema,
   meDataSchema,
+  offerEnvelopeSchema,
+  offerListSchema,
   reapplyResultSchema,
   submitResultSchema,
 } from "./schemas";
@@ -25,7 +29,8 @@ export interface Endpoint<TData> {
   readonly method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   /**
    * Path below the API base URL: a fixed string beginning with "/", containing no dot segments, "//", "?" or "#". The only variable part
-   * allowed is a segment written `:id`, which is filled with a UUID that the client validates (never free text).
+   * allowed are segments written `:id` (filled with a UUID) or `:username` (filled with a creator username of 3-30 letters, digits, dots and
+   * underscores); the client validates both (never free text).
    */
   readonly path: string;
   /** The only query-string keys this operation may send (list filters and paging). Anything else is refused. */
@@ -61,6 +66,20 @@ export const ENDPOINTS = {
   campaignSubmit: endpoint({ name: "campaignSubmit", method: "POST", path: "/brand/campaigns/:id/submit", auth: "session", schema: campaignEnvelopeSchema }),
   campaignCancel: endpoint({ name: "campaignCancel", method: "POST", path: "/brand/campaigns/:id/cancel", auth: "session", schema: campaignEnvelopeSchema }),
 
+  // Offers, invitations and direct hires (backend docs/DIRECT_HIRING.md, CAMPAIGN_DISCOVERY_OFFERS.md, PLATFORM_INVITATIONS.md). Identity always comes from the session.
+  creatorOffers: endpoint({ name: "creatorOffers", method: "GET", path: "/creator/offers", query: ["status", "sort", "dir", "limit", "cursor"], auth: "session", schema: offerListSchema }),
+  creatorOffer: endpoint({ name: "creatorOffer", method: "GET", path: "/creator/offers/:id", auth: "session", schema: offerEnvelopeSchema }),
+  declineReasons: endpoint({ name: "declineReasons", method: "GET", path: "/creator/offers/decline-reasons", auth: "session", schema: declineReasonsSchema }),
+  creatorOfferAccept: endpoint({ name: "creatorOfferAccept", method: "POST", path: "/creator/offers/:id/accept", auth: "session", schema: offerEnvelopeSchema }),
+  creatorOfferDecline: endpoint({ name: "creatorOfferDecline", method: "POST", path: "/creator/offers/:id/decline", auth: "session", schema: offerEnvelopeSchema }),
+  brandOffers: endpoint({ name: "brandOffers", method: "GET", path: "/brand/offers", query: ["status", "sort", "dir", "limit", "cursor"], auth: "session", schema: offerListSchema }),
+  brandOffer: endpoint({ name: "brandOffer", method: "GET", path: "/brand/offers/:id", auth: "session", schema: offerEnvelopeSchema }),
+  brandHire: endpoint({ name: "brandHire", method: "POST", path: "/brand/offers", auth: "session", schema: offerEnvelopeSchema }),
+  brandOfferAccept: endpoint({ name: "brandOfferAccept", method: "POST", path: "/brand/offers/:id/accept", auth: "session", schema: offerEnvelopeSchema }),
+  brandOfferDecline: endpoint({ name: "brandOfferDecline", method: "POST", path: "/brand/offers/:id/decline", auth: "session", schema: offerEnvelopeSchema }),
+  brandOfferCancel: endpoint({ name: "brandOfferCancel", method: "POST", path: "/brand/offers/:id/cancel", auth: "session", schema: offerEnvelopeSchema }),
+  hireCreator: endpoint({ name: "hireCreator", method: "GET", path: "/creators/:username", auth: "session", schema: hireCreatorSchema }),
+
   applicationReapply: endpoint({ name: "applicationReapply", method: "POST", path: "/creator/applications/reapply", auth: "session", schema: reapplyResultSchema }),
 } as const;
 
@@ -76,7 +95,7 @@ export function isAllowedEndpoint(candidate: unknown): candidate is Endpoint<unk
 
 /** Defence in depth: even a table entry must be a plain absolute path with no traversal or authority tricks. */
 export function isSafeApiPath(path: string): boolean {
-  const plain = path.replace(/\/:id(?=\/|$)/g, "/x");
+  const plain = path.replace(/\/:(?:id|username)(?=\/|$)/g, "/x");
   return /^\/[A-Za-z0-9/_-]*$/.test(plain) && !plain.includes("//") && !plain.split("/").some((segment) => segment === "." || segment === "..");
 }
 
@@ -87,14 +106,29 @@ export function isUuid(value: unknown): value is string {
   return typeof value === "string" && UUID.test(value);
 }
 
-/** Fills the `:id` segment of an operation's path. A value that is not a UUID is refused before anything is sent. */
-export function buildApiPath(endpoint: Pick<Endpoint<unknown>, "path">, params: { id?: string } = {}): string {
-  if (!endpoint.path.includes(":id")) {
-    if (params.id !== undefined) throw new ApiConfigError("This API operation takes no identifier");
-    return endpoint.path;
+const USERNAME = /^[A-Za-z0-9._]{3,30}$/;
+
+/** True for a creator username as the API defines it: the only value a `:username` segment may take. */
+export function isUsername(value: unknown): value is string {
+  return typeof value === "string" && USERNAME.test(value) && !/^\.+$/.test(value);
+}
+
+/** Fills the `:id` / `:username` segment of an operation's path. A value of the wrong shape is refused before anything is sent. */
+export function buildApiPath(endpoint: Pick<Endpoint<unknown>, "path">, params: { id?: string; username?: string } = {}): string {
+  let path = endpoint.path;
+  if (path.includes(":id")) {
+    if (typeof params.id !== "string" || !UUID.test(params.id)) throw new ApiConfigError("The identifier is not valid");
+    path = path.replace(":id", params.id.toLowerCase());
+  } else if (params.id !== undefined) {
+    throw new ApiConfigError("This API operation takes no identifier");
   }
-  if (typeof params.id !== "string" || !UUID.test(params.id)) throw new ApiConfigError("The identifier is not valid");
-  return endpoint.path.replace(":id", params.id.toLowerCase());
+  if (path.includes(":username")) {
+    if (!isUsername(params.username)) throw new ApiConfigError("The username is not valid");
+    path = path.replace(":username", params.username);
+  } else if (params.username !== undefined) {
+    throw new ApiConfigError("This API operation takes no username");
+  }
+  return path;
 }
 
 /** Builds the query string from the keys the operation allows; a key it does not list, or an unreasonable value, is refused. */
