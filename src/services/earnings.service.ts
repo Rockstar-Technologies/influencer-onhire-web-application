@@ -15,8 +15,8 @@ export async function getEarningsSummary(): Promise<EarningsSummary> {
 
   return {
     availableBalance: MOCK_CREATOR_BALANCE.available,
-    inEscrow: sum("on_hold"),
-    pendingPayout: sum("payout_requested"),
+    inEscrow: sum("held"),
+    pendingPayout: sum("requested"),
     totalEarned: MOCK_CREATOR_BALANCE.lifetimeEarned,
   };
 }
@@ -44,8 +44,8 @@ export async function getMinimumWithdrawal(): Promise<number> {
 export async function requestPayout(earningId: string): Promise<CreatorCampaignEarning> {
   // TODO: replace with `return fetch(`/api/creator/earnings/${earningId}/payout-request`, { method: "POST" }).then(r => r.json())`
   const earning = MOCK_CREATOR_CAMPAIGN_EARNINGS.find((item) => item.id === earningId);
-  if (!earning || earning.status !== "on_hold") throw new Error("Payout can't be requested for this campaign");
-  earning.status = "payout_requested";
+  if (!earning || earning.status !== "held") throw new Error("Payout can't be requested for this campaign");
+  earning.status = "requested";
   earning.payoutRequestedAt = new Date().toISOString().slice(0, 10);
   return { ...earning };
 }

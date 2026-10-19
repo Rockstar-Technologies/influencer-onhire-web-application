@@ -19,17 +19,18 @@ export function AccountTypeTag({ type }: { type: AccountType }) {
     <span
       className={cn(
         "inline-flex rounded-md px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide",
-        type === "influencer" ? "bg-primary-light text-primary" : "bg-info-light text-navy",
+        type === "creator" ? "bg-primary-light text-primary" : "bg-info-light text-navy",
       )}
     >
-      {type}
+      {type === "creator" ? "influencer" : type}
     </span>
   );
 }
 
 const COMPLIANCE: Record<ComplianceStatus, { label: string; icon: typeof FiCheckCircle; className: string }> = {
   verified: { label: "Verified", icon: FiCheckCircle, className: "text-success-strong" },
-  "in-review": { label: "In review", icon: FiClock, className: "text-warning" },
+  in_review: { label: "In review", icon: FiClock, className: "text-warning" },
+  rejected: { label: "Rejected", icon: FiAlertCircle, className: "text-danger-strong" },
   missing: { label: "Missing", icon: FiAlertCircle, className: "text-danger-strong" },
 };
 

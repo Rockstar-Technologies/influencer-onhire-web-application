@@ -35,13 +35,13 @@ function form(entries: Record<string, string>): FormData {
   return data;
 }
 
-const VALID_FUND = { creatorId: "c1", campaign: "My campaign", amount: "50000", method: "MTN MoMo", phone: "670000001" };
+const VALID_FUND = { creatorId: "c1", campaign: "My campaign", amount: "50000", method: "mtn_momo", phone: "670000001" };
 const VALID_CASHOUT = { paymentId: "p1", summary: "I delivered the agreed reel and three stories.", links: "https://example.com/post" };
-const VALID_WITHDRAW = { amount: "5000", method: "MTN MoMo", phone: "670000001" };
+const VALID_WITHDRAW = { amount: "5000", method: "mtn_momo", phone: "670000001" };
 const VALID_HIRE = { fullName: "Jane Brand", location: "Douala, Cameroon", socialHandle: "", promotion: "", paymentMethod: "MTN MoMo", duration: "1 week" };
 const VALID_CAMPAIGN = { title: "Summer launch", niche: "beauty", budget: "500000", startDate: "2030-01-01", endDate: "2030-02-01", deliverables: "One reel", minEngagement: "any" };
 const VALID_TICKET = { subject: "Payment question", message: "The brand asks about a release.", fromName: "Acme", fromRole: "brand", priority: "normal" };
-const VALID_INVITE = { name: "New Admin", email: "new@admin.example", role: "Support Agent" };
+const VALID_INVITE = { name: "New Admin", email: "new@admin.example", role: "support_agent" };
 
 type Case = { name: string; requirement: object; run: () => Promise<unknown>; service: () => unknown };
 

@@ -1,17 +1,18 @@
 import type { ApiUser } from "@/lib/api/schemas";
+import type { PermissionCode } from "@/lib/domain/vocabulary";
 
 /** What a signed-in session looks like once restored from the API (`GET /auth/me`). */
 export interface Session {
   user: ApiUser;
-  /** Admin permission codes (empty for brands and creators). */
-  permissions: readonly string[];
+  /** Admin permission codes the API granted (empty for brands and creators). Codes this app does not know are dropped when the session is restored. */
+  permissions: readonly PermissionCode[];
   expiresAt: string | null;
 }
 
 export type Requirement =
   | { role: "brand" }
   | { role: "creator"; allowPending?: boolean }
-  | { role: "admin"; permission?: string };
+  | { role: "admin"; permission?: PermissionCode };
 
 export type AccessDecision =
   | { allowed: true }

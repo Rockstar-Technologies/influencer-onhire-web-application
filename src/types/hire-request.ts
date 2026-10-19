@@ -1,3 +1,5 @@
+import type { OfferStatus } from "@/lib/domain/vocabulary";
+
 export interface CampaignDuration {
   value: string;
   label: string;
@@ -17,7 +19,7 @@ export interface HireRequestInput {
 export interface HireRequest extends HireRequestInput {
   id: string;
   reference: string;
-  status: "pending";
+  status: Extract<OfferStatus, "pending">;
   createdAt: string;
 }
 

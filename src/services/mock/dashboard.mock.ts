@@ -30,8 +30,8 @@ export const MOCK_REVENUE: Record<DashboardRange, RevenuePoint[]> = {
 };
 
 export const MOCK_CAMPAIGNS: CampaignSummary[] = [
-  { id: "c-201", name: "Autumn Glow Launch", brand: "Shea Radiance", budget: 2_400_000, influencers: 14, delivered: 9, endsAt: daysFromNow(6), status: "in-progress" },
-  { id: "c-202", name: "Summer Cashback", brand: "PayLink Mobile", budget: 3_100_000, influencers: 6, delivered: 6, endsAt: daysFromNow(-2), status: "pending-review" },
+  { id: "c-201", name: "Autumn Glow Launch", brand: "Shea Radiance", budget: 2_400_000, influencers: 14, delivered: 9, endsAt: daysFromNow(6), status: "in_progress" },
+  { id: "c-202", name: "Summer Cashback", brand: "PayLink Mobile", budget: 3_100_000, influencers: 6, delivered: 6, endsAt: daysFromNow(-2), status: "pending_review" },
   { id: "c-203", name: "Zanzibar Escape", brand: "Wanderlust Tours", budget: 900_000, influencers: 4, delivered: 1, endsAt: daysFromNow(-3), status: "overdue" },
   { id: "c-204", name: "Morning Ritual", brand: "Kivu Coffee Co.", budget: 650_000, influencers: 5, delivered: 0, endsAt: daysFromNow(21), status: "scheduled" },
   { id: "c-205", name: "Back to School", brand: "PayLink Mobile", budget: 1_800_000, influencers: 21, delivered: 21, endsAt: daysFromNow(-9), status: "completed" },

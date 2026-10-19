@@ -1,7 +1,10 @@
+import { parseApiDate } from "@/lib/domain/dates";
+
 const DAY_MS = 86_400_000;
 
 function toDate(value: string) {
-  return new Date(`${value}T00:00:00`);
+  // Accepts both calendar dates and full API timestamps; an unreadable value becomes the epoch rather than an invalid Date.
+  return parseApiDate(value) ?? new Date(0);
 }
 
 export function formatFrs(amount: number) {

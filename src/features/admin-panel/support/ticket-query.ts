@@ -4,13 +4,14 @@ export type RawSearchParams = Record<string, string | string[] | undefined>;
 
 export const TICKET_STATUSES: { value: TicketStatus; label: string }[] = [
   { value: "open", label: "Open" },
-  { value: "in-progress", label: "In Progress" },
+  { value: "in_progress", label: "In Progress" },
   { value: "resolved", label: "Resolved" },
 ];
 
 export function parseTicketQuery(params: RawSearchParams): TicketQuery {
   const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value) ?? "";
-  const status = first(params.status);
+  // Saved links may still say ?status=in-progress.
+  const status = first(params.status).replace("-", "_");
   return {
     q: first(params.q),
     status: TICKET_STATUSES.some((option) => option.value === status) ? (status as TicketStatus) : "all",

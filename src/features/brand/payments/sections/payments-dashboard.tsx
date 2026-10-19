@@ -22,7 +22,7 @@ function RowAction({ payment, onOpen }: { payment: CampaignPayment; onOpen: (dia
   const buttonClass =
     "rounded-lg border border-border bg-surface px-3 py-1.5 text-[13px] font-semibold text-heading shadow-sm transition-colors hover:border-primary-border hover:bg-primary-light hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
 
-  if (payment.status === "payout_requested") {
+  if (payment.status === "requested") {
     return (
       <div className="flex flex-col items-start gap-1.5">
         <button type="button" className={buttonClass} onClick={() => onOpen({ kind: "request", payment })}>

@@ -147,7 +147,7 @@ export async function fundCampaign(input: {
 }): Promise<EscrowPayment | null> {
   // TODO: replace with `fetch("/api/brand/payments", { method: "POST", ... })` — the backend collects the mobile money payment first
   const [brand, creator] = await Promise.all([getActiveAccount(input.brandId), getActiveAccount(input.creatorId)]);
-  if (!brand || brand.type !== "brand" || !creator || creator.type !== "influencer") return null;
+  if (!brand || brand.type !== "brand" || !creator || creator.type !== "creator") return null;
 
   const number = Math.max(0, ...MOCK_PAYMENTS.map((payment) => Number(payment.invoice.slice(4)))) + 1;
   const payment: EscrowPayment = {

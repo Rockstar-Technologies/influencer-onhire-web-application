@@ -18,11 +18,13 @@ import { EarningReceiptDialog, RequestPayoutDialog } from "./earning-dialogs";
 import { WithdrawPanel } from "./withdraw-panel";
 import { WithdrawalHistory } from "./withdrawal-history";
 
-const STATUS = {
-  on_hold: { label: "On Hold (Escrow)", className: "bg-primary-light text-primary" },
-  payout_requested: { label: "Payout Requested", className: "bg-warning/10 text-warning" },
+const STATUS: Record<CreatorCampaignEarning["status"], { label: string; className: string }> = {
+  held: { label: "On Hold (Escrow)", className: "bg-primary-light text-primary" },
+  requested: { label: "Payout Requested", className: "bg-warning/10 text-warning" },
   released: { label: "Released", className: "bg-success/10 text-success" },
-} as const;
+  refund_pending: { label: "Refund Pending", className: "bg-warning/10 text-warning" },
+  refunded: { label: "Refunded", className: "bg-border-light text-body" },
+};
 
 type OpenDialog = { kind: "request" | "receipt"; earning: CreatorCampaignEarning } | null;
 
@@ -166,7 +168,7 @@ export function EarningsDashboard({
                       <Pill className={STATUS[earning.status].className}>{STATUS[earning.status].label}</Pill>
                     </td>
                     <td className="px-4 py-4">
-                      {earning.status === "on_hold" && (
+                      {earning.status === "held" && (
                         <button
                           type="button"
                           onClick={() => setDialog({ kind: "request", earning })}
@@ -175,7 +177,7 @@ export function EarningsDashboard({
                           Request Payout
                         </button>
                       )}
-                      {earning.status === "payout_requested" && <Pill className="bg-heading/5 text-body">Awaiting Release</Pill>}
+                      {earning.status === "requested" && <Pill className="bg-heading/5 text-body">Awaiting Release</Pill>}
                       {earning.status === "released" && (
                         <button
                           type="button"

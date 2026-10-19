@@ -8,6 +8,8 @@ import { resolveClientIp } from "@/lib/api/client-ip";
 import { ENDPOINTS } from "@/lib/api/endpoints";
 import { ApiError } from "@/lib/api/errors";
 import { BROWSER_SESSION_COOKIE, isValidSessionToken } from "@/lib/api/session-cookie";
+import { knownPermissions } from "@/lib/domain/mappers";
+import type { PermissionCode } from "@/lib/domain/vocabulary";
 import { decideAccess } from "./access";
 import type { Requirement, Session } from "./access";
 import { CREATOR_APPLICATION_PATH, sanitizeNext, signInUrl } from "./paths";
@@ -37,7 +39,7 @@ async function restoreSession(clearInvalid: boolean): Promise<Session | null> {
     const result = await callApi(ENDPOINTS.me, { session: token, clientIp: await getForwardedClientIp() });
     return {
       user: result.data.user,
-      permissions: result.data.permissions ?? [],
+      permissions: knownPermissions(result.data.permissions ?? []),
       expiresAt: result.data.session?.expiresAt ?? null,
     };
   } catch (error) {
@@ -82,5 +84,5 @@ export async function requireAccess(requirement: Requirement, next: string): Pro
 export const requireBrand = (next: string) => requireAccess({ role: "brand" }, next);
 export const requireCreator = (next: string, options: { allowPending?: boolean } = {}) =>
   requireAccess({ role: "creator", ...(options.allowPending ? { allowPending: true } : {}) }, next);
-export const requireAdmin = (next: string, permission?: string) =>
+export const requireAdmin = (next: string, permission?: PermissionCode) =>
   requireAccess({ role: "admin", ...(permission ? { permission } : {}) }, next);

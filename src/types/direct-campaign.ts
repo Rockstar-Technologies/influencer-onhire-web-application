@@ -1,3 +1,5 @@
+import type { CampaignStatus } from "@/lib/domain/vocabulary";
+
 import type { FilterOption } from "./influencer-filters";
 
 export interface CampaignFormOptions {
@@ -45,7 +47,7 @@ export interface CampaignInput {
 export interface Campaign extends CampaignInput {
   id: string;
   reference: string;
-  status: "pending_review";
+  status: Extract<CampaignStatus, "pending_review">;
   // Verified influencers the campaign was sent to.
   matchedCount: number;
   createdAt: string;

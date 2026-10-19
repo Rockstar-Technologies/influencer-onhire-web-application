@@ -6,9 +6,9 @@ import type { CampaignStatus } from "@/types/dashboard";
 // Green = done/paid, amber = waiting on someone, red = late, blue = scheduled or running, grey = draft.
 const STATUS_STYLES: Record<CampaignStatus, BadgeStyle> = {
   completed: { label: "Completed", badge: "bg-success-light text-success-strong", dot: "bg-success" },
-  "pending-review": { label: "Pending Review", badge: "bg-warning-light text-warning", dot: "bg-warning" },
+  pending_review: { label: "Pending Review", badge: "bg-warning-light text-warning", dot: "bg-warning" },
   overdue: { label: "Overdue", badge: "bg-danger-light text-danger-strong", dot: "bg-danger" },
-  "in-progress": { label: "In Progress", badge: "bg-info-light text-info", dot: "bg-info" },
+  in_progress: { label: "In Progress", badge: "bg-info-light text-info", dot: "bg-info" },
   scheduled: { label: "Scheduled", badge: "bg-info-light text-info", dot: "bg-info" },
   draft: { label: "Draft", badge: "bg-border-light text-body", dot: "bg-muted" },
 };

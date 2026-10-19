@@ -20,7 +20,7 @@ export const MOCK_CAMPAIGN_PAYMENTS: CampaignPayment[] = [
     method: "mtn_momo",
     payerPhone: "677 123 456",
     fundedAt: "2026-09-10",
-    status: "on_hold",
+    status: "held",
     deliverables: ["1 Instagram story", "2 TikTok posts", "1 YouTube mention"],
   },
   {
@@ -32,7 +32,7 @@ export const MOCK_CAMPAIGN_PAYMENTS: CampaignPayment[] = [
     method: "orange_money",
     payerPhone: "699 456 789",
     fundedAt: "2026-08-02",
-    status: "payout_requested",
+    status: "requested",
     deliverables: ["3 Instagram reels", "1 skincare routine TikTok"],
     payoutRequestedAt: "2026-09-18",
   },

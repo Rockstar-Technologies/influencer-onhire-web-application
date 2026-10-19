@@ -150,3 +150,32 @@ describe("financial wording", () => {
     }
   });
 });
+
+describe("one vocabulary: legacy spellings are gone from the source", () => {
+  const stripComments = (text: string) => text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+  // The only place allowed to mention the old spellings is the boundary mapper that translates saved links and display text.
+  const SOURCE = FILES.filter((f) => !["src/lib/domain/mappers.ts", "src/lib/domain/labels.ts"].includes(f.rel));
+
+  const LEGACY: [string, RegExp][] = [
+    ["influencer as an account type or role", /(?:type|role|fromRole|requester)\s*(?:===|!==|:|=)\s*["']influencer["']|\[\s*["']influencer["']\s*,|\(\s*["']influencer["']\s*\)/],
+    ["old payment statuses", /["'](?:on_hold|payout_requested)["']/],
+    ["kebab-case API statuses", /["'](?:in-progress|in-review|pending-review|resolved-in-favour|resolved-against)["']/],
+    ["kebab-case document, alert and flag codes", /["'](?:tax-id|business-registration|national-id|failed-logins|follower-spike|payout-change|campaign-description)["']/],
+    ["payment method display label used as a value", /method\s*[:=]\s*["'](?:MTN MoMo|Orange Money)["']/],
+    ["display age range used as a value", /value:\s*["']45\+["']/],
+    ["team role display label used as a value", /role\s*[:=]\s*["'](?:Super Admin|Campaign Manager|Finance|Support Agent)["']/],
+  ];
+
+  it.each(LEGACY)("no %s", (_name, pattern) => {
+    const offenders = SOURCE.filter((f) => pattern.test(stripComments(f.text))).map((f) => f.rel);
+    expect(offenders).toEqual([]);
+  });
+
+  it("the duplicate payment status and method type definitions both point at the canonical vocabulary", () => {
+    for (const rel of ["src/types/payment.ts", "src/types/payments.ts"]) {
+      const text = readFileSync(path.join(ROOT, rel), "utf8");
+      expect(text, rel).toContain("@/lib/domain/vocabulary");
+      expect(text, rel).not.toMatch(/export type EscrowStatus\s*=\s*["']/);
+    }
+  });
+});

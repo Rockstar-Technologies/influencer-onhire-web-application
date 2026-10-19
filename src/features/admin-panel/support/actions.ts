@@ -11,7 +11,7 @@ import type {
 } from "@/types/support";
 
 const PRIORITIES: TicketPriority[] = ["urgent", "normal", "low"];
-const ROLES: TicketRequesterRole[] = ["influencer", "brand"];
+const ROLES: TicketRequesterRole[] = ["creator", "brand"];
 
 // Server Actions are reachable by direct POST, so every value is validated here.
 // The caller must be a signed-in administrator who manages tickets.

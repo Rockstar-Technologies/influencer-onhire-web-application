@@ -1,4 +1,7 @@
-export type InfluencerLanguage = "Bilingual" | "French" | "English";
+import type { LanguageCode } from "@/lib/domain/vocabulary";
+
+/** The API's language codes (english, french, bilingual); show them with LANGUAGE_LABELS. */
+export type InfluencerLanguage = LanguageCode;
 
 export type SocialPlatform = "facebook" | "instagram" | "tiktok" | "youtube";
 

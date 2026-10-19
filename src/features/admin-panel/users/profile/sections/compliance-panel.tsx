@@ -5,20 +5,20 @@ import type { AccountType, ComplianceDocument, ComplianceDocumentKind } from "@/
 
 const KIND_LABELS: Record<ComplianceDocumentKind, string> = {
   contract: "Signed agreement",
-  "tax-id": "Tax ID",
-  "business-registration": "Business registration",
-  "national-id": "National ID",
+  tax_id: "Tax ID",
+  business_registration: "Business registration",
+  national_id: "National ID",
 };
 
 // What each account type must upload before it can be paid or post campaigns.
 const REQUIRED: Record<AccountType, ComplianceDocumentKind[]> = {
-  influencer: ["national-id", "tax-id", "contract"],
-  brand: ["business-registration", "tax-id"],
+  creator: ["national_id", "tax_id", "contract"],
+  brand: ["business_registration", "tax_id"],
 };
 
 const STATUS_STYLES: Record<ComplianceDocument["status"], BadgeStyle> = {
   verified: { label: "Verified", badge: "bg-success-light text-success-strong", dot: "bg-success" },
-  "in-review": { label: "In review", badge: "bg-warning-light text-warning", dot: "bg-warning" },
+  in_review: { label: "In review", badge: "bg-warning-light text-warning", dot: "bg-warning" },
   rejected: { label: "Rejected", badge: "bg-danger-light text-danger-strong", dot: "bg-danger" },
 };
 

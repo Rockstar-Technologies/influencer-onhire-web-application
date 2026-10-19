@@ -4,16 +4,17 @@ import { useActionState } from "react";
 import { FiCheckCircle, FiChevronDown } from "react-icons/fi";
 import { FieldError, fieldClass, FormLabel } from "@/components/shared/form-field";
 import { cn } from "@/lib/utils";
-import { TEAM_ROLES, type InviteField, type InviteFormState } from "@/types/user-management";
+import { ADMIN_ROLE_LABELS } from "@/lib/domain/labels";
+import { TEAM_ROLES, type InviteField, type InviteFormState, type TeamRole } from "@/types/user-management";
 import { inviteTeamMemberAction } from "../actions";
 
 const INITIAL_STATE: InviteFormState = { status: "idle" };
 
-const ROLE_HINTS: Record<(typeof TEAM_ROLES)[number], string> = {
-  "Super Admin": "Full access, including team and payouts.",
-  "Campaign Manager": "Approves users and moderates campaigns.",
-  Finance: "Manages wallets, escrow and refunds.",
-  "Support Agent": "Answers tickets and messages users.",
+const ROLE_HINTS: Record<TeamRole, string> = {
+  super_admin: "Full access, including team and payouts.",
+  campaign_manager: "Approves users and moderates campaigns.",
+  finance: "Manages wallets, escrow and refunds.",
+  support_agent: "Answers tickets and messages users.",
 };
 
 export function InviteForm() {
@@ -58,9 +59,11 @@ export function InviteForm() {
         <div>
           <FormLabel htmlFor="invite-role">Role</FormLabel>
           <div className="relative">
-            <select id="invite-role" name="role" defaultValue={values?.role ?? "Support Agent"} className={cn(fieldClass(!!errors.role), "h-11 appearance-none pr-9")} {...describe("role")}>
+            <select id="invite-role" name="role" defaultValue={values?.role ?? "support_agent"} className={cn(fieldClass(!!errors.role), "h-11 appearance-none pr-9")} {...describe("role")}>
               {TEAM_ROLES.map((role) => (
-                <option key={role}>{role}</option>
+                <option key={role} value={role}>
+                  {ADMIN_ROLE_LABELS[role]}
+                </option>
               ))}
             </select>
             <FiChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted" />
@@ -69,7 +72,7 @@ export function InviteForm() {
           <ul className="mt-3 space-y-1.5 rounded-lg bg-surface-alt p-3 text-xs text-body">
             {TEAM_ROLES.map((role) => (
               <li key={role}>
-                <span className="font-semibold text-heading">{role}:</span> {ROLE_HINTS[role]}
+                <span className="font-semibold text-heading">{ADMIN_ROLE_LABELS[role]}:</span> {ROLE_HINTS[role]}
               </li>
             ))}
           </ul>

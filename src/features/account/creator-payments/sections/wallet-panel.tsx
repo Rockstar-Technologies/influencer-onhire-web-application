@@ -1,11 +1,21 @@
 import { StatusBadge, type BadgeStyle } from "@/components/shared/status-badge";
+import { lookupOr } from "@/lib/domain/labels";
 import { formatDate, formatPrice, maskPhone } from "@/lib/utils";
 import type { CreatorWallet, Withdrawal } from "@/types/payments";
 import { WithdrawDialog } from "./withdraw-dialog";
+import { PAYMENT_METHOD_LABELS } from "@/lib/domain/labels";
+
+const UNKNOWN_BADGE: BadgeStyle = { label: "Unknown", badge: "bg-border-light text-body", dot: "bg-muted" };
 
 const WITHDRAWAL_STYLES: Record<Withdrawal["status"], BadgeStyle> = {
   processing: { label: "Processing", badge: "bg-warning-light text-warning", dot: "bg-warning" },
   completed: { label: "Sent", badge: "bg-success-light text-success-strong", dot: "bg-success" },
+  requested: { label: "Requested", badge: "bg-warning-light text-warning", dot: "bg-warning" },
+  under_review: { label: "Under review", badge: "bg-warning-light text-warning", dot: "bg-warning" },
+  approved: { label: "Approved", badge: "bg-info-light text-info", dot: "bg-info" },
+  rejected: { label: "Rejected", badge: "bg-danger-light text-danger-strong", dot: "bg-danger" },
+  cancelled: { label: "Cancelled", badge: "bg-border-light text-body", dot: "bg-muted" },
+  failed: { label: "Failed", badge: "bg-danger-light text-danger-strong", dot: "bg-danger" },
 };
 
 export function WalletPanel({ wallet, withdrawals, minimum }: { wallet: CreatorWallet; withdrawals: Withdrawal[]; minimum: number }) {
@@ -47,11 +57,11 @@ export function WalletPanel({ wallet, withdrawals, minimum }: { wallet: CreatorW
                 <tr key={withdrawal.id}>
                   <td className="py-3 pr-4 whitespace-nowrap text-body">{formatDate(withdrawal.requestedAt)}</td>
                   <td className="py-3 pr-4 whitespace-nowrap">
-                    <span className="font-medium text-heading">{withdrawal.method}</span> <span className="text-body tabular-nums">{maskPhone(withdrawal.phone)}</span>
+                    <span className="font-medium text-heading">{PAYMENT_METHOD_LABELS[withdrawal.method]}</span> <span className="text-body tabular-nums">{maskPhone(withdrawal.phone)}</span>
                   </td>
                   <td className="py-3 pr-4 text-right font-semibold whitespace-nowrap text-heading tabular-nums">{formatPrice(withdrawal.amount)}</td>
                   <td className="py-3">
-                    <StatusBadge {...WITHDRAWAL_STYLES[withdrawal.status]} />
+                    <StatusBadge {...lookupOr(WITHDRAWAL_STYLES, withdrawal.status, UNKNOWN_BADGE)} />
                   </td>
                 </tr>
               ))}

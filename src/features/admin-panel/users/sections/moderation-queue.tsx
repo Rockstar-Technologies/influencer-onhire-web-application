@@ -7,7 +7,7 @@ import { ModerationActions } from "./moderation-actions";
 
 const FIELD_LABELS: Record<FlaggedField, string> = {
   bio: "Profile bio",
-  "campaign-description": "Campaign description",
+  campaign_description: "Campaign description",
   media: "Uploaded media",
 };
 

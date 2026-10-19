@@ -1,8 +1,9 @@
+import type { PermissionCode } from "@/lib/domain/vocabulary";
 import { describe, expect, it } from "vitest";
 import { decideAccess } from "@/lib/auth/access";
 import type { Session } from "@/lib/auth/access";
 
-function session(role: "brand" | "creator" | "admin", status: "pending" | "active" | "suspended" | "rejected" = "active", permissions: string[] = []): Session {
+function session(role: "brand" | "creator" | "admin", status: "pending" | "active" | "suspended" | "rejected" = "active", permissions: PermissionCode[] = []): Session {
   return {
     user: { id: "00000000-0000-4000-8000-000000000001", email: "a@b.cc", fullName: "A B", phone: null, role, status, restricted: status !== "active", createdAt: "2026-01-01T00:00:00.000Z" },
     permissions,

@@ -20,37 +20,37 @@ const DAY = 24 * HOUR;
 // In-memory stand-in for the users table. Status changes mutate these rows.
 export const MOCK_PLATFORM_USERS: PlatformUser[] = [
   {
-    id: "u-101", name: "Amara Nkemelu", email: "amara@styleby.cm", type: "influencer", status: "active",
+    id: "u-101", name: "Amara Nkemelu", email: "amara@styleby.cm", type: "creator", status: "active",
     location: "Douala", niche: "Fashion", followers: 184_000, engagementRate: 6.2,
     joinedAt: minutesAgo(310 * DAY), lastActiveAt: minutesAgo(25),
     wallet: { available: 420_000, inEscrow: 350_000 }, compliance: "verified", flagged: false,
   },
   {
-    id: "u-102", name: "James Mwangi", email: "james.mwangi@mail.com", type: "influencer", status: "active",
+    id: "u-102", name: "James Mwangi", email: "james.mwangi@mail.com", type: "creator", status: "active",
     location: "Nairobi", niche: "Tech", followers: 96_500, engagementRate: 4.8,
     joinedAt: minutesAgo(220 * DAY), lastActiveAt: minutesAgo(3 * HOUR),
     wallet: { available: 85_000, inEscrow: 200_000 }, compliance: "verified", flagged: true,
   },
   {
-    id: "u-103", name: "Lindiwe Osei", email: "lindiwe.o@creator.africa", type: "influencer", status: "pending",
+    id: "u-103", name: "Lindiwe Osei", email: "lindiwe.o@creator.africa", type: "creator", status: "pending",
     location: "Accra", niche: "Beauty", followers: 52_300, engagementRate: 7.1,
     joinedAt: minutesAgo(2 * DAY), lastActiveAt: minutesAgo(6 * HOUR),
-    wallet: { available: 0, inEscrow: 0 }, compliance: "in-review", flagged: false,
+    wallet: { available: 0, inEscrow: 0 }, compliance: "in_review", flagged: false,
   },
   {
-    id: "u-104", name: "Kofi Mensah", email: "kofi.eats@mail.com", type: "influencer", status: "pending",
+    id: "u-104", name: "Kofi Mensah", email: "kofi.eats@mail.com", type: "creator", status: "pending",
     location: "Accra", niche: "Food", followers: 31_800, engagementRate: 3.9,
     joinedAt: minutesAgo(1 * DAY), lastActiveAt: minutesAgo(1 * DAY),
     wallet: { available: 0, inEscrow: 0 }, compliance: "missing", flagged: false,
   },
   {
-    id: "u-105", name: "Muriel Blanch", email: "muriel@fitwithmuriel.com", type: "influencer", status: "active",
+    id: "u-105", name: "Muriel Blanch", email: "muriel@fitwithmuriel.com", type: "creator", status: "active",
     location: "Yaoundé", niche: "Fitness", followers: 243_000, engagementRate: 5.4,
     joinedAt: minutesAgo(400 * DAY), lastActiveAt: minutesAgo(50),
     wallet: { available: 610_000, inEscrow: 150_000 }, compliance: "verified", flagged: false,
   },
   {
-    id: "u-106", name: "Tariq Bello", email: "tariq.travels@mail.com", type: "influencer", status: "suspended",
+    id: "u-106", name: "Tariq Bello", email: "tariq.travels@mail.com", type: "creator", status: "suspended",
     location: "Lagos", niche: "Travel", followers: 128_000, engagementRate: 1.6,
     joinedAt: minutesAgo(180 * DAY), lastActiveAt: minutesAgo(9 * DAY),
     wallet: { available: 40_000, inEscrow: 0 }, compliance: "verified", flagged: true,
@@ -65,7 +65,7 @@ export const MOCK_PLATFORM_USERS: PlatformUser[] = [
     id: "u-108", name: "Kivu Coffee Co.", email: "marketing@kivucoffee.rw", type: "brand", status: "pending",
     location: "Kigali", niche: "Food", followers: null, engagementRate: null,
     joinedAt: minutesAgo(3 * DAY), lastActiveAt: minutesAgo(20 * HOUR),
-    wallet: { available: 0, inEscrow: 0 }, compliance: "in-review", flagged: false,
+    wallet: { available: 0, inEscrow: 0 }, compliance: "in_review", flagged: false,
   },
   {
     id: "u-109", name: "PayLink Mobile", email: "growth@paylink.africa", type: "brand", status: "active",
@@ -116,11 +116,11 @@ export const MOCK_DISPUTES: Record<string, Dispute[]> = {
     { id: "d-41", campaign: "PayLink Summer Cashback", reason: "Escrow not released 5 days after delivery", status: "open", openedAt: minutesAgo(5 * DAY) },
   ],
   "u-106": [
-    { id: "d-33", campaign: "Wanderlust Zanzibar Promo", reason: "Content never delivered", status: "resolved-against", openedAt: minutesAgo(40 * DAY) },
+    { id: "d-33", campaign: "Wanderlust Zanzibar Promo", reason: "Content never delivered", status: "resolved_against", openedAt: minutesAgo(40 * DAY) },
     { id: "d-37", campaign: "Kivu Coffee Morning Ritual", reason: "Engagement figures appeared inflated", status: "open", openedAt: minutesAgo(12 * DAY) },
   ],
   "u-101": [
-    { id: "d-12", campaign: "Shea Radiance Launch", reason: "Brand requested extra revisions beyond scope", status: "resolved-in-favour", openedAt: minutesAgo(120 * DAY) },
+    { id: "d-12", campaign: "Shea Radiance Launch", reason: "Brand requested extra revisions beyond scope", status: "resolved_in_favour", openedAt: minutesAgo(120 * DAY) },
   ],
 };
 
@@ -150,23 +150,23 @@ export const MOCK_TRANSACTIONS: Record<string, WalletTransaction[]> = {
 
 export const MOCK_DOCUMENTS: Record<string, ComplianceDocument[]> = {
   "u-101": [
-    { id: "c-1", kind: "national-id", fileName: "national-id.pdf", uploadedAt: minutesAgo(300 * DAY), status: "verified" },
-    { id: "c-2", kind: "tax-id", fileName: "niu-certificate.pdf", uploadedAt: minutesAgo(300 * DAY), status: "verified" },
+    { id: "c-1", kind: "national_id", fileName: "national-id.pdf", uploadedAt: minutesAgo(300 * DAY), status: "verified" },
+    { id: "c-2", kind: "tax_id", fileName: "niu-certificate.pdf", uploadedAt: minutesAgo(300 * DAY), status: "verified" },
     { id: "c-3", kind: "contract", fileName: "creator-agreement-signed.pdf", uploadedAt: minutesAgo(305 * DAY), status: "verified" },
   ],
   "u-103": [
-    { id: "c-4", kind: "national-id", fileName: "ghana-card.jpg", uploadedAt: minutesAgo(2 * DAY), status: "in-review" },
-    { id: "c-5", kind: "contract", fileName: "creator-agreement.pdf", uploadedAt: minutesAgo(2 * DAY), status: "in-review" },
+    { id: "c-4", kind: "national_id", fileName: "ghana-card.jpg", uploadedAt: minutesAgo(2 * DAY), status: "in_review" },
+    { id: "c-5", kind: "contract", fileName: "creator-agreement.pdf", uploadedAt: minutesAgo(2 * DAY), status: "in_review" },
   ],
   "u-107": [
-    { id: "c-6", kind: "business-registration", fileName: "rccm-shea-radiance.pdf", uploadedAt: minutesAgo(255 * DAY), status: "verified" },
-    { id: "c-7", kind: "tax-id", fileName: "tax-clearance-2026.pdf", uploadedAt: minutesAgo(60 * DAY), status: "verified" },
+    { id: "c-6", kind: "business_registration", fileName: "rccm-shea-radiance.pdf", uploadedAt: minutesAgo(255 * DAY), status: "verified" },
+    { id: "c-7", kind: "tax_id", fileName: "tax-clearance-2026.pdf", uploadedAt: minutesAgo(60 * DAY), status: "verified" },
   ],
   "u-108": [
-    { id: "c-8", kind: "business-registration", fileName: "rdb-certificate.pdf", uploadedAt: minutesAgo(3 * DAY), status: "in-review" },
+    { id: "c-8", kind: "business_registration", fileName: "rdb-certificate.pdf", uploadedAt: minutesAgo(3 * DAY), status: "in_review" },
   ],
   "u-110": [
-    { id: "c-9", kind: "business-registration", fileName: "cac-certificate.jpg", uploadedAt: minutesAgo(85 * DAY), status: "rejected" },
+    { id: "c-9", kind: "business_registration", fileName: "cac-certificate.jpg", uploadedAt: minutesAgo(85 * DAY), status: "rejected" },
   ],
 };
 
@@ -178,20 +178,20 @@ export const MOCK_NOTIFICATIONS: UserNotification[] = [
 ];
 
 export const MOCK_ALERTS: SecurityAlert[] = [
-  { id: "a-1", userId: "u-102", userName: "James Mwangi", kind: "failed-logins", detail: "7 failed sign-in attempts from 3 countries in 20 minutes", severity: "high", detectedAt: minutesAgo(40) },
-  { id: "a-2", userId: "u-106", userName: "Tariq Bello", kind: "follower-spike", detail: "Followers grew 177% in one month while engagement fell to 1.6%", severity: "high", detectedAt: minutesAgo(2 * DAY) },
-  { id: "a-3", userId: "u-110", userName: "Wanderlust Tours", kind: "payout-change", detail: "Payout account changed twice in 24 hours", severity: "medium", detectedAt: minutesAgo(8 * HOUR) },
+  { id: "a-1", userId: "u-102", userName: "James Mwangi", kind: "failed_logins", detail: "7 failed sign-in attempts from 3 countries in 20 minutes", severity: "high", detectedAt: minutesAgo(40) },
+  { id: "a-2", userId: "u-106", userName: "Tariq Bello", kind: "follower_spike", detail: "Followers grew 177% in one month while engagement fell to 1.6%", severity: "high", detectedAt: minutesAgo(2 * DAY) },
+  { id: "a-3", userId: "u-110", userName: "Wanderlust Tours", kind: "payout_change", detail: "Payout account changed twice in 24 hours", severity: "medium", detectedAt: minutesAgo(8 * HOUR) },
 ];
 
 export const MOCK_FLAGS: ModerationFlag[] = [
   { id: "f-1", userId: "u-102", userName: "James Mwangi", field: "bio", excerpt: "DM me for guaranteed 10x crypto returns 🚀", reason: "Possible financial scam promotion", reportedAt: minutesAgo(3 * HOUR) },
-  { id: "f-2", userId: "u-110", userName: "Wanderlust Tours", field: "campaign-description", excerpt: "Creators must pay a 50,000 CFA registration fee before joining…", reason: "Charging creators to apply violates platform policy", reportedAt: minutesAgo(1 * DAY) },
+  { id: "f-2", userId: "u-110", userName: "Wanderlust Tours", field: "campaign_description", excerpt: "Creators must pay a 50,000 CFA registration fee before joining…", reason: "Charging creators to apply violates platform policy", reportedAt: minutesAgo(1 * DAY) },
   { id: "f-3", userId: "u-106", userName: "Tariq Bello", field: "media", excerpt: "beach-promo-final.mp4", reason: "Reported by 3 users as containing copyrighted music", reportedAt: minutesAgo(2 * DAY) },
 ];
 
 export const MOCK_TEAM: TeamMember[] = [
-  { id: "m-1", name: "Samuel Ndolo", email: "ndolosam237@gmail.com", role: "Super Admin", status: "active", lastActiveAt: minutesAgo(0) },
-  { id: "m-2", name: "Rita Wambui", email: "rita.w@influenceronhire.com", role: "Campaign Manager", status: "active", lastActiveAt: minutesAgo(2 * HOUR) },
-  { id: "m-3", name: "Tunde Okafor", email: "tunde.o@influenceronhire.com", role: "Finance", status: "active", lastActiveAt: minutesAgo(1 * DAY) },
-  { id: "m-4", name: "Chiara Mensah", email: "chiara.m@influenceronhire.com", role: "Support Agent", status: "invited", lastActiveAt: minutesAgo(5 * DAY) },
+  { id: "m-1", name: "Samuel Ndolo", email: "ndolosam237@gmail.com", role: "super_admin", status: "active", lastActiveAt: minutesAgo(0) },
+  { id: "m-2", name: "Rita Wambui", email: "rita.w@influenceronhire.com", role: "campaign_manager", status: "active", lastActiveAt: minutesAgo(2 * HOUR) },
+  { id: "m-3", name: "Tunde Okafor", email: "tunde.o@influenceronhire.com", role: "finance", status: "active", lastActiveAt: minutesAgo(1 * DAY) },
+  { id: "m-4", name: "Chiara Mensah", email: "chiara.m@influenceronhire.com", role: "support_agent", status: "invited", lastActiveAt: minutesAgo(5 * DAY) },
 ];

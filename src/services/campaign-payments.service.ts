@@ -19,7 +19,7 @@ export async function getEscrowSummary(): Promise<EscrowSummary> {
 
   return {
     totalFunded: sum(MOCK_CAMPAIGN_PAYMENTS),
-    inEscrow: sum(byStatus("on_hold")),
+    inEscrow: sum(byStatus("held")),
     released: sum(byStatus("released")),
     activeCampaigns: MOCK_CAMPAIGN_PAYMENTS.filter((p) => p.status !== "released").length,
   };
@@ -50,7 +50,7 @@ export async function fundCampaign(input: FundCampaignInput): Promise<CampaignPa
     method: input.method,
     payerPhone: input.payerPhone,
     fundedAt: now.toISOString().slice(0, 10),
-    status: "on_hold",
+    status: "held",
     deliverables: [],
   };
   MOCK_CAMPAIGN_PAYMENTS.push(payment);

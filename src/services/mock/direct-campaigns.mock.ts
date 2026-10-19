@@ -14,7 +14,7 @@ export const MOCK_CAMPAIGN_FORM_OPTIONS: CampaignFormOptions = {
     { value: "18-24", label: "18–24" },
     { value: "25-34", label: "25–34" },
     { value: "35-44", label: "35–44" },
-    { value: "45+", label: "45+" },
+    { value: "45-plus", label: "45+" },
   ],
   interests: [
     { value: "beauty-skincare", label: "Beauty & skincare" },

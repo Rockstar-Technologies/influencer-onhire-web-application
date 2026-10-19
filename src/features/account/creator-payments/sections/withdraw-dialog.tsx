@@ -3,6 +3,8 @@
 import { useActionState, useEffect, useRef } from "react";
 import { FiArrowUpRight, FiX } from "react-icons/fi";
 import { FieldError, fieldClass, FormLabel } from "@/components/shared/form-field";
+import { PAYMENT_METHOD_LABELS } from "@/lib/domain/labels";
+import { PAYMENT_METHOD } from "@/lib/domain/vocabulary";
 import { cn, formatPrice } from "@/lib/utils";
 import type { WithdrawField, WithdrawFormState } from "@/types/payments";
 import { withdrawAction } from "../actions";
@@ -90,13 +92,13 @@ export function WithdrawDialog({ available, minimum }: { available: number; mini
           <fieldset>
             <legend className="mb-2 text-sm font-semibold text-heading">Send to</legend>
             <div className="grid grid-cols-2 gap-2">
-              {(["MTN MoMo", "Orange Money"] as const).map((method) => (
+              {PAYMENT_METHOD.values.map((method) => (
                 <label
                   key={method}
                   className="flex cursor-pointer items-center gap-2 rounded-lg border border-border px-3.5 py-2.5 text-sm font-medium text-heading has-checked:border-navy has-checked:bg-info-light has-focus-visible:ring-2 has-focus-visible:ring-navy/20"
                 >
-                  <input type="radio" name="method" value={method} defaultChecked={(values?.method ?? "MTN MoMo") === method} className="accent-navy" />
-                  {method}
+                  <input type="radio" name="method" value={method} defaultChecked={(values?.method ?? "mtn_momo") === method} className="accent-navy" />
+                  {PAYMENT_METHOD_LABELS[method]}
                 </label>
               ))}
             </div>

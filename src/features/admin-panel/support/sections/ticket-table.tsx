@@ -47,7 +47,7 @@ export async function TicketTable({ query }: { query: TicketQuery }) {
                   <td className="px-4 py-3.5 text-heading">{ticket.subject}</td>
                   <td className="px-4 py-3.5">
                     <span className="block text-heading">{ticket.from.name}</span>
-                    <span className="block text-xs capitalize text-muted">{ticket.from.role}</span>
+                    <span className="block text-xs capitalize text-muted">{ticket.from.role === "creator" ? "influencer" : ticket.from.role}</span>
                   </td>
                   <td className="px-4 py-3.5">
                     <PriorityBadge priority={ticket.priority} />

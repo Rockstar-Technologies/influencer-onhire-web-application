@@ -22,7 +22,7 @@ export function PerformancePanel({
   trend: TrendPoint[];
   disputes: Dispute[];
 }) {
-  const isInfluencer = type === "influencer";
+  const isInfluencer = type === "creator";
   const openDisputes = disputes.filter((dispute) => dispute.status === "open").length;
   const kpis = [
     { label: isInfluencer ? "Lifetime Earnings" : "Lifetime Spend", value: formatPrice(performance.lifetimeValue) },

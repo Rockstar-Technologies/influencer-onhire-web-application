@@ -4,6 +4,7 @@ import { Button } from "@/components/shared/button";
 import { SocialStatList } from "@/components/shared/social-stats";
 import { Stars } from "@/components/shared/stars";
 import { formatPrice } from "@/lib/utils";
+import { LANGUAGE_LABELS } from "@/lib/domain/labels";
 import type { Influencer } from "@/types/influencer";
 
 export function InfluencerCard({ influencer }: { influencer: Influencer }) {
@@ -14,12 +15,12 @@ export function InfluencerCard({ influencer }: { influencer: Influencer }) {
       <div className="relative h-64 w-full overflow-hidden bg-surface-alt">
         <Image src={imageUrl} alt={name} fill sizes="(min-width: 1024px) 360px, 100vw" className="object-cover transition-transform duration-500 group-hover:scale-105" />
         <span className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-heading shadow-sm">
-          {language === "Bilingual" ? (
+          {language === "bilingual" ? (
             <FiGlobe className="text-sky-500" size={12} />
           ) : (
-            <span className="text-[9px] font-bold text-muted">{language === "French" ? "FR" : "GB"}</span>
+            <span className="text-[9px] font-bold text-muted">{language === "french" ? "FR" : "GB"}</span>
           )}
-          {language}
+          {LANGUAGE_LABELS[language]}
         </span>
       </div>
 

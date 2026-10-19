@@ -53,7 +53,7 @@ export async function getUserStats(): Promise<UserStats> {
   const users = MOCK_PLATFORM_USERS;
   return {
     total: users.length,
-    influencers: users.filter((user) => user.type === "influencer").length,
+    influencers: users.filter((user) => user.type === "creator").length,
     brands: users.filter((user) => user.type === "brand").length,
     pendingApproval: users.filter((user) => user.status === "pending").length,
     suspended: users.filter((user) => user.status === "suspended").length,
@@ -97,7 +97,7 @@ export async function countOpenDisputes(): Promise<number> {
 // Ranked by earnings rather than followers, since follower counts are easy to inflate.
 export async function listTopInfluencers(limit: number): Promise<TopInfluencer[]> {
   // TODO: replace with `fetch("/api/admin/influencers/top?limit=" + limit)`
-  return MOCK_PLATFORM_USERS.filter((user) => user.type === "influencer" && user.status === "active" && MOCK_PERFORMANCE[user.id])
+  return MOCK_PLATFORM_USERS.filter((user) => user.type === "creator" && user.status === "active" && MOCK_PERFORMANCE[user.id])
     .map((user) => {
       const performance = MOCK_PERFORMANCE[user.id];
       return {

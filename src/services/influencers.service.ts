@@ -75,7 +75,7 @@ function matchesFilters(influencer: Influencer, filters: Record<string, string[]
   if (niche?.length && !niche.some((value) => influencer.categories.includes(value))) return false;
   if (location?.length && !location.includes(normalize(influencer.location))) return false;
   if (platform?.length && !platform.some((value) => influencer.social[value as SocialPlatform] > 0)) return false;
-  if (language?.length && !language.includes(influencer.language.toLowerCase())) return false;
+  if (language?.length && !language.includes(influencer.language)) return false;
   if (followers?.[0] && !inRange(totalFollowers(influencer), FOLLOWER_RANGES[followers[0]])) return false;
   if (budget?.[0] && !inRange(influencer.startingPrice, BUDGET_RANGES[budget[0]])) return false;
   if (successRate?.[0] && influencer.successRate < Number(successRate[0])) return false;

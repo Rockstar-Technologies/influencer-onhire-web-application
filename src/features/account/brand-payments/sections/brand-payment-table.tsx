@@ -7,17 +7,22 @@ import { EscrowBadge } from "@/components/shared/escrow-badge";
 import { InfoTip } from "@/components/shared/info-tip";
 import { cn, formatDate, formatPrice } from "@/lib/utils";
 import type { BrandPaymentView } from "@/types/payments";
+import { PAYMENT_METHOD_LABELS } from "@/lib/domain/labels";
 
 const STATUS_NOTE: Record<BrandPaymentView["status"], string> = {
   held: "Your deposit is held safely in escrow. The creator can see it's on hold and is working on the campaign.",
   requested: "The creator has delivered and requested cashout. The platform is reviewing their report before releasing your deposit.",
   released: "Your deposit has been released to the creator. This campaign is complete.",
+  refund_pending: "A refund of this payment is being processed.",
+  refunded: "This payment was refunded.",
 };
 
 const ACTION_LABEL: Record<BrandPaymentView["status"], string> = {
   held: "Details",
   requested: "Read report",
   released: "Receipt",
+  refund_pending: "Details",
+  refunded: "Details",
 };
 
 export function BrandPaymentTable({ payments }: { payments: BrandPaymentView[] }) {
@@ -64,7 +69,7 @@ export function BrandPaymentTable({ payments }: { payments: BrandPaymentView[] }
                   </td>
                   <td className="whitespace-nowrap px-3 py-3.5 text-heading">{payment.creatorName}</td>
                   <td className="whitespace-nowrap px-3 py-3.5 text-right font-semibold tabular-nums text-heading">{formatPrice(payment.deposited)}</td>
-                  <td className="whitespace-nowrap px-3 py-3.5 text-body">{payment.method}</td>
+                  <td className="whitespace-nowrap px-3 py-3.5 text-body">{PAYMENT_METHOD_LABELS[payment.method]}</td>
                   <td className="whitespace-nowrap px-3 py-3.5 text-body">{formatDate(payment.fundedAt)}</td>
                   <td className="px-3 py-3.5">
                     <EscrowBadge status={payment.status} />

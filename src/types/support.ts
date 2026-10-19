@@ -1,8 +1,11 @@
-export type TicketPriority = "urgent" | "normal" | "low";
+import type { AccountType, TicketPriority as ApiTicketPriority, TicketStatus as ApiTicketStatus } from "@/lib/domain/vocabulary";
 
-export type TicketStatus = "open" | "in-progress" | "resolved";
+export type TicketPriority = ApiTicketPriority;
 
-export type TicketRequesterRole = "influencer" | "brand";
+export type TicketStatus = ApiTicketStatus;
+
+/** Who raised a ticket: a creator or a brand (the API's account types). */
+export type TicketRequesterRole = AccountType;
 
 export interface SupportTicket {
   id: string;

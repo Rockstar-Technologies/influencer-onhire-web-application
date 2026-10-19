@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { authorizeAction } from "@/lib/auth/action-access";
+import { ADMIN_ROLE } from "@/lib/domain/vocabulary";
+import type { AdminRoleCode } from "@/lib/domain/vocabulary";
 import {
   applyUserAction,
   dismissSecurityAlert,
@@ -11,12 +13,10 @@ import {
   setUserFlagged,
 } from "@/services/user-management.service";
 import {
-  TEAM_ROLES,
   type ActionResult,
   type BulkAction,
   type InviteField,
   type InviteFormState,
-  type TeamRole,
 } from "@/types/user-management";
 
 // Server Actions are reachable by direct POST, so every argument is validated here.
@@ -112,10 +112,10 @@ export async function inviteTeamMemberAction(_previous: InviteFormState, formDat
   const errors: Partial<Record<InviteField, string>> = {};
   if (values.name.length < 2 || values.name.length > 80) errors.name = "Enter the person's full name.";
   if (!EMAIL_PATTERN.test(values.email) || values.email.length > 120) errors.email = "Enter a valid email address.";
-  if (!TEAM_ROLES.includes(values.role as TeamRole)) errors.role = "Choose a role.";
+  if (!ADMIN_ROLE.is(values.role)) errors.role = "Choose a role.";
   if (Object.keys(errors).length > 0) return { status: "error", values, errors };
 
-  const member = await inviteTeamMember({ name: values.name, email: values.email, role: values.role as TeamRole });
+  const member = await inviteTeamMember({ name: values.name, email: values.email, role: values.role as AdminRoleCode }); // validated above by ADMIN_ROLE.is
   if (!member) return { status: "error", values, errors: { email: "This person is already on the team." } };
   refresh();
   return { status: "success", member };

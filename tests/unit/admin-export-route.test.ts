@@ -1,3 +1,4 @@
+import type { PermissionCode } from "@/lib/domain/vocabulary";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Session } from "@/lib/auth/access";
 import { apiUser } from "../helpers";
@@ -7,7 +8,7 @@ vi.mock("@/lib/auth/session", () => ({ getSession: vi.fn() }));
 const { getSession } = await import("@/lib/auth/session");
 const route = await import("@/app/admin/export/route");
 
-const session = (role: "brand" | "creator" | "admin", permissions: string[] = []): Session => ({
+const session = (role: "brand" | "creator" | "admin", permissions: PermissionCode[] = []): Session => ({
   user: apiUser({ role, phone: role === "admin" ? null : "670000001" }) as Session["user"],
   permissions,
   expiresAt: null,

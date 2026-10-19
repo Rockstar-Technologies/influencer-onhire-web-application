@@ -6,9 +6,9 @@ import type { AlertKind } from "@/types/user-management";
 import { AlertActions } from "./alert-actions";
 
 const KIND: Record<AlertKind, { label: string; icon: typeof FiLock }> = {
-  "failed-logins": { label: "Failed sign-ins", icon: FiLock },
-  "follower-spike": { label: "Follower spike", icon: FiActivity },
-  "payout-change": { label: "Payout change", icon: FiCreditCard },
+  failed_logins: { label: "Failed sign-ins", icon: FiLock },
+  follower_spike: { label: "Follower spike", icon: FiActivity },
+  payout_change: { label: "Payout change", icon: FiCreditCard },
 };
 
 export async function SecurityAlerts() {

@@ -1,9 +1,10 @@
+import { parseAccountType } from "@/lib/domain/mappers";
 import type { AccountStatus, AccountType, UserQuery } from "@/types/user-management";
 
 export type RawSearchParams = Record<string, string | string[] | undefined>;
 
 export const ACCOUNT_TYPES: { value: AccountType; label: string }[] = [
-  { value: "influencer", label: "Influencers" },
+  { value: "creator", label: "Influencers" },
   { value: "brand", label: "Brands" },
 ];
 
@@ -20,7 +21,8 @@ export const EMPTY_USER_QUERY: UserQuery = { q: "", type: "all", status: "all", 
 
 export function parseUserQuery(params: RawSearchParams): UserQuery {
   const first = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value) ?? "";
-  const type = first(params.type);
+  // Saved links may still say ?type=influencer.
+  const type = parseAccountType(first(params.type)) ?? "";
   const status = first(params.status);
   const minEngagement = Number(first(params.engagement));
   return {

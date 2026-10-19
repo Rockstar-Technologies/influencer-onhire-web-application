@@ -8,7 +8,7 @@ import { BrandPaymentTable } from "./sections/brand-payment-table";
 import { FundCampaignDialog } from "./sections/fund-campaign-dialog";
 
 export async function BrandPaymentsPage({ brand }: { brand: ApiUser }) {
-  const [payments, creators] = await Promise.all([listBrandPayments(brand.id), listActiveAccounts("influencer")]);
+  const [payments, creators] = await Promise.all([listBrandPayments(brand.id), listActiveAccounts("creator")]);
   const summary = summarizeBrandPayments(payments);
   const amount = (value: number) => value.toLocaleString("en-US");
   const count = (status: string) => payments.filter((payment) => payment.status === status).length;

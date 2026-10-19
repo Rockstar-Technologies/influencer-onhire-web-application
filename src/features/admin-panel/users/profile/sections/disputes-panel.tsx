@@ -4,8 +4,9 @@ import type { Dispute, DisputeStatus } from "@/types/user-management";
 
 const DISPUTE_STYLES: Record<DisputeStatus, BadgeStyle> = {
   open: { label: "Open", badge: "bg-warning-light text-warning", dot: "bg-warning" },
-  "resolved-in-favour": { label: "Won", badge: "bg-success-light text-success-strong", dot: "bg-success" },
-  "resolved-against": { label: "Lost", badge: "bg-danger-light text-danger-strong", dot: "bg-danger" },
+  withdrawn: { label: "Withdrawn", badge: "bg-border-light text-body", dot: "bg-muted" },
+  resolved_in_favour: { label: "Won", badge: "bg-success-light text-success-strong", dot: "bg-success" },
+  resolved_against: { label: "Lost", badge: "bg-danger-light text-danger-strong", dot: "bg-danger" },
 };
 
 export function DisputesPanel({ disputes }: { disputes: Dispute[] }) {

@@ -13,7 +13,7 @@ export async function TopInfluencers() {
         <h2 id="top-heading" className="font-display text-base font-bold text-heading">
           Top Influencers
         </h2>
-        <Link href="/admin/users?type=influencer" className="text-sm font-semibold text-navy hover:underline">
+        <Link href="/admin/users?type=creator" className="text-sm font-semibold text-navy hover:underline">
           View all
         </Link>
       </div>

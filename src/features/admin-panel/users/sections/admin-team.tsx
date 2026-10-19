@@ -2,6 +2,7 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { formatRelativeTime, formatRelativeTimeInline, initials } from "@/lib/utils";
 import { listTeamMembers } from "@/services/user-management.service";
 import { InviteForm } from "./invite-form";
+import { ADMIN_ROLE_LABELS } from "@/lib/domain/labels";
 
 const COLUMNS = ["User", "Role", "Last active", "Status"];
 
@@ -41,7 +42,7 @@ export async function AdminTeam() {
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3.5 text-heading">{member.role}</td>
+                  <td className="px-4 py-3.5 text-heading">{ADMIN_ROLE_LABELS[member.role]}</td>
                   <td className="whitespace-nowrap px-4 py-3.5 text-body">
                     {member.status === "invited" ? (
                       <span className="text-muted">Invite sent {formatRelativeTimeInline(member.lastActiveAt)}</span>

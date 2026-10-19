@@ -9,7 +9,7 @@ const PRIORITY_STYLES: Record<TicketPriority, BadgeStyle> = {
 
 const STATUS_STYLES: Record<TicketStatus, BadgeStyle> = {
   open: { label: "Open", badge: "bg-warning-light text-warning", dot: "bg-warning" },
-  "in-progress": { label: "In Progress", badge: "bg-primary-light text-primary", dot: "bg-primary" },
+  in_progress: { label: "In Progress", badge: "bg-primary-light text-primary", dot: "bg-primary" },
   resolved: { label: "Resolved", badge: "bg-success-light text-success-strong", dot: "bg-success" },
 };
 

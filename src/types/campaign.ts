@@ -1,3 +1,5 @@
+import type { CampaignStatus as ApiCampaignStatus } from "@/lib/domain/vocabulary";
+
 export interface CampaignStep {
   id: string;
   title: string;
@@ -30,7 +32,8 @@ export interface CampaignPreview {
   };
 }
 
-export type CampaignStatus = "pending_review" | "accepted" | "in_progress";
+/** The part of the API's campaign lifecycle this legacy screen describes (see src/lib/domain/vocabulary.ts for all eight statuses). */
+export type CampaignStatus = Extract<ApiCampaignStatus, "pending_review" | "accepted" | "in_progress">;
 
 export interface NewCampaignInput {
   title: string;

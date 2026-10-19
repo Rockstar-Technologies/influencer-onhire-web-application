@@ -12,6 +12,7 @@ import type { ActionResult } from "@/types/user-management";
 import { ResultMessage } from "../../users/sections/result-message";
 import { useAdminAction } from "../../users/use-admin-action";
 import { releasePaymentAction } from "../actions";
+import { PAYMENT_METHOD_LABELS } from "@/lib/domain/labels";
 
 type Row = EscrowPayment & { split: PaymentSplit };
 
@@ -82,7 +83,7 @@ export function PaymentTable({ rows }: { rows: Row[] }) {
                   <tr className="transition-colors hover:bg-surface-alt">
                     <td className="whitespace-nowrap px-2 py-3.5">
                       <span className="block font-semibold text-heading">{row.invoice}</span>
-                      <span className="block text-xs text-muted">{row.method}</span>
+                      <span className="block text-xs text-muted">{PAYMENT_METHOD_LABELS[row.method]}</span>
                     </td>
                     <td className="whitespace-nowrap px-2 py-3.5">
                       <Link href={`/admin/users/${row.brand.id}`} className="block text-heading hover:text-navy hover:underline">

@@ -1,6 +1,10 @@
-export type EscrowStatus = "held" | "requested" | "released";
+import type { PaymentMethodCode, PaymentStatus, WithdrawalStatus } from "@/lib/domain/vocabulary";
 
-export type PaymentMethod = "MTN MoMo" | "Orange Money";
+/** The API's payment statuses (held, requested, released, refund_pending, refunded). */
+export type EscrowStatus = PaymentStatus;
+
+/** The API's method code (`mtn_momo`, `orange_money`); show it with PAYMENT_METHOD_LABELS. */
+export type PaymentMethod = PaymentMethodCode;
 
 export interface EscrowPayment {
   id: string;
@@ -79,7 +83,8 @@ export interface Withdrawal {
   amount: number;
   method: PaymentMethod;
   phone: string;
-  status: "processing" | "completed";
+  /** All eight API withdrawal states; the mock data only uses processing and completed. */
+  status: WithdrawalStatus;
   requestedAt: string;
   completedAt?: string;
 }

@@ -1,4 +1,7 @@
-export type CampaignRequestStatus = "pending" | "accepted" | "declined";
+import type { OfferStatus } from "@/lib/domain/vocabulary";
+
+/** A creator-facing request is an API offer; all eight offer statuses can occur (pending, accepted, declined, withdrawn, cancelled, expired, funding_expired, refunded). */
+export type CampaignRequestStatus = OfferStatus;
 
 export interface CampaignRequest {
   id: string;

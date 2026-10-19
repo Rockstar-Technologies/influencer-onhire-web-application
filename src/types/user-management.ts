@@ -1,8 +1,13 @@
-export type AccountType = "influencer" | "brand";
+// Canonical vocabulary: see src/lib/domain/vocabulary.ts. A creator is `creator` everywhere (the old `influencer` spelling only survives in saved links).
+export type { AccountType } from "@/lib/domain/vocabulary";
+import { ADMIN_ROLE } from "@/lib/domain/vocabulary";
+import type { AdminRoleCode, AccountStatus as ApiAccountStatus, AccountType, AlertKind as ApiAlertKind, DisputeStatus as ApiDisputeStatus, DocumentKind, DocumentStatus, FlagField, AlertSeverity } from "@/lib/domain/vocabulary";
+import type { ComplianceDisplayStatus, WalletTransactionKind as UiWalletTransactionKind } from "@/lib/domain/frontend-only";
 
-export type AccountStatus = "active" | "pending" | "suspended" | "rejected";
+export type AccountStatus = ApiAccountStatus;
 
-export type ComplianceStatus = "verified" | "in-review" | "missing";
+/** The API's document statuses plus the UI-only "missing" (nothing uploaded); see src/lib/domain/frontend-only.ts. */
+export type ComplianceStatus = ComplianceDisplayStatus;
 
 export interface PlatformUser {
   id: string;
@@ -64,7 +69,7 @@ export interface TrendPoint {
   revenue: number;
 }
 
-export type DisputeStatus = "open" | "resolved-in-favour" | "resolved-against";
+export type DisputeStatus = ApiDisputeStatus;
 
 export interface Dispute {
   id: string;
@@ -74,7 +79,8 @@ export interface Dispute {
   openedAt: string;
 }
 
-export type WalletTransactionKind = "escrow-held" | "released" | "refunded" | "withdrawal" | "deposit";
+// UI-only vocabulary (the API has different ledger types and no "deposit"); mapping is unresolved, see src/lib/domain/frontend-only.ts.
+export type WalletTransactionKind = UiWalletTransactionKind;
 
 export interface WalletTransaction {
   id: string;
@@ -84,14 +90,14 @@ export interface WalletTransaction {
   date: string;
 }
 
-export type ComplianceDocumentKind = "contract" | "tax-id" | "business-registration" | "national-id";
+export type ComplianceDocumentKind = DocumentKind;
 
 export interface ComplianceDocument {
   id: string;
   kind: ComplianceDocumentKind;
   fileName: string;
   uploadedAt: string;
-  status: "verified" | "in-review" | "rejected";
+  status: DocumentStatus;
 }
 
 export interface UserNotification {
@@ -114,7 +120,7 @@ export interface UserProfile {
 
 // --- trust & safety ---
 
-export type AlertKind = "failed-logins" | "follower-spike" | "payout-change";
+export type AlertKind = ApiAlertKind;
 
 export interface SecurityAlert {
   id: string;
@@ -122,11 +128,11 @@ export interface SecurityAlert {
   userName: string;
   kind: AlertKind;
   detail: string;
-  severity: "high" | "medium";
+  severity: AlertSeverity;
   detectedAt: string;
 }
 
-export type FlaggedField = "bio" | "campaign-description" | "media";
+export type FlaggedField = FlagField;
 
 export interface ModerationFlag {
   id: string;
@@ -140,9 +146,10 @@ export interface ModerationFlag {
 
 // --- admin team ---
 
-export const TEAM_ROLES = ["Super Admin", "Campaign Manager", "Finance", "Support Agent"] as const;
+/** Admin team roles by the API's role code (super_admin, campaign_manager, finance, support_agent); show them with ADMIN_ROLE_LABELS. */
+export const TEAM_ROLES = ADMIN_ROLE.values;
 
-export type TeamRole = (typeof TEAM_ROLES)[number];
+export type TeamRole = AdminRoleCode;
 
 export interface TeamMember {
   id: string;

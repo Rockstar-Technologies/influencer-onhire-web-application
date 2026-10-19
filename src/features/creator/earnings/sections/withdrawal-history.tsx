@@ -1,11 +1,20 @@
 import { cn } from "@/lib/utils";
 import { PAYMENT_METHOD_LABELS, formatDate, formatFcfa } from "@/lib/format";
 import type { Withdrawal } from "@/types/earnings";
+import { lookupOr } from "@/lib/domain/labels";
 
-const STATUS_STYLES = {
+const UNKNOWN_STATUS = { label: "Unknown", className: "bg-border-light text-body" };
+
+const STATUS_STYLES: Record<Withdrawal["status"], { label: string; className: string }> = {
   completed: { label: "Completed", className: "bg-success/10 text-success" },
   processing: { label: "Processing", className: "bg-warning/10 text-warning" },
-} as const;
+  requested: { label: "Requested", className: "bg-warning/10 text-warning" },
+  under_review: { label: "Under review", className: "bg-warning/10 text-warning" },
+  approved: { label: "Approved", className: "bg-info-light text-info" },
+  rejected: { label: "Rejected", className: "bg-danger-light text-danger-strong" },
+  cancelled: { label: "Cancelled", className: "bg-border-light text-body" },
+  failed: { label: "Failed", className: "bg-danger-light text-danger-strong" },
+};
 
 export function WithdrawalHistory({ withdrawals, highlightId }: { withdrawals: Withdrawal[]; highlightId?: string | null }) {
   return (
@@ -23,7 +32,7 @@ export function WithdrawalHistory({ withdrawals, highlightId }: { withdrawals: W
           </thead>
           <tbody className="divide-y divide-border-light">
             {withdrawals.map((withdrawal) => {
-              const status = STATUS_STYLES[withdrawal.status];
+              const status = lookupOr(STATUS_STYLES, withdrawal.status, UNKNOWN_STATUS);
               return (
                 <tr
                   key={withdrawal.id}

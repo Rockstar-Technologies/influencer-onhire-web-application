@@ -105,11 +105,11 @@ export function NewTicketDialog() {
                 <select
                   id="ticket-fromRole"
                   name="fromRole"
-                  defaultValue={values?.fromRole ?? "influencer"}
+                  defaultValue={values?.fromRole ?? "creator"}
                   className={cn(fieldClass(!!errors.fromRole), "h-11 appearance-none pr-9")}
                   {...describe("fromRole")}
                 >
-                  <option value="influencer">Influencer</option>
+                  <option value="creator">Influencer</option>
                   <option value="brand">Brand</option>
                 </select>
                 <FiChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted" />

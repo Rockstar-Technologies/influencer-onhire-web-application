@@ -1,3 +1,5 @@
+import type { CampaignDisplayStatus } from "@/lib/domain/frontend-only";
+
 export type DashboardRange = "7d" | "30d" | "90d";
 
 export interface PeriodValue {
@@ -20,7 +22,8 @@ export interface RevenuePoint {
   revenue: number;
 }
 
-export type CampaignStatus = "draft" | "scheduled" | "in-progress" | "pending-review" | "completed" | "overdue";
+// "scheduled" and "overdue" are derived display states, not API statuses (see src/lib/domain/frontend-only.ts).
+export type CampaignStatus = CampaignDisplayStatus;
 
 export interface CampaignSummary {
   id: string;

@@ -1,11 +1,23 @@
+import { OFFER_STATUS_LABELS, lookupOr } from "@/lib/domain/labels";
 import { cn } from "@/lib/utils";
 import type { CampaignRequest } from "@/types/campaign-request";
 import { formatDate, formatFcfa } from "../request-format";
 
-const RESPONSE_STYLES = {
-  accepted: { label: "Accepted", className: "bg-success/10 text-success" },
-  declined: { label: "Declined", className: "bg-heading/5 text-body" },
-} as const;
+const NEUTRAL = "bg-heading/5 text-body";
+
+/** One entry per API offer status, so a withdrawn or expired request is never shown as "Declined". */
+const RESPONSE_STYLES: Record<CampaignRequest["status"], { label: string; className: string }> = {
+  accepted: { label: OFFER_STATUS_LABELS.accepted, className: "bg-success/10 text-success" },
+  declined: { label: OFFER_STATUS_LABELS.declined, className: NEUTRAL },
+  pending: { label: OFFER_STATUS_LABELS.pending, className: "bg-warning/10 text-warning" },
+  withdrawn: { label: OFFER_STATUS_LABELS.withdrawn, className: NEUTRAL },
+  cancelled: { label: OFFER_STATUS_LABELS.cancelled, className: NEUTRAL },
+  expired: { label: OFFER_STATUS_LABELS.expired, className: NEUTRAL },
+  funding_expired: { label: OFFER_STATUS_LABELS.funding_expired, className: NEUTRAL },
+  refunded: { label: OFFER_STATUS_LABELS.refunded, className: NEUTRAL },
+};
+
+const UNKNOWN_RESPONSE = { label: "Unknown", className: NEUTRAL };
 
 export function RequestHistory({ requests, highlightId }: { requests: CampaignRequest[]; highlightId?: string | null }) {
   return (
@@ -25,7 +37,7 @@ export function RequestHistory({ requests, highlightId }: { requests: CampaignRe
           </thead>
           <tbody className="divide-y divide-border-light">
             {requests.map((request) => {
-              const response = RESPONSE_STYLES[request.status === "accepted" ? "accepted" : "declined"];
+              const response = lookupOr(RESPONSE_STYLES, request.status, UNKNOWN_RESPONSE);
               return (
                 <tr
                   key={request.id}

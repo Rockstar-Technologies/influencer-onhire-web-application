@@ -1,6 +1,9 @@
-export type EscrowStatus = "on_hold" | "payout_requested" | "released";
+import type { PaymentMethodCode, PaymentStatus } from "@/lib/domain/vocabulary";
 
-export type PaymentMethod = "mtn_momo" | "orange_money";
+/** The API's payment statuses (held, requested, released, refund_pending, refunded). */
+export type EscrowStatus = PaymentStatus;
+
+export type PaymentMethod = PaymentMethodCode;
 
 export interface PaymentInfluencer {
   id: string;

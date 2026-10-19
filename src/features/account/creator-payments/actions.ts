@@ -1,10 +1,10 @@
 "use server";
 
 import { authorizeAction, PAYMENTS_NOT_CONNECTED } from "@/lib/auth/action-access";
+import { PAYMENT_METHOD } from "@/lib/domain/vocabulary";
 import { MIN_WITHDRAWAL } from "@/services/payments.service";
-import type { CashoutField, CashoutFormState, PaymentMethod, WithdrawField, WithdrawFormState } from "@/types/payments";
+import type { CashoutField, CashoutFormState, WithdrawField, WithdrawFormState } from "@/types/payments";
 
-const METHODS: PaymentMethod[] = ["MTN MoMo", "Orange Money"];
 const MAX_LINKS = 5;
 
 // Links are shown to the brand and admins as clickable, so only plain web addresses are accepted.
@@ -58,7 +58,7 @@ export async function withdrawAction(_previous: WithdrawFormState, formData: For
   const errors: Partial<Record<WithdrawField, string>> = {};
   if (!amount) errors.amount = "Enter how much you want to withdraw.";
   else if (amount < MIN_WITHDRAWAL) errors.amount = `The minimum withdrawal is ${MIN_WITHDRAWAL.toLocaleString("en-US")} CFA.`;
-  if (!METHODS.includes(values.method as PaymentMethod)) errors.method = "Choose MTN MoMo or Orange Money.";
+  if (!PAYMENT_METHOD.is(values.method)) errors.method = "Choose MTN MoMo or Orange Money.";
   if (!/^6\d{8}$/.test(phone)) errors.phone = "Enter a 9-digit number starting with 6, e.g. 677 123 456.";
   if (!access.ok) return { status: "error", values, errors: {}, message: access.message };
   if (Object.keys(errors).length > 0) return { status: "error", values, errors };
