@@ -123,3 +123,43 @@ export function routeFetch(routes: Record<string, Response | Error | ((call: Rec
   const keys = () => calls.map((c) => `${c.init.method ?? "GET"} ${new URL(c.url).pathname.replace(/^\/api\/v1/, "")}`);
   return { fetch: impl, calls, keys };
 }
+
+// ---- brand campaigns fixtures ---------------------------------------------------------------------------------------------------------
+import campaignOptionsJson from "./fixtures/campaign-options.json";
+import type { CampaignListItem, CampaignOptions, CampaignView } from "@/lib/api/schemas";
+
+/** Captured from the running API's GET /brand/campaigns/options (not hand-written). */
+export const CAMPAIGN_OPTIONS = campaignOptionsJson as unknown as CampaignOptions;
+export const CAMPAIGN_ID = "33333333-3333-4333-8333-333333333333";
+
+export function campaignView(overrides: Partial<CampaignView> = {}): CampaignView {
+  return {
+    id: CAMPAIGN_ID,
+    reference: "CMP-7",
+    title: "Summer Glow Launch",
+    niche: { slug: "beauty", name: "Beauty" },
+    budgetXaf: 500000,
+    startDate: "2031-03-01",
+    endDate: "2031-03-31",
+    status: "draft",
+    submittedAt: null,
+    reviewedAt: null,
+    createdAt: "2026-10-19T10:00:00.000Z",
+    updatedAt: "2026-10-19T10:00:00.000Z",
+    deliverables: "1 story + 2 TikToks + 1 YouTube mention",
+    minEngagement: { pct: 5, label: "5%+" },
+    cities: [{ slug: "douala", name: "Douala" }],
+    interests: [{ slug: "beauty-skincare", name: "Beauty & skincare" }],
+    ageRanges: [{ code: "45-plus", label: "45+" }],
+    imageFileIds: [],
+    reviewNote: null,
+    cancelledAt: null,
+    ...overrides,
+  };
+}
+
+export function campaignListItem(overrides: Partial<CampaignListItem> = {}): CampaignListItem {
+  const { deliverables, minEngagement, cities, interests, ageRanges, imageFileIds, reviewNote, cancelledAt, ...item } = campaignView(overrides);
+  void [deliverables, minEngagement, cities, interests, ageRanges, imageFileIds, reviewNote, cancelledAt];
+  return item;
+}

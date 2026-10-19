@@ -37,7 +37,7 @@ export async function PostCampaign() {
 
         <div className="mt-14 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
-            href="/post-campaign"
+            href="/campaigns/new"
             className="group inline-flex items-center gap-2 rounded-lg bg-accent px-7 py-3.5 text-sm font-bold text-ink transition-colors hover:bg-accent-hover"
           >
             Post Your Campaign

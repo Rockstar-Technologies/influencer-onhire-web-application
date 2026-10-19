@@ -2,7 +2,7 @@ import Link from "next/link";
 import { FiArrowRight, FiCheckCircle, FiChevronDown } from "react-icons/fi";
 import { Panel } from "@/components/shared/panel";
 import { cn } from "@/lib/utils";
-import type { CampaignGuidance, CampaignLifecycleStep } from "@/types/direct-campaign";
+import type { CampaignGuidance, CampaignLifecycleStep } from "./guidance";
 
 const TONE_CLASSES: Record<CampaignLifecycleStep["tone"], string> = {
   warning: "bg-warning-light text-warning",

@@ -5,7 +5,7 @@ import type { FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { formatNumber, parseAmount } from "@/lib/format";
-import { previewCampaignMatches, saveCampaignDraft } from "@/services/campaigns.service";
+import { previewCampaignMatches } from "@/services/campaigns.service";
 import type { CampaignMatchPreview, EngagementRateOption, MatchFilterOptions, NewCampaignInput } from "@/types/campaign";
 
 interface Filters {
@@ -71,12 +71,8 @@ export function CreatorMatchFinder({
     }
     setBudgetError("");
     setSubmitting(true);
-    try {
-      const draft = await saveCampaignDraft(toInput(filters, amount));
-      router.push(`/campaigns/new?draft=${encodeURIComponent(draft.id)}`);
-    } catch {
-      setSubmitting(false);
-    }
+    // The estimate above is a demonstration. The real campaign is created in the campaign form; only the budget carries over.
+    router.push(`/campaigns/new?budget=${Math.trunc(amount)}`);
   }
 
   const preview = result?.preview;

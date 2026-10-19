@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { APPLICATION_STATUS, DEPOSIT_TERMS, HIRE_DURATION, LANGUAGE, PAYMENT_METHOD, PLATFORM } from "@/lib/domain/vocabulary";
+import { AGE_RANGE, APPLICATION_STATUS, CAMPAIGN_STATUS, DEPOSIT_TERMS, HIRE_DURATION, LANGUAGE, PAYMENT_METHOD, PLATFORM } from "@/lib/domain/vocabulary";
 
 /** Shapes of the Express API's responses (see backend docs/AUTHENTICATION.md). Unknown extra fields are ignored, not trusted. */
 export const userSchema = z.object({
@@ -116,3 +116,50 @@ export const submitResultSchema = z.object({
 export const reapplyResultSchema = z.object({
   application: z.object({ id: z.uuid(), status: z.enum(APPLICATION_STATUS.values), createdAt: z.string() }).loose(),
 });
+
+// ---- brand campaigns (verified against the running API, backend docs/CAMPAIGN_MANAGEMENT.md) ------------------------------------------
+export const campaignOptionsSchema = z.object({
+  niches: z.array(z.object({ slug: z.string(), name: z.string() })),
+  cities: z.array(z.object({ slug: z.string(), name: z.string() })),
+  interests: z.array(z.object({ slug: z.string(), name: z.string() })),
+  ageRanges: z.array(z.object({ code: z.enum(AGE_RANGE.values), label: z.string() })),
+  engagementLevels: z.array(z.object({ minPct: z.number(), label: z.string() })),
+  limits: z.object({ budgetMinXaf: z.number().int(), budgetMaxXaf: z.number().int() }),
+});
+export type CampaignOptions = z.infer<typeof campaignOptionsSchema>;
+
+const campaignNiche = z.object({ slug: z.string(), name: z.string() });
+
+/** A row of GET /brand/campaigns. Dates: `startDate`/`endDate` are calendar dates, the rest UTC timestamps. */
+export const campaignListItemSchema = z.object({
+  id: z.uuid(),
+  reference: z.string(),
+  title: z.string(),
+  niche: campaignNiche,
+  budgetXaf: z.number().int(),
+  startDate: z.string(),
+  endDate: z.string(),
+  status: z.enum(CAMPAIGN_STATUS.values),
+  submittedAt: z.string().nullable(),
+  reviewedAt: z.string().nullable(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+export type CampaignListItem = z.infer<typeof campaignListItemSchema>;
+export const campaignListSchema = z.array(campaignListItemSchema);
+
+export const campaignViewSchema = campaignListItemSchema.extend({
+  deliverables: z.string(),
+  minEngagement: z.object({ pct: z.number(), label: z.string() }).nullable(),
+  cities: z.array(z.object({ slug: z.string(), name: z.string() })),
+  interests: z.array(z.object({ slug: z.string(), name: z.string() })),
+  ageRanges: z.array(z.object({ code: z.enum(AGE_RANGE.values), label: z.string() })),
+  imageFileIds: z.array(z.string()),
+  /** The reviewer's explanation, shown to the brand on its own campaign. */
+  reviewNote: z.string().nullable(),
+  cancelledAt: z.string().nullable(),
+});
+export type CampaignView = z.infer<typeof campaignViewSchema>;
+
+export const campaignEnvelopeSchema = z.object({ campaign: campaignViewSchema });
+export const campaignDeleteSchema = z.object({ id: z.uuid(), deleted: z.literal(true) });

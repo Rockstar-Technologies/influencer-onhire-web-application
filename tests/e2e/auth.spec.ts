@@ -13,13 +13,18 @@ async function signUp(page: import("@playwright/test").Page, type: "brand" | "cr
 }
 
 test.describe("anonymous visitors", () => {
-  for (const path of ["/admin", "/admin/users", "/admin/payments", "/admin/support", "/brand/payments", "/brand/campaign-payments", "/creator/payments", "/creator/earnings", "/creator/requests", "/campaigns/new", "/post-campaign", "/influencers/amina.beauty/hire", "/for-creators/apply/profile", "/for-creators/apply/rates"]) {
+  for (const path of ["/admin", "/admin/users", "/admin/payments", "/admin/support", "/brand/payments", "/brand/campaign-payments", "/creator/payments", "/creator/earnings", "/creator/requests", "/campaigns/new", "/brand/campaigns", "/influencers/amina.beauty/hire", "/for-creators/apply/profile", "/for-creators/apply/rates"]) {
     test(`${path} redirects to sign-in with a safe next`, async ({ page }) => {
       await page.goto(`${APP}${path}`);
       await expect(page).toHaveURL(new RegExp(`/sign-in\\?next=${encodeURIComponent(path).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`));
       await expect(page.getByLabel("Password")).toBeVisible();
     });
   }
+
+  test("the retired /post-campaign URL leads to sign-in and then to the real campaign form", async ({ page }) => {
+    await page.goto(`${APP}/post-campaign`);
+    await expect(page).toHaveURL(/\/sign-in\?next=%2Fcampaigns%2Fnew/);
+  });
 
   test("the admin CSV export answers 401 and returns no data", async ({ request }) => {
     const response = await request.get(`${APP}/admin/export?range=30d`);

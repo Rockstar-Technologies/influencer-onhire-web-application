@@ -1,0 +1,148 @@
+{
+ "niches": [
+  {
+   "slug": "beauty",
+   "name": "Beauty"
+  },
+  {
+   "slug": "fashion",
+   "name": "Fashion"
+  },
+  {
+   "slug": "lifestyle",
+   "name": "Lifestyle"
+  },
+  {
+   "slug": "sports-fitness",
+   "name": "Sports & Fitness"
+  },
+  {
+   "slug": "fitness",
+   "name": "Fitness"
+  },
+  {
+   "slug": "sports",
+   "name": "Sports"
+  },
+  {
+   "slug": "business",
+   "name": "Business"
+  },
+  {
+   "slug": "food",
+   "name": "Food"
+  },
+  {
+   "slug": "tech",
+   "name": "Tech"
+  },
+  {
+   "slug": "travel",
+   "name": "Travel"
+  },
+  {
+   "slug": "music",
+   "name": "Music"
+  },
+  {
+   "slug": "comedy",
+   "name": "Comedy"
+  }
+ ],
+ "cities": [
+  {
+   "slug": "douala",
+   "name": "Douala"
+  },
+  {
+   "slug": "yaounde",
+   "name": "Yaound\u00e9"
+  },
+  {
+   "slug": "bamenda",
+   "name": "Bamenda"
+  },
+  {
+   "slug": "buea",
+   "name": "Buea"
+  },
+  {
+   "slug": "bafoussam",
+   "name": "Bafoussam"
+  },
+  {
+   "slug": "garoua",
+   "name": "Garoua"
+  },
+  {
+   "slug": "kribi",
+   "name": "Kribi"
+  }
+ ],
+ "interests": [
+  {
+   "slug": "beauty-skincare",
+   "name": "Beauty & skincare"
+  },
+  {
+   "slug": "fashion",
+   "name": "Fashion"
+  },
+  {
+   "slug": "fitness-health",
+   "name": "Fitness & health"
+  },
+  {
+   "slug": "food-travel",
+   "name": "Food & travel"
+  },
+  {
+   "slug": "tech",
+   "name": "Tech"
+  },
+  {
+   "slug": "music-entertainment",
+   "name": "Music & entertainment"
+  },
+  {
+   "slug": "business",
+   "name": "Business"
+  }
+ ],
+ "ageRanges": [
+  {
+   "code": "18-24",
+   "label": "18\u201324"
+  },
+  {
+   "code": "25-34",
+   "label": "25\u201334"
+  },
+  {
+   "code": "35-44",
+   "label": "35\u201344"
+  },
+  {
+   "code": "45-plus",
+   "label": "45+"
+  }
+ ],
+ "engagementLevels": [
+  {
+   "minPct": 3,
+   "label": "3%+"
+  },
+  {
+   "minPct": 5,
+   "label": "5%+"
+  },
+  {
+   "minPct": 7,
+   "label": "7%+"
+  }
+ ],
+ "limits": {
+  "budgetMinXaf": 50000,
+  "budgetMaxXaf": 100000000
+ }
+}

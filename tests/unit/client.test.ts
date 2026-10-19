@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { callApi } from "@/lib/api/client";
-import { ENDPOINTS, isAllowedEndpoint, isSafeApiPath } from "@/lib/api/endpoints";
+import { ENDPOINTS, buildApiPath, buildApiQuery, isAllowedEndpoint, isSafeApiPath, isUuid } from "@/lib/api/endpoints";
 import type { Endpoint } from "@/lib/api/endpoints";
 import { ApiConfigError, ApiError, UpstreamContractError, UpstreamUnavailableError } from "@/lib/api/errors";
 import { z } from "zod";
@@ -9,14 +9,22 @@ import { TEST_CONFIG, TOKEN, apiUser, errorBody, fakeFetch, jsonResponse, sessio
 const deps = (fetchImpl: typeof fetch, config = TEST_CONFIG) => ({ config, fetchImpl, newRequestId: () => "req-test-0001" });
 
 describe("endpoint allowlist", () => {
-  it("lists exactly the allowed operations (auth and the creator application wizard) with fixed paths", () => {
+  it("lists exactly the allowed operations (auth, creator application wizard, brand campaigns) with fixed paths", () => {
     expect(Object.values(ENDPOINTS).map((e) => `${e.method} ${e.path}`).sort()).toEqual([
+      "DELETE /brand/campaigns/:id",
       "GET /auth/me",
+      "GET /brand/campaigns",
+      "GET /brand/campaigns/:id",
+      "GET /brand/campaigns/options",
       "GET /creator/applications/current",
       "GET /creator/applications/options",
+      "PATCH /brand/campaigns/:id",
       "POST /auth/login",
       "POST /auth/logout",
       "POST /auth/register",
+      "POST /brand/campaigns",
+      "POST /brand/campaigns/:id/cancel",
+      "POST /brand/campaigns/:id/submit",
       "POST /creator/applications/current/submit",
       "POST /creator/applications/reapply",
       "PUT /creator/applications/current/audience",
@@ -25,8 +33,13 @@ describe("endpoint allowlist", () => {
     ]);
   });
 
-  it("no allowed operation takes an identifier in its path: the creator always comes from the session", () => {
-    for (const operation of Object.values(ENDPOINTS)) expect(operation.path).not.toMatch(/:|\{|\[/);
+  it("the only variable path part is a UUID `:id`, and only the brand's own campaign routes have one (the owner is never in a path)", () => {
+    for (const operation of Object.values(ENDPOINTS)) {
+      expect(operation.path, operation.name).not.toMatch(/\{|\[|\*/);
+      const variable = operation.path.match(/:[a-z]+/g) ?? [];
+      expect(variable.every((part) => part === ":id")).toBe(true);
+      if (variable.length) expect(operation.path.startsWith("/brand/campaigns/")).toBe(true);
+    }
   });
 
   it("accepts only the frozen table objects, not copies or look-alikes", () => {
@@ -58,6 +71,61 @@ describe("endpoint allowlist", () => {
     const forged: Endpoint<unknown> = { name: "x", method: "GET", path: "/admin/users", auth: "none", schema: z.unknown() };
     await expect(callApi(forged, {}, deps(fetch))).rejects.toBeInstanceOf(ApiConfigError);
     expect(calls).toHaveLength(0);
+  });
+});
+
+describe("path parameters and query strings", () => {
+  const ID = "33333333-3333-4333-8333-333333333333";
+
+  it("fills :id only with a UUID", () => {
+    expect(buildApiPath(ENDPOINTS.campaignGet, { id: ID })).toBe(`/brand/campaigns/${ID}`);
+    expect(buildApiPath(ENDPOINTS.campaignSubmit, { id: ID.toUpperCase() })).toBe(`/brand/campaigns/${ID}/submit`);
+    for (const bad of ["../admin", "abc", "", `${ID}/cancel`, `${ID}?x=1`, `${ID}%2F..`, "00000000-0000-0000-0000-000000000000x", undefined]) {
+      expect(() => buildApiPath(ENDPOINTS.campaignGet, { id: bad as string }), String(bad)).toThrow(ApiConfigError);
+    }
+  });
+
+  it("refuses an identifier for an operation that takes none, and a missing one for an operation that needs it", () => {
+    expect(() => buildApiPath(ENDPOINTS.me, { id: ID })).toThrow(ApiConfigError);
+    expect(buildApiPath(ENDPOINTS.me)).toBe("/auth/me");
+    expect(() => buildApiPath(ENDPOINTS.campaignCancel)).toThrow(ApiConfigError);
+  });
+
+  it("isUuid accepts UUIDs only", () => {
+    expect(isUuid(ID)).toBe(true);
+    expect(isUuid("abc")).toBe(false);
+    expect(isUuid(null)).toBe(false);
+  });
+
+  it("builds a query only from the keys the operation lists", () => {
+    expect(buildApiQuery(ENDPOINTS.campaignList, { status: "draft", limit: 20, cursor: undefined, q: "" })).toBe("?status=draft&limit=20");
+    expect(buildApiQuery(ENDPOINTS.campaignList)).toBe("");
+    expect(() => buildApiQuery(ENDPOINTS.campaignList, { brandId: "other" })).toThrow(ApiConfigError);
+    expect(() => buildApiQuery(ENDPOINTS.me, { status: "draft" })).toThrow(ApiConfigError);
+    expect(() => buildApiQuery(ENDPOINTS.campaignList, { q: "x".repeat(301) })).toThrow(ApiConfigError);
+  });
+
+  it("encodes query values (no injection through a value)", () => {
+    expect(buildApiQuery(ENDPOINTS.campaignList, { q: "a&b=c#d" })).toBe("?q=a%26b%3Dc%23d");
+  });
+
+  it("callApi builds the final URL from the table, the validated id and the allowed query, and returns meta", async () => {
+    const { fetch, calls } = fakeFetch(new Response(JSON.stringify({ data: [], meta: { nextCursor: "abc", limit: 20 } }), { status: 200, headers: { "content-type": "application/json" } }));
+    const result = await callApi(ENDPOINTS.campaignList, { session: TOKEN, query: { status: "open", limit: 20 } }, deps(fetch));
+    expect(calls[0]!.url).toBe("http://api.test/api/v1/brand/campaigns?status=open&limit=20");
+    expect(result.meta).toEqual({ nextCursor: "abc", limit: 20 });
+    const one = fakeFetch(jsonResponse(200, { data: { campaign: { id: "not-a-valid-shape" } } }));
+    await expect(callApi(ENDPOINTS.campaignGet, { session: TOKEN, params: { id: ID } }, deps(one.fetch))).rejects.toBeInstanceOf(UpstreamContractError);
+    expect(one.calls[0]!.url).toBe(`http://api.test/api/v1/brand/campaigns/${ID}`);
+    expect(one.calls[0]!.init.method).toBe("GET");
+  });
+
+  it("uses PATCH and DELETE exactly as the table says, and never calls the API for a bad id", async () => {
+    const { fetch, calls } = fakeFetch(jsonResponse(200, { data: { id: ID, deleted: true } }));
+    await callApi(ENDPOINTS.campaignDelete, { session: TOKEN, params: { id: ID } }, deps(fetch));
+    expect(calls[0]!.init.method).toBe("DELETE");
+    await expect(callApi(ENDPOINTS.campaignUpdate, { session: TOKEN, params: { id: "../x" }, body: {} }, deps(fetch))).rejects.toBeInstanceOf(ApiConfigError);
+    expect(calls).toHaveLength(1);
   });
 });
 

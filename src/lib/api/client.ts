@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { isIP } from "node:net";
 import type { ApiConfig } from "./config";
 import { getApiConfig } from "./config";
-import { isAllowedEndpoint, isSafeApiPath } from "./endpoints";
+import { buildApiPath, buildApiQuery, isAllowedEndpoint, isSafeApiPath } from "./endpoints";
 import type { Endpoint } from "./endpoints";
 import { ApiConfigError, ApiError, UpstreamContractError, UpstreamUnavailableError } from "./errors";
 import { errorBodySchema } from "./schemas";
@@ -12,6 +12,10 @@ import type { UpstreamSessionCookie } from "./session-cookie";
 
 export interface CallOptions {
   body?: unknown;
+  /** The campaign (or other resource) UUID for operations whose path ends in `:id`. */
+  params?: { id?: string };
+  /** Query-string values; only the keys the operation lists are accepted. */
+  query?: Record<string, string | number | undefined>;
   /** The user's session token (from this application's cookie). Sent only to endpoints that accept a session. */
   session?: string | null;
   /** The real client address, already resolved by resolveClientIp. */
@@ -24,6 +28,8 @@ export interface CallResult<TData> {
   /** The session cookie the API set or cleared in this response, if any. */
   sessionCookie: UpstreamSessionCookie | null;
   requestId: string | null;
+  /** The envelope's `meta` (for example the next page cursor), when the API sent one. */
+  meta: Record<string, unknown> | null;
 }
 
 export interface ClientDependencies {
@@ -87,7 +93,7 @@ export async function callApi<TData>(
   const doFetch = dependencies.fetchImpl ?? fetch;
   const requestId = (dependencies.newRequestId ?? randomUUID)();
 
-  const url = new URL(`${config.baseUrl}${endpoint.path}`);
+  const url = new URL(`${config.baseUrl}${buildApiPath(endpoint, options.params)}${buildApiQuery(endpoint, options.query)}`);
   if (url.origin !== new URL(config.baseUrl).origin || !url.pathname.startsWith(new URL(config.baseUrl).pathname)) {
     throw new ApiConfigError("The API URL is invalid");
   }
@@ -142,5 +148,12 @@ export async function callApi<TData>(
   const data = endpoint.schema.safeParse((body as { data: unknown }).data);
   if (!data.success) throw new UpstreamContractError();
 
-  return { data: data.data, status: response.status, sessionCookie, requestId: upstreamRequestId ?? requestId };
+  const meta = (body as { meta?: unknown }).meta;
+  return {
+    data: data.data,
+    status: response.status,
+    sessionCookie,
+    requestId: upstreamRequestId ?? requestId,
+    meta: typeof meta === "object" && meta !== null && !Array.isArray(meta) ? (meta as Record<string, unknown>) : null,
+  };
 }

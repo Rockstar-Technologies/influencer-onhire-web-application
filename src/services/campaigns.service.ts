@@ -1,6 +1,5 @@
 import type {
   Campaign,
-  CampaignDraft,
   CampaignMatchPreview,
   CampaignMatchSummary,
   CampaignOverview,
@@ -9,16 +8,13 @@ import type {
   MatchableInfluencer,
   MatchFilterOptions,
   NewCampaignInput,
-  PostCampaignGuide,
 } from "@/types/campaign";
 import {
   MOCK_CAMPAIGN_OVERVIEW,
   MOCK_CAMPAIGN_PREVIEW,
-  MOCK_CAMPAIGN_DRAFTS,
   MOCK_CAMPAIGNS,
   MOCK_ENGAGEMENT_RATE_OPTIONS,
   MOCK_MATCHABLE_INFLUENCERS,
-  MOCK_POST_CAMPAIGN_GUIDE,
 } from "./mock/campaigns.mock";
 
 export async function getCampaignOverview(): Promise<CampaignOverview> {
@@ -29,11 +25,6 @@ export async function getCampaignOverview(): Promise<CampaignOverview> {
 export async function getCampaignPreview(): Promise<CampaignPreview> {
   // TODO: replace with `return fetch("/api/campaigns/preview").then(r => r.json())`
   return MOCK_CAMPAIGN_PREVIEW;
-}
-
-export async function getPostCampaignGuide(): Promise<PostCampaignGuide> {
-  // TODO: replace with `return fetch("/api/campaigns/guide").then(r => r.json())`
-  return MOCK_POST_CAMPAIGN_GUIDE;
 }
 
 export async function listEngagementRateOptions(): Promise<EngagementRateOption[]> {
@@ -129,60 +120,7 @@ export async function previewCampaignMatches(input: NewCampaignInput): Promise<C
   return { summary, topMatches, broadened };
 }
 
-export async function saveCampaignDraft(input: NewCampaignInput, draftId?: string): Promise<CampaignDraft> {
-  // TODO: replace with `return fetch("/api/campaigns/drafts", { method: "PUT", body: JSON.stringify({ id: draftId, ...input }) }).then(r => r.json())`
-  const draft: CampaignDraft = {
-    ...input,
-    id: draftId ?? `DRF-${Date.now().toString(36).toUpperCase()}`,
-    updatedAt: new Date().toISOString(),
-  };
-  const index = MOCK_CAMPAIGN_DRAFTS.findIndex((item) => item.id === draft.id);
-  if (index >= 0) MOCK_CAMPAIGN_DRAFTS[index] = draft;
-  else MOCK_CAMPAIGN_DRAFTS.push(draft);
-  return draft;
-}
-
-export async function getCampaignDraft(id: string): Promise<CampaignDraft | null> {
-  // TODO: replace with `return fetch(`/api/campaigns/drafts/${id}`).then(r => (r.ok ? r.json() : null))`
-  return MOCK_CAMPAIGN_DRAFTS.find((draft) => draft.id === id) ?? null;
-}
-
-export async function deleteCampaignDraft(id: string): Promise<void> {
-  // TODO: replace with `await fetch(`/api/campaigns/drafts/${id}`, { method: "DELETE" })`
-  const index = MOCK_CAMPAIGN_DRAFTS.findIndex((draft) => draft.id === id);
-  if (index >= 0) MOCK_CAMPAIGN_DRAFTS.splice(index, 1);
-}
-
-export async function createCampaign(input: NewCampaignInput): Promise<Campaign> {
-  // TODO: replace with `return fetch("/api/campaigns", { method: "POST", body: JSON.stringify(input) }).then(r => r.json())`
-  const campaign: Campaign = {
-    ...input,
-    id: `CMP-${Date.now().toString(36).toUpperCase()}`,
-    status: "pending_review",
-    createdAt: new Date().toISOString(),
-    match: matchInfluencers(input),
-  };
-  MOCK_CAMPAIGNS.push(campaign);
-  return campaign;
-}
-
-export async function getCampaignById(id: string): Promise<Campaign | null> {
-  // TODO: replace with `return fetch(`/api/campaigns/${id}`).then(r => (r.ok ? r.json() : null))`
-  return MOCK_CAMPAIGNS.find((campaign) => campaign.id === id) ?? null;
-}
-
 export async function listMyCampaigns(): Promise<Campaign[]> {
   // TODO: replace with `return fetch("/api/brand/campaigns").then(r => r.json())`
   return MOCK_CAMPAIGNS;
-}
-
-export async function publishCampaignDraft(draftId: string): Promise<Campaign> {
-  // TODO: replace with `return fetch(`/api/campaigns/drafts/${draftId}/publish`, { method: "POST" }).then(r => r.json())`
-  const draft = await getCampaignDraft(draftId);
-  if (!draft) throw new Error("Draft not found");
-  const { id, updatedAt, ...input } = draft;
-  void updatedAt;
-  const campaign = await createCampaign(input);
-  await deleteCampaignDraft(id);
-  return campaign;
 }

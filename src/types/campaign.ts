@@ -84,18 +84,7 @@ export interface FaqItem {
   answer: string;
 }
 
-export interface PostCampaignGuide {
-  statusFlow: { status: CampaignStatus; label: string }[];
-  nextStepsNote: string;
-  smartMatching: string[];
-  secureByDesign: string[];
-  faqs: FaqItem[];
-}
 
-export interface CampaignDraft extends NewCampaignInput {
-  id: string;
-  updatedAt: string;
-}
 
 export type MatchStrength = "strong" | "good";
 

@@ -1,11 +1,9 @@
 import type {
   Campaign,
-  CampaignDraft,
   CampaignOverview,
   CampaignPreview,
   EngagementRateOption,
   MatchableInfluencer,
-  PostCampaignGuide,
 } from "@/types/campaign";
 
 export const MOCK_CAMPAIGN_OVERVIEW: CampaignOverview = {
@@ -52,7 +50,6 @@ export const MOCK_CAMPAIGN_PREVIEW: CampaignPreview = {
 
 export const MOCK_CAMPAIGNS: Campaign[] = [];
 
-export const MOCK_CAMPAIGN_DRAFTS: CampaignDraft[] = [];
 
 export const MOCK_ENGAGEMENT_RATE_OPTIONS: EngagementRateOption[] = [
   { value: 0, label: "Any" },
@@ -63,43 +60,6 @@ export const MOCK_ENGAGEMENT_RATE_OPTIONS: EngagementRateOption[] = [
   { value: 8, label: "8%+" },
 ];
 
-export const MOCK_POST_CAMPAIGN_GUIDE: PostCampaignGuide = {
-  statusFlow: [
-    { status: "pending_review", label: "Pending Review" },
-    { status: "accepted", label: "Accepted" },
-    { status: "in_progress", label: "In Progress" },
-  ],
-  nextStepsNote:
-    "Only active influencers with no conflicting brand deals see your campaign. They can accept or decline directly — if declined, we'll suggest other matching influencers automatically.",
-  smartMatching: [
-    "Filters influencers by your niche tags",
-    "Cross-checks their audience against your target age, location & interests",
-    "Ranks matches by engagement rate & past results",
-    "Only notifies influencers who are active and free of conflicting deals",
-  ],
-  secureByDesign: [
-    "Payment held in escrow until delivery is confirmed",
-    "Funds only released after the influencer's payout request",
-    "Leave a rating & review once the campaign is complete",
-  ],
-  faqs: [
-    {
-      question: "What happens after I submit?",
-      answer:
-        "Your campaign moves to Pending Review and is sent to matching influencers. You'll be notified as soon as one accepts.",
-    },
-    {
-      question: "Can I edit my campaign after posting?",
-      answer:
-        "Yes — you can edit the brief until an influencer accepts it. After that, changes need to be agreed with the influencer.",
-    },
-    {
-      question: "What if no influencer accepts?",
-      answer:
-        "We automatically suggest other matching influencers. If nobody accepts, nothing is charged and you can adjust your budget or targeting.",
-    },
-  ],
-};
 
 const NICHES = ["Beauty", "Fashion", "Lifestyle", "Food", "Tech", "Travel", "Music", "Comedy", "Fitness"];
 const FIRST_NAMES = ["Lindiwe", "Amara", "Muriel", "Brenda", "Kevin", "Sandra", "Joel", "Grace", "Nadia", "Paul", "Aïcha", "Boris", "Carine", "Estelle", "Franck", "Gaëlle", "Hervé"];

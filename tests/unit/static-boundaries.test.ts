@@ -221,3 +221,37 @@ describe("the creator application wizard is no longer backed by mock services", 
     }
   });
 });
+
+describe("brand campaigns are no longer backed by mock services", () => {
+  const CAMPAIGN_FILES = FILES.filter((f) => f.rel.startsWith("src/features/brand-campaigns/") || f.rel.startsWith("src/features/brand/campaigns/"));
+
+  it("the legacy mock campaign flows and services are gone", () => {
+    for (const gone of ["src/features/public/direct-campaign", "src/features/public/post-campaign", "src/features/public/campaign-preview", "src/features/public/campaign-posted", "src/services/direct-campaigns.service.ts", "src/services/mock/direct-campaigns.mock.ts", "src/types/direct-campaign.ts"]) {
+      expect(FILES.some((f) => f.rel === gone || f.rel.startsWith(`${gone}/`)), gone).toBe(false);
+    }
+  });
+
+  it("campaign code imports no mock or service module", () => {
+    expect(CAMPAIGN_FILES.length).toBeGreaterThan(5);
+    for (const f of CAMPAIGN_FILES) expect(importsOf(f.text).filter((i) => /\/services\/|\/mock\//.test(i)), f.rel).toEqual([]);
+  });
+
+  it("campaign browser code never calls the API itself; only Server Actions do", () => {
+    for (const f of CAMPAIGN_FILES.filter((file) => isClientComponent(file.text))) {
+      expect(f.text, f.rel).not.toMatch(/callApi|callWithSession|from "@\/lib\/api\/(?:client|config)"|\bfetch\(/);
+    }
+  });
+
+  it("every campaign Server Action checks the session and role first, and accepts no owner, status or reviewer field", () => {
+    const actions = FILES.find((f) => f.rel === "src/features/brand-campaigns/actions.ts")!;
+    expect(actions.text).toContain('const BRAND_ONLY = { role: "brand" }');
+    expect(actions.text).toContain("authorizeAction(BRAND_ONLY");
+    for (const name of ["saveCampaignAction", "transitionCampaignAction"]) {
+      const body = actions.text.slice(actions.text.indexOf(`export async function ${name}`));
+      expect(body.indexOf("await gate()"), name).toBeGreaterThan(-1);
+      expect(body.indexOf("await gate()"), name).toBeLessThan(body.indexOf("callWithSession") === -1 ? Infinity : body.indexOf("callWithSession"));
+    }
+    const schemas = FILES.find((f) => f.rel === "src/features/brand-campaigns/schemas.ts")!;
+    expect(stripComments(schemas.text)).not.toMatch(/brandId|ownerId|userId|reviewedBy|reviewNote|status\s*:/);
+  });
+});

@@ -1,15 +1,8 @@
-import type { Metadata } from "next";
-import { CampaignPostedPage } from "@/features/public/campaign-posted/campaign-posted-page";
+import { redirect } from "next/navigation";
+import { isUuid } from "@/lib/api/endpoints";
 
-export const metadata: Metadata = {
-  title: "Campaign Posted | Influencer On Hire",
-};
-
-export default async function Page({
-  searchParams,
-}: {
-  searchParams: Promise<{ id?: string }>;
-}) {
+/** Compatibility route for old "campaign posted" links: the campaign's own page now shows its real status. */
+export default async function Page({ searchParams }: { searchParams: Promise<{ id?: string | string[] }> }) {
   const { id } = await searchParams;
-  return <CampaignPostedPage campaignId={id} />;
+  redirect(isUuid(id) ? `/brand/campaigns/${id}?submitted=1` : "/brand/campaigns");
 }
