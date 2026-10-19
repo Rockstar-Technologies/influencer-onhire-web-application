@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { requireBrand } from "@/lib/auth/session";
 import { PostCampaignPage } from "@/features/public/direct-campaign/post-campaign-page";
 
 export const metadata: Metadata = {
@@ -6,6 +7,7 @@ export const metadata: Metadata = {
   description: "Describe your campaign, set your budget and get matched with verified influencers across Cameroon.",
 };
 
-export default function Page() {
+export default async function Page() {
+  await requireBrand("/post-campaign");
   return <PostCampaignPage />;
 }

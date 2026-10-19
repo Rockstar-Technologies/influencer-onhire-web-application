@@ -103,7 +103,7 @@ export function EarningsDashboard({
     await refresh();
     setWithdrawKey((key) => key + 1);
     setHighlight(withdrawal.id);
-    setToast(`${formatFcfa(withdrawal.amount)} is on its way to your mobile money account.`);
+    setToast(`${formatFcfa(withdrawal.amount)} withdrawal request was received and is subject to review.`);
   }
 
   return (

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { authorizeAction } from "@/lib/auth/action-access";
 import { createSupportTicket } from "@/services/support.service";
 import type {
   NewTicketField,
@@ -13,8 +14,9 @@ const PRIORITIES: TicketPriority[] = ["urgent", "normal", "low"];
 const ROLES: TicketRequesterRole[] = ["influencer", "brand"];
 
 // Server Actions are reachable by direct POST, so every value is validated here.
-// TODO: once auth exists, reject the request unless the caller is a signed-in admin.
+// The caller must be a signed-in administrator who manages tickets.
 export async function createTicketAction(_previous: NewTicketFormState, formData: FormData): Promise<NewTicketFormState> {
+  const access = await authorizeAction({ role: "admin", permission: "tickets.manage" });
   const read = (field: NewTicketField) => {
     const value = formData.get(field);
     return typeof value === "string" ? value.trim() : "";
@@ -26,6 +28,8 @@ export async function createTicketAction(_previous: NewTicketFormState, formData
     fromRole: read("fromRole"),
     priority: read("priority"),
   };
+
+  if (!access.ok) return { status: "error", values, errors: { subject: access.message } };
 
   const errors: Partial<Record<NewTicketField, string>> = {};
   if (values.subject.length < 5 || values.subject.length > 120) errors.subject = "Enter a subject between 5 and 120 characters.";

@@ -242,8 +242,8 @@ export async function requestWithdrawal(input: {
 
   await sendUserMessage(
     [input.creatorId],
-    "Withdrawal on its way",
-    `${input.amount.toLocaleString("en-US")} CFA is being sent to your ${input.method} number ending ${input.phone.slice(-3)}. It usually arrives within 24 hours.`,
+    "Withdrawal request received",
+    `${input.amount.toLocaleString("en-US")} CFA to your ${input.method} number ending ${input.phone.slice(-3)} was received and is subject to review. Any applicable fees and estimated processing times will be shown when confirmed.`,
   );
   return withdrawal;
 }

@@ -18,7 +18,7 @@ export function WalletPanel({ wallet, withdrawals, minimum }: { wallet: CreatorW
           </h2>
           <p className="mt-2 font-display text-3xl font-extrabold text-heading tabular-nums">{formatPrice(wallet.available)}</p>
           <p className="mt-1 text-sm text-muted">
-            {wallet.processing > 0 && <>{formatPrice(wallet.processing)} on its way · </>}
+            {wallet.processing > 0 && <>{formatPrice(wallet.processing)} pending review · </>}
             {formatPrice(wallet.withdrawn)} withdrawn so far
           </p>
         </div>

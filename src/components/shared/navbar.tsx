@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Button } from "./button";
 import { NAV_LINKS } from "@/constants/design-tokens";
 import { cn } from "@/lib/utils";
+import { signOutAction } from "@/features/auth/actions";
 
 function MenuIcon() {
   return (
@@ -74,7 +75,24 @@ function PendingDot() {
   );
 }
 
-export function Navbar() {
+/** Who is signed in, as resolved on the server from the API session. Null when nobody is. */
+export interface NavbarAccount {
+  name: string;
+  homeHref: string;
+  homeLabel: string;
+}
+
+function SignOutButton({ className }: { className?: string }) {
+  return (
+    <form action={signOutAction}>
+      <button type="submit" className={cn("inline-flex w-full items-center justify-center rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-heading transition-colors hover:bg-surface-alt", className)}>
+        Sign out
+      </button>
+    </form>
+  );
+}
+
+export function Navbar({ account = null }: { account?: NavbarAccount | null }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
@@ -106,24 +124,35 @@ export function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
-          <Button
-            href="/login"
-            variant="outline"
-            aria-current={pathname === "/login" ? "page" : undefined}
-            className={cn(
-              "hover:border-primary-border hover:text-primary",
-              pathname === "/login" && "border-primary text-primary"
-            )}
-          >
-            Login
-          </Button>
-          <Button
-            href="/for-creators/apply/profile"
-            variant="primary"
-            className="transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/30"
-          >
-            Become a Creator
-          </Button>
+          {account ? (
+            <>
+              <Button href={account.homeHref} variant="primary">
+                {account.homeLabel}
+              </Button>
+              <SignOutButton />
+            </>
+          ) : (
+            <>
+              <Button
+                href="/sign-in"
+                variant="outline"
+                aria-current={pathname === "/sign-in" ? "page" : undefined}
+                className={cn(
+                  "hover:border-primary-border hover:text-primary",
+                  pathname === "/sign-in" && "border-primary text-primary"
+                )}
+              >
+                Login
+              </Button>
+              <Button
+                href="/for-creators/apply/profile"
+                variant="primary"
+                className="transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/30"
+              >
+                Become a Creator
+              </Button>
+            </>
+          )}
         </div>
 
         <button
@@ -162,12 +191,23 @@ export function Navbar() {
             })}
           </nav>
           <div className="mt-4 flex flex-col gap-3">
-            <Button href="/login" variant="outline" onClick={() => setOpen(false)}>
-              Login
-            </Button>
-            <Button href="/for-creators/apply/profile" variant="primary" onClick={() => setOpen(false)}>
-              Become a Creator
-            </Button>
+            {account ? (
+              <>
+                <Button href={account.homeHref} variant="primary" onClick={() => setOpen(false)}>
+                  {account.homeLabel}
+                </Button>
+                <SignOutButton />
+              </>
+            ) : (
+              <>
+                <Button href="/sign-in" variant="outline" onClick={() => setOpen(false)}>
+                  Login
+                </Button>
+                <Button href="/for-creators/apply/profile" variant="primary" onClick={() => setOpen(false)}>
+                  Become a Creator
+                </Button>
+              </>
+            )}
           </div>
         </div>
       )}

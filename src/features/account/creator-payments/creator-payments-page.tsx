@@ -2,11 +2,11 @@ import { FiCheckCircle, FiClock, FiLock, FiTrendingUp } from "react-icons/fi";
 import { EscrowSteps } from "@/components/shared/escrow-steps";
 import { StatCardGrid, type StatCard } from "@/components/shared/stat-cards";
 import { getCreatorWallet, listCreatorPayments, listWithdrawals, MIN_WITHDRAWAL, summarizeCreatorPayments } from "@/services/payments.service";
-import type { PlatformUser } from "@/types/user-management";
+import type { ApiUser } from "@/lib/api/schemas";
 import { CreatorPaymentTable } from "./sections/creator-payment-table";
 import { WalletPanel } from "./sections/wallet-panel";
 
-export async function CreatorPaymentsPage({ creator }: { creator: PlatformUser }) {
+export async function CreatorPaymentsPage({ creator }: { creator: ApiUser }) {
   const [payments, wallet, withdrawals] = await Promise.all([listCreatorPayments(creator.id), getCreatorWallet(creator.id), listWithdrawals(creator.id)]);
   const summary = summarizeCreatorPayments(payments);
   const amount = (value: number) => value.toLocaleString("en-US");

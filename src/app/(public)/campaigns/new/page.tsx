@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { requireBrand } from "@/lib/auth/session";
 import { PostCampaignPage } from "@/features/public/post-campaign/post-campaign-page";
 
 export const metadata: Metadata = {
@@ -10,6 +11,7 @@ export default async function Page({
 }: {
   searchParams: Promise<{ draft?: string }>;
 }) {
+  await requireBrand("/campaigns/new");
   const { draft } = await searchParams;
   return <PostCampaignPage draftId={draft} />;
 }

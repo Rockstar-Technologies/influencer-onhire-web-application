@@ -1,13 +1,17 @@
 "use server";
 
+import { authorizeAction } from "@/lib/auth/action-access";
 import { createCampaign, estimateCampaignReach, getCampaignFormOptions } from "@/services/direct-campaigns.service";
 import type { CampaignFormValues, CampaignSubmitResult, ReachCriteria } from "@/types/direct-campaign";
 import { MAX_IMAGES, todayISO, validateCampaign } from "./campaign-form-rules";
 
 // Server Actions are reachable by direct POST, so everything is re-validated here.
-// TODO: once accounts exist, require a signed-in brand user before creating the campaign.
+// Only a signed-in brand may submit a campaign (checked first; the API enforces it again once campaigns are connected, milestone I-4).
 // TODO: reference images are only counted for now; upload them to storage once it exists.
 export async function submitCampaign(formData: FormData): Promise<CampaignSubmitResult> {
+  const access = await authorizeAction({ role: "brand" });
+  if (!access.ok) return { status: "error", errors: {}, message: access.message };
+
   const read = (field: string) => {
     const value = formData.get(field);
     return typeof value === "string" ? value.trim() : "";
@@ -67,6 +71,7 @@ export async function submitCampaign(formData: FormData): Promise<CampaignSubmit
 
 // Powers the live "influencers you'd reach" estimate next to the submit button.
 export async function estimateReach(criteria: ReachCriteria): Promise<number> {
+  if (!(await authorizeAction({ role: "brand" })).ok) return 0;
   return estimateCampaignReach({
     niche: typeof criteria.niche === "string" ? criteria.niche : "",
     locations: Array.isArray(criteria.locations) ? criteria.locations.filter((value) => typeof value === "string") : [],

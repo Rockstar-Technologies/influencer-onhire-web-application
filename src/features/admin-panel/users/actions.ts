@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { authorizeAction } from "@/lib/auth/action-access";
 import {
   applyUserAction,
   dismissSecurityAlert,
@@ -19,7 +20,7 @@ import {
 } from "@/types/user-management";
 
 // Server Actions are reachable by direct POST, so every argument is validated here.
-// TODO: once auth exists, reject every action unless the caller is a signed-in admin with the right role.
+// Every action first checks the signed-in administrator's permission (the same codes the API enforces).
 
 const BULK_ACTIONS: BulkAction[] = ["approve", "reject", "suspend", "reactivate"];
 const MAX_BATCH = 200;
@@ -39,6 +40,8 @@ function refresh() {
 }
 
 export async function userStatusAction(ids: string[], action: BulkAction): Promise<ActionResult> {
+  const access = await authorizeAction({ role: "admin", permission: action === "approve" ? "applications.review" : "users.moderate" });
+  if (!access.ok) return { ok: false, message: access.message };
   if (!validIds(ids) || !BULK_ACTIONS.includes(action)) return { ok: false, message: "Invalid request." };
 
   const changed = await applyUserAction(ids, action);
@@ -53,6 +56,8 @@ export async function userStatusAction(ids: string[], action: BulkAction): Promi
 }
 
 export async function messageUsersAction(ids: string[], subject: string, body: string): Promise<ActionResult> {
+  const access = await authorizeAction({ role: "admin", permission: "users.moderate" });
+  if (!access.ok) return { ok: false, message: access.message };
   if (!validIds(ids) || typeof subject !== "string" || typeof body !== "string") return { ok: false, message: "Invalid request." };
   const cleanSubject = subject.trim();
   const cleanBody = body.trim();
@@ -65,6 +70,8 @@ export async function messageUsersAction(ids: string[], subject: string, body: s
 }
 
 export async function toggleFlagAction(id: string, flagged: boolean): Promise<ActionResult> {
+  const access = await authorizeAction({ role: "admin", permission: "users.moderate" });
+  if (!access.ok) return { ok: false, message: access.message };
   if (typeof id !== "string" || typeof flagged !== "boolean") return { ok: false, message: "Invalid request." };
   const user = await setUserFlagged(id, flagged);
   if (!user) return { ok: false, message: "User not found." };
@@ -73,6 +80,8 @@ export async function toggleFlagAction(id: string, flagged: boolean): Promise<Ac
 }
 
 export async function dismissAlertAction(id: string): Promise<ActionResult> {
+  const access = await authorizeAction({ role: "admin", permission: "alerts.manage" });
+  if (!access.ok) return { ok: false, message: access.message };
   if (typeof id !== "string") return { ok: false, message: "Invalid request." };
   const dismissed = await dismissSecurityAlert(id);
   refresh();
@@ -80,6 +89,8 @@ export async function dismissAlertAction(id: string): Promise<ActionResult> {
 }
 
 export async function resolveFlagAction(id: string, decision: "remove" | "dismiss"): Promise<ActionResult> {
+  const access = await authorizeAction({ role: "admin", permission: "moderation.manage" });
+  if (!access.ok) return { ok: false, message: access.message };
   if (typeof id !== "string" || (decision !== "remove" && decision !== "dismiss")) return { ok: false, message: "Invalid request." };
   const flag = await resolveModerationFlag(id, decision);
   refresh();
@@ -90,6 +101,8 @@ export async function resolveFlagAction(id: string, decision: "remove" | "dismis
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function inviteTeamMemberAction(_previous: InviteFormState, formData: FormData): Promise<InviteFormState> {
+  const access = await authorizeAction({ role: "admin", permission: "team.manage" });
+  if (!access.ok) return { status: "error", values: { name: "", email: "", role: "" }, errors: { email: access.message } };
   const read = (field: InviteField) => {
     const value = formData.get(field);
     return typeof value === "string" ? value.trim() : "";

@@ -1,5 +1,6 @@
 "use server";
 
+import { authorizeAction } from "@/lib/auth/action-access";
 import { createHireRequest, getCampaignDurations } from "@/services/hire-requests.service";
 import { getInfluencerProfile } from "@/services/influencers.service";
 import type { HireFormField, HireFormState, HireFormValues } from "@/types/hire-request";
@@ -7,7 +8,7 @@ import { HANDLE_PATTERN, PROMOTION_MAX } from "./hire-form-rules";
 
 // Server Actions are reachable by direct POST, so every value is re-validated
 // here against the influencer's real payment methods and durations.
-// TODO: once accounts exist, require a signed-in brand user before creating the request.
+// Only a signed-in brand may send a hire request (checked first; the API enforces it again once hiring is connected, milestone I-5).
 export async function submitHireRequest(
   username: string,
   _previous: HireFormState,
@@ -25,6 +26,9 @@ export async function submitHireRequest(
     paymentMethod: read("paymentMethod"),
     duration: read("duration"),
   };
+
+  const access = await authorizeAction({ role: "brand" });
+  if (!access.ok) return { status: "error", values, errors: {}, message: access.message };
 
   const profile = await getInfluencerProfile(username);
   if (!profile) {

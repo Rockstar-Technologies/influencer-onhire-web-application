@@ -3,11 +3,11 @@ import { EscrowSteps } from "@/components/shared/escrow-steps";
 import { StatCardGrid, type StatCard } from "@/components/shared/stat-cards";
 import { listBrandPayments, summarizeBrandPayments } from "@/services/payments.service";
 import { listActiveAccounts } from "@/services/user-management.service";
-import type { PlatformUser } from "@/types/user-management";
+import type { ApiUser } from "@/lib/api/schemas";
 import { BrandPaymentTable } from "./sections/brand-payment-table";
 import { FundCampaignDialog } from "./sections/fund-campaign-dialog";
 
-export async function BrandPaymentsPage({ brand }: { brand: PlatformUser }) {
+export async function BrandPaymentsPage({ brand }: { brand: ApiUser }) {
   const [payments, creators] = await Promise.all([listBrandPayments(brand.id), listActiveAccounts("influencer")]);
   const summary = summarizeBrandPayments(payments);
   const amount = (value: number) => value.toLocaleString("en-US");

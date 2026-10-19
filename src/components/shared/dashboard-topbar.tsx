@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { DashboardAccount } from "@/types/account";
+import { signOutAction } from "@/features/auth/actions";
 
 function SearchIcon() {
   return (
@@ -87,6 +88,11 @@ export function DashboardTopbar({
           <span className="block text-sm font-semibold text-heading">{account.name}</span>
           <span className="block text-xs text-muted">{account.accountLabel}</span>
         </span>
+        <form action={signOutAction}>
+          <button type="submit" className="rounded-lg border border-border px-3 py-1.5 text-sm font-semibold text-heading hover:bg-surface-alt">
+            Sign out
+          </button>
+        </form>
       </div>
     </header>
   );

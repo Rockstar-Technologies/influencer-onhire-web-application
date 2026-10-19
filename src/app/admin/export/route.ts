@@ -1,4 +1,6 @@
 import { parseRange, rangeLabel } from "@/features/admin-panel/dashboard/dashboard-range";
+import { decideAccess } from "@/lib/auth/access";
+import { getSession } from "@/lib/auth/session";
 import { getDashboardKpis, getRevenueSeries, listRecentCampaigns } from "@/services/dashboard.service";
 
 // Quotes every cell and neutralises leading =, +, - and @ so spreadsheet apps can't run it as a formula.
@@ -10,8 +12,19 @@ function cell(value: string | number) {
 
 const row = (...values: (string | number)[]) => values.map(cell).join(",");
 
-// TODO: once auth exists, return 401 unless the caller is a signed-in admin.
+const NO_STORE = { "Cache-Control": "no-store" } as const;
+
+// Administrators holding dashboard.export only (the API's permission code). Read-only: this handler never changes state, and any other
+// method is refused. 401 without a valid session, 403 for a signed-in user without the permission.
 export async function GET(request: Request) {
+  const session = await getSession();
+  const decision = decideAccess(session, { role: "admin", permission: "dashboard.export" });
+  if (!decision.allowed) {
+    return new Response(JSON.stringify({ error: decision.reason === "anonymous" ? "unauthorized" : "forbidden" }), {
+      status: decision.reason === "anonymous" ? 401 : 403,
+      headers: { "Content-Type": "application/json", ...NO_STORE },
+    });
+  }
   const range = parseRange(new URL(request.url).searchParams.get("range") ?? undefined);
   const [kpis, revenue, campaigns] = await Promise.all([getDashboardKpis(range), getRevenueSeries(range), listRecentCampaigns()]);
 
@@ -40,6 +53,13 @@ export async function GET(request: Request) {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
       "Content-Disposition": `attachment; filename="dashboard-${range}-${date}.csv"`,
+      ...NO_STORE,
     },
   });
 }
+
+const refuse = () => new Response(null, { status: 405, headers: { Allow: "GET", ...NO_STORE } });
+export const POST = refuse;
+export const PUT = refuse;
+export const PATCH = refuse;
+export const DELETE = refuse;

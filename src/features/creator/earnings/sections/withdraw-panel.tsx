@@ -165,10 +165,10 @@ export function WithdrawPanel({
             disabled={submitting}
             className="h-11 w-full rounded-lg bg-primary text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {submitting ? "Sending to mobile money…" : "Withdraw Funds"}
+            {submitting ? "Submitting request…" : "Withdraw Funds"}
           </button>
           <p className="text-center text-xs text-muted">
-            Withdrawals are usually credited to your mobile money account within 24 hours.
+            Withdrawal requests are subject to review. Any applicable fees and estimated processing times will be shown when confirmed.
           </p>
         </form>
       )}

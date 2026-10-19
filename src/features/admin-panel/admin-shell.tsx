@@ -2,12 +2,11 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { inter, jakarta } from "@/lib/fonts";
 import { initials } from "@/lib/utils";
-import { getCurrentAdmin } from "@/services/support.service";
+import { signOutAction } from "@/features/auth/actions";
+import type { ApiUser } from "@/lib/api/schemas";
 import { AdminMobileNav, AdminSearch, AdminSidebar } from "./admin-nav";
 
-export async function AdminShell({ children }: { children: ReactNode }) {
-  const admin = await getCurrentAdmin();
-
+export function AdminShell({ admin, children }: { admin: ApiUser; children: ReactNode }) {
   return (
     <div className={`${inter.variable} ${jakarta.variable} flex flex-1 flex-col bg-surface-alt font-body text-body`}>
       <header className="sticky top-0 z-20 border-b border-border bg-surface">
@@ -26,12 +25,17 @@ export async function AdminShell({ children }: { children: ReactNode }) {
 
           <div className="ml-auto flex shrink-0 items-center gap-3 sm:ml-0">
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-info-light text-xs font-bold text-navy">
-              {initials(admin.name)}
+              {initials(admin.fullName)}
             </span>
             <span className="hidden leading-tight sm:block">
-              <span className="block text-sm font-semibold text-heading">{admin.name}</span>
-              <span className="block text-xs text-muted">{admin.role}</span>
+              <span className="block text-sm font-semibold text-heading">{admin.fullName}</span>
+              <span className="block text-xs text-muted">Administrator</span>
             </span>
+            <form action={signOutAction}>
+              <button type="submit" className="rounded-lg border border-border px-3 py-1.5 text-sm font-semibold text-heading hover:bg-surface-alt">
+                Sign out
+              </button>
+            </form>
           </div>
         </div>
         <AdminMobileNav />

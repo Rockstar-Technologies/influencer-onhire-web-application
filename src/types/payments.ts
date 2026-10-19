@@ -97,7 +97,7 @@ export type FundField = "creatorId" | "campaign" | "amount" | "method" | "phone"
 
 export type FundFormState =
   | { status: "idle" }
-  | { status: "error"; values: Record<FundField, string>; errors: Partial<Record<FundField, string>> }
+  | { status: "error"; values: Record<FundField, string>; errors: Partial<Record<FundField, string>>; message?: string }
   | { status: "success"; invoice: string; creatorName: string; amount: number };
 
 export type CashoutField = "summary" | "links";
@@ -111,7 +111,7 @@ export type WithdrawField = "amount" | "method" | "phone";
 
 export type WithdrawFormState =
   | { status: "idle" }
-  | { status: "error"; values: Record<WithdrawField, string>; errors: Partial<Record<WithdrawField, string>> }
+  | { status: "error"; values: Record<WithdrawField, string>; errors: Partial<Record<WithdrawField, string>>; message?: string }
   | { status: "success"; withdrawal: Withdrawal };
 
 export interface PaymentSplit {

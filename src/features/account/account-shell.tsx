@@ -3,11 +3,11 @@ import type { ReactNode } from "react";
 import { FiLogOut } from "react-icons/fi";
 import { inter, jakarta } from "@/lib/fonts";
 import { initials } from "@/lib/utils";
-import type { PlatformUser } from "@/types/user-management";
-import { signOutAction } from "./actions";
+import type { ApiUser } from "@/lib/api/schemas";
+import { signOutAction } from "@/features/auth/actions";
 
-export function AccountShell({ account, children }: { account: PlatformUser; children: ReactNode }) {
-  const isBrand = account.type === "brand";
+export function AccountShell({ account, children }: { account: ApiUser; children: ReactNode }) {
+  const isBrand = account.role === "brand";
   const area = isBrand ? "/brand" : "/creator";
 
   return (
@@ -34,9 +34,9 @@ export function AccountShell({ account, children }: { account: PlatformUser; chi
           </nav>
 
           <div className="ml-auto flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-info-light text-xs font-bold text-navy">{initials(account.name)}</span>
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-info-light text-xs font-bold text-navy">{initials(account.fullName)}</span>
             <span className="hidden leading-tight sm:block">
-              <span className="block text-sm font-semibold text-heading">{account.name}</span>
+              <span className="block text-sm font-semibold text-heading">{account.fullName}</span>
               <span className="block text-xs text-muted">{isBrand ? "Brand account" : "Creator account"}</span>
             </span>
             <form action={signOutAction}>

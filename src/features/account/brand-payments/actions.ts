@@ -1,17 +1,16 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-import { fundCampaign } from "@/services/payments.service";
-import { requireAccount } from "@/services/session.service";
+import { authorizeAction, PAYMENTS_NOT_CONNECTED } from "@/lib/auth/action-access";
 import type { FundField, FundFormState, PaymentMethod } from "@/types/payments";
 
 const METHODS: PaymentMethod[] = ["MTN MoMo", "Orange Money"];
 const MIN_AMOUNT = 10_000;
 const MAX_AMOUNT = 50_000_000;
 
-// The brand is always taken from the session, never from the form, so one brand can't fund as another.
+// The brand is always the signed-in session user, never a form value. Funding is not connected to the live payment service yet (milestone I-7),
+// so after validation this refuses instead of showing a payment that does not exist.
 export async function fundCampaignAction(_previous: FundFormState, formData: FormData): Promise<FundFormState> {
-  const brand = await requireAccount("brand");
+  const access = await authorizeAction({ role: "brand" });
 
   const read = (field: FundField) => {
     const value = formData.get(field);
@@ -28,18 +27,8 @@ export async function fundCampaignAction(_previous: FundFormState, formData: For
     errors.amount = `Enter an amount between ${MIN_AMOUNT.toLocaleString("en-US")} and ${MAX_AMOUNT.toLocaleString("en-US")} CFA.`;
   if (!METHODS.includes(values.method as PaymentMethod)) errors.method = "Choose MTN MoMo or Orange Money.";
   if (!/^6\d{8}$/.test(phone)) errors.phone = "Enter the 9-digit number you're paying from, e.g. 677 123 456.";
+  if (!access.ok) return { status: "error", values, errors: {}, message: access.message };
   if (Object.keys(errors).length > 0) return { status: "error", values, errors };
 
-  const payment = await fundCampaign({
-    brandId: brand.id,
-    creatorId: values.creatorId,
-    campaign: values.campaign,
-    amount,
-    method: values.method as PaymentMethod,
-  });
-  if (!payment) return { status: "error", values, errors: { creatorId: "That creator can't receive payments right now. Choose another." } };
-
-  revalidatePath("/brand/payments");
-  revalidatePath("/admin", "layout");
-  return { status: "success", invoice: payment.invoice, creatorName: payment.creator.name, amount: payment.gross };
+  return { status: "error", values, errors: {}, message: PAYMENTS_NOT_CONNECTED };
 }

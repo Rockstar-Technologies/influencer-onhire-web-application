@@ -119,7 +119,13 @@ export function WithdrawDialog({ available, minimum }: { available: number; mini
             <FieldError id={`${prefix}-phone-error`} message={errors.phone} />
           </div>
 
-          <p className="text-xs text-muted">Withdrawals are free and usually arrive within 24 hours.</p>
+          <p className="text-xs text-muted">Withdrawal requests are subject to review. Any applicable fees and estimated processing times will be shown when confirmed.</p>
+
+          {state.status === "error" && state.message && (
+            <p role="alert" className="rounded-lg bg-danger-light px-3 py-2 text-sm font-medium text-danger-strong">
+              {state.message}
+            </p>
+          )}
 
           <div className="flex justify-end gap-3 border-t border-border pt-5">
             <button type="button" onClick={() => dialogRef.current?.close()} className="rounded-lg border border-border px-4 py-2.5 text-sm font-semibold text-heading hover:bg-surface-alt">
