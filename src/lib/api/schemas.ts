@@ -264,3 +264,54 @@ export const notificationListSchema = z.array(notificationViewSchema);
 export const unreadCountSchema = z.object({ unread: z.number().int().nonnegative() });
 export const markReadResultSchema = z.object({ notification: notificationViewSchema });
 export const markAllReadResultSchema = z.object({ updated: z.number().int().nonnegative(), unread: z.number().int().nonnegative() });
+
+// ---- escrow funding and brand payments (verified against the running API, backend docs/PAYMENTS_FUNDING.md) ---------------------------------
+/** `expired` is reported when an accepted offer lapsed unfunded. A status this app does not know is a contract error, never shown as paid. */
+export const FUNDING_STATUS = ["not_started", "awaiting_confirmation", "indeterminate", "failed", "under_review", "funded", "expired"] as const;
+export type FundingStatus = (typeof FUNDING_STATUS)[number];
+
+export const fundingViewSchema = z.object({
+  offerId: z.uuid(),
+  /** The amount the brand pays: exactly the offer's price, set by the API. 100% goes into escrow. */
+  amountXaf: z.number().int(),
+  deadline: z.string().nullable(),
+  status: z.enum(FUNDING_STATUS),
+  canStart: z.boolean(),
+  /** True when the money came from the fake provider (development only): no real money moved. */
+  simulated: z.boolean(),
+  payment: z.object({ id: z.uuid(), reference: z.string(), status: z.string() }).nullable(),
+  attempts: z.array(
+    z.object({
+      id: z.uuid(),
+      status: z.string(),
+      confirmation: z.enum(["awaiting_confirmation", "indeterminate", "failed", "succeeded"]),
+      failure: z.object({ category: z.string() }).nullable(),
+      startedAt: z.string(),
+      completedAt: z.string().nullable(),
+      simulated: z.boolean(),
+    }),
+  ),
+});
+export type FundingView = z.infer<typeof fundingViewSchema>;
+export const fundingEnvelopeSchema = z.object({ funding: fundingViewSchema });
+export const fundResultSchema = z.object({ funding: fundingViewSchema, replayed: z.boolean() });
+
+/** One of the brand's payments. A brand never sees the platform fee or the creator's net. */
+export const brandPaymentSchema = z.object({
+  id: z.uuid(),
+  reference: z.string(),
+  status: z.string(),
+  amountXaf: z.number().int(),
+  fundedAt: z.string(),
+  simulated: z.boolean(),
+  requestedAt: z.string().nullable(),
+  releasedAt: z.string().nullable(),
+  engagement: z.object({
+    offerId: z.uuid(),
+    origin: z.string(),
+    campaign: z.object({ id: z.uuid(), reference: z.string(), title: z.string() }).nullable(),
+  }),
+  creator: z.object({ username: z.string(), displayName: z.string() }),
+});
+export type BrandPayment = z.infer<typeof brandPaymentSchema>;
+export const paymentListSchema = z.array(brandPaymentSchema);

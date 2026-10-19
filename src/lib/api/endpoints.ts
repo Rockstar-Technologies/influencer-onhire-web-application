@@ -8,6 +8,8 @@ import {
   campaignListSchema,
   campaignOptionsSchema,
   declineReasonsSchema,
+  fundResultSchema,
+  fundingEnvelopeSchema,
   emptyDataSchema,
   hireCreatorSchema,
   markAllReadResultSchema,
@@ -16,6 +18,7 @@ import {
   meDataSchema,
   offerEnvelopeSchema,
   offerListSchema,
+  paymentListSchema,
   unreadCountSchema,
   reapplyResultSchema,
   submitResultSchema,
@@ -39,6 +42,8 @@ export interface Endpoint<TData> {
   readonly path: string;
   /** The only query-string keys this operation may send (list filters and paging). Anything else is refused. */
   readonly query?: readonly string[];
+  /** True for operations that REQUIRE an `Idempotency-Key` (money-moving requests): the client sends it, in this header only, and refuses a call without a valid one. */
+  readonly idempotent?: boolean;
   readonly auth: "none" | "session";
   readonly schema: ZodType<TData>;
 }
@@ -90,6 +95,11 @@ export const ENDPOINTS = {
   notificationRead: endpoint({ name: "notificationRead", method: "POST", path: "/notifications/:id/read", auth: "session", schema: markReadResultSchema }),
   notificationsReadAll: endpoint({ name: "notificationsReadAll", method: "POST", path: "/notifications/read-all", auth: "session", schema: markAllReadResultSchema }),
 
+  // Escrow funding of an accepted offer (backend docs/PAYMENTS_FUNDING.md). The amount is always the offer's price, read by the API: it is never sent.
+  brandFund: endpoint({ name: "brandFund", method: "POST", path: "/brand/offers/:id/fund", auth: "session", idempotent: true, schema: fundResultSchema }),
+  brandFunding: endpoint({ name: "brandFunding", method: "GET", path: "/brand/offers/:id/funding", auth: "session", schema: fundingEnvelopeSchema }),
+  brandPayments: endpoint({ name: "brandPayments", method: "GET", path: "/brand/payments", query: ["status", "cursor", "limit"], auth: "session", schema: paymentListSchema }),
+
   applicationReapply: endpoint({ name: "applicationReapply", method: "POST", path: "/creator/applications/reapply", auth: "session", schema: reapplyResultSchema }),
 } as const;
 
@@ -107,6 +117,13 @@ export function isAllowedEndpoint(candidate: unknown): candidate is Endpoint<unk
 export function isSafeApiPath(path: string): boolean {
   const plain = path.replace(/\/:(?:id|username)(?=\/|$)/g, "/x");
   return /^\/[A-Za-z0-9/_-]*$/.test(plain) && !plain.includes("//") && !plain.split("/").some((segment) => segment === "." || segment === "..");
+}
+
+const IDEMPOTENCY_KEY = /^[A-Za-z0-9_-]{8,100}$/;
+
+/** True for a key the API accepts: 8-100 letters, digits, hyphens and underscores. */
+export function isIdempotencyKey(value: unknown): value is string {
+  return typeof value === "string" && IDEMPOTENCY_KEY.test(value);
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;

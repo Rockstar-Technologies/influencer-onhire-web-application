@@ -13,6 +13,7 @@ export interface SessionCallOptions {
   body?: unknown;
   id?: string;
   username?: string;
+  idempotencyKey?: string;
   query?: Record<string, string | number | undefined>;
 }
 
@@ -25,5 +26,6 @@ export async function callWithSession<TData>(endpoint: Endpoint<TData>, body?: u
     ...(body === undefined ? {} : { body }),
     ...(extra.id === undefined && extra.username === undefined ? {} : { params: { ...(extra.id === undefined ? {} : { id: extra.id }), ...(extra.username === undefined ? {} : { username: extra.username }) } }),
     ...(extra.query === undefined ? {} : { query: extra.query }),
+    ...(extra.idempotencyKey === undefined ? {} : { idempotencyKey: extra.idempotencyKey }),
   });
 }

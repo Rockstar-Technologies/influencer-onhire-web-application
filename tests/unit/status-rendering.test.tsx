@@ -8,7 +8,6 @@ import { offerView } from "../helpers";
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: vi.fn(), refresh: vi.fn(), push: vi.fn() }), usePathname: () => "/", useSearchParams: () => new URLSearchParams() }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("@/features/auth/actions", () => ({ signInAction: vi.fn(), signUpAction: vi.fn(), signOutAction: vi.fn() }));
-vi.mock("@/features/account/brand-payments/actions", () => ({ fundCampaignAction: vi.fn() }));
 vi.mock("@/features/account/creator-payments/actions", () => ({ withdrawAction: vi.fn(), requestCashoutAction: vi.fn() }));
 vi.mock("@/features/admin-panel/users/actions", () => ({ inviteTeamMemberAction: vi.fn(), userStatusAction: vi.fn() }));
 vi.mock("@/features/admin-panel/support/actions", () => ({ createTicketAction: vi.fn() }));
@@ -18,7 +17,6 @@ const { WithdrawalHistory } = await import("@/features/creator/earnings/sections
 const { RequestHistory } = await import("@/features/creator/requests/request-history");
 const { AccountStatusBadge, AccountTypeTag, ComplianceIndicator } = await import("@/features/admin-panel/users/sections/user-badges");
 const { StatusBadge: TicketStatusBadge } = await import("@/features/admin-panel/support/sections/ticket-badges");
-const { FundCampaignDialog } = await import("@/features/account/brand-payments/sections/fund-campaign-dialog");
 const { WithdrawDialog } = await import("@/features/account/creator-payments/sections/withdraw-dialog");
 const { InviteForm } = await import("@/features/admin-panel/users/sections/invite-form");
 const { NewTicketDialog } = await import("@/features/admin-panel/support/sections/new-ticket-dialog");
@@ -100,12 +98,6 @@ describe("admin badges", () => {
 
 describe("form values must match what the API accepts", () => {
   const optionValues = (selector: string, root: ParentNode = document) => [...root.querySelectorAll<HTMLInputElement | HTMLOptionElement>(selector)].map((el) => el.value);
-
-  it("the fund form offers exactly the API's payment methods, by code, with readable labels", () => {
-    render(<FundCampaignDialog creators={[]} />);
-    expect(optionValues('input[name="method"]')).toEqual([...v.PAYMENT_METHOD.values]);
-    for (const code of v.PAYMENT_METHOD.values) expect(document.body.textContent).toContain(labels.PAYMENT_METHOD_LABELS[code]);
-  });
 
   it("the withdrawal form offers exactly the API's payout networks, by code", () => {
     render(<WithdrawDialog available={10_000} minimum={1_000} />);

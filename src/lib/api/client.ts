@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { isIP } from "node:net";
 import type { ApiConfig } from "./config";
 import { getApiConfig } from "./config";
-import { buildApiPath, buildApiQuery, isAllowedEndpoint, isSafeApiPath } from "./endpoints";
+import { buildApiPath, buildApiQuery, isAllowedEndpoint, isIdempotencyKey, isSafeApiPath } from "./endpoints";
 import type { Endpoint } from "./endpoints";
 import { ApiConfigError, ApiError, UpstreamContractError, UpstreamUnavailableError } from "./errors";
 import { errorBodySchema } from "./schemas";
@@ -16,6 +16,8 @@ export interface CallOptions {
   params?: { id?: string; username?: string };
   /** Query-string values; only the keys the operation lists are accepted. */
   query?: Record<string, string | number | undefined>;
+  /** The `Idempotency-Key` of a money-moving request: required by (and only accepted for) operations marked `idempotent`. */
+  idempotencyKey?: string;
   /** The user's session token (from this application's cookie). Sent only to endpoints that accept a session. */
   session?: string | null;
   /** The real client address, already resolved by resolveClientIp. */
@@ -103,6 +105,12 @@ export async function callApi<TData>(
   if (endpoint.auth === "session" && options.session) {
     if (!isValidSessionToken(options.session)) throw new ApiConfigError("The session value is not valid");
     headers.Cookie = `${config.upstreamCookieName}=${options.session}`;
+  }
+  if (endpoint.idempotent) {
+    if (!isIdempotencyKey(options.idempotencyKey)) throw new ApiConfigError("This API operation needs a valid idempotency key");
+    headers["Idempotency-Key"] = options.idempotencyKey;
+  } else if (options.idempotencyKey !== undefined) {
+    throw new ApiConfigError("This API operation takes no idempotency key");
   }
   if (options.clientIp && isIP(options.clientIp) !== 0) headers["X-Forwarded-For"] = options.clientIp;
 

@@ -32,20 +32,6 @@ export interface DeliveryReport {
 }
 
 // What a brand is allowed to see: what they paid and where it is. No fee, no creator payout details.
-export interface BrandPaymentView {
-  id: string;
-  invoice: string;
-  campaign: string;
-  creatorName: string;
-  deposited: number;
-  method: PaymentMethod;
-  status: EscrowStatus;
-  fundedAt: string;
-  requestedAt?: string;
-  releasedAt?: string;
-  report?: DeliveryReport;
-}
-
 // What a creator is allowed to see: their take-home pay and how it's worked out.
 export interface CreatorPaymentView {
   id: string;
@@ -58,13 +44,6 @@ export interface CreatorPaymentView {
   requestedAt?: string;
   releasedAt?: string;
   report?: DeliveryReport;
-}
-
-export interface BrandPaymentSummary {
-  totalDeposited: number;
-  onHold: number;
-  awaitingRelease: number;
-  released: number;
 }
 
 export interface CreatorPaymentSummary {
@@ -97,13 +76,6 @@ export interface CreatorWallet {
 }
 
 // --- form state (shared by server actions and client forms) ---
-
-export type FundField = "creatorId" | "campaign" | "amount" | "method" | "phone";
-
-export type FundFormState =
-  | { status: "idle" }
-  | { status: "error"; values: Record<FundField, string>; errors: Partial<Record<FundField, string>>; message?: string }
-  | { status: "success"; invoice: string; creatorName: string; amount: number };
 
 export type CashoutField = "summary" | "links";
 

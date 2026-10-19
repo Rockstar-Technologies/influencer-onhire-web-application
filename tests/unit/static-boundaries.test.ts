@@ -327,3 +327,50 @@ describe("notifications are real and server-side", () => {
     }
   });
 });
+
+describe("funding is real, server-side and never simulated by the frontend", () => {
+  const FUNDING = FILES.filter((f) => f.rel.startsWith("src/features/funding/"));
+
+  it("the legacy mock funding flows and services are gone", () => {
+    for (const gone of ["src/features/account/brand-payments/sections", "src/features/account/brand-payments/actions.ts", "src/features/brand/payments"]) {
+      expect(FILES.some((f) => f.rel === gone || f.rel.startsWith(`${gone}/`)), gone).toBe(false);
+    }
+    const payments = FILES.find((f) => f.rel === "src/services/payments.service.ts")!;
+    expect(payments.text).not.toMatch(/export async function fundCampaign|listBrandPayments|summarizeBrandPayments/);
+    const campaignPayments = FILES.find((f) => f.rel === "src/services/campaign-payments.service.ts")!;
+    expect(campaignPayments.text).not.toMatch(/fundCampaign|MOCK_CAMPAIGN_PAYMENTS|MOCK_HIREABLE/);
+  });
+
+  it("funding code imports no mock or service module and browser code never calls the API", () => {
+    expect(FUNDING.length).toBeGreaterThan(6);
+    for (const f of FUNDING) {
+      expect(importsOf(f.text).filter((i) => /\/services\/|\/mock\//.test(i)), f.rel).toEqual([]);
+      if (isClientComponent(f.text)) expect(f.text, f.rel).not.toMatch(/callApi|callWithSession|from "@\/lib\/api\/(?:client|config)"|\bfetch\(/);
+    }
+  });
+
+  it("every funding Server Action checks the session and role first", () => {
+    const actions = FUNDING.find((f) => f.rel.endsWith("actions.ts"))!;
+    expect(actions.text).toContain('authorizeAction({ role: "brand" }');
+    for (const name of ["startFundingAction", "refreshFundingAction"]) {
+      const body = actions.text.slice(actions.text.indexOf(`export async function ${name}`));
+      expect(body.indexOf("await gate()"), name).toBeGreaterThan(-1);
+      const firstCall = Math.min(...["callWithSession", "current("].map((needle) => body.indexOf(needle)).filter((i) => i >= 0));
+      expect(body.indexOf("await gate()"), name).toBeLessThan(firstCall);
+    }
+  });
+
+  it("no amount, status, provider or evidence of payment can be sent from the browser, and no code computes a fee or a payment outcome", () => {
+    const schemas = FUNDING.find((f) => f.rel.endsWith("schemas.ts"))!;
+    expect(stripComments(schemas.text)).not.toMatch(/amount|status|provider|brandId|outcome|simulat/i);
+    for (const f of FUNDING) {
+      const code = stripComments(f.text);
+      expect(code, f.rel).not.toMatch(/PLATFORM_FEE|feeRate|feeXaf|netXaf|\* 0\.2|\* 0\.8|\* 20 \/ 100/);
+      expect(code, f.rel).not.toMatch(/status:\s*["']funded["']\s*[,}]\s*(?:as const)?;?\s*$/m);
+    }
+  });
+
+  it("the simulation controls exist only in the backend: no frontend file mentions the mode or the reserved numbers", () => {
+    for (const f of FILES) expect(stripComments(f.text), f.rel).not.toMatch(/PAYMENTS_SIMULATION_MODE|auto_succeed|auto_fail|670000001|670000002|670000003/);
+  });
+});

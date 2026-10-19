@@ -9,7 +9,7 @@ import { TEST_CONFIG, TOKEN, apiUser, errorBody, fakeFetch, jsonResponse, sessio
 const deps = (fetchImpl: typeof fetch, config = TEST_CONFIG) => ({ config, fetchImpl, newRequestId: () => "req-test-0001" });
 
 describe("endpoint allowlist", () => {
-  it("lists exactly the allowed operations (auth, creator application wizard, brand campaigns, offers and hires, notifications) with fixed paths", () => {
+  it("lists exactly the allowed operations (auth, creator application wizard, brand campaigns, offers and hires, notifications, funding) with fixed paths", () => {
     expect(Object.values(ENDPOINTS).map((e) => `${e.method} ${e.path}`).sort()).toEqual([
       "DELETE /brand/campaigns/:id",
       "GET /auth/me",
@@ -18,6 +18,8 @@ describe("endpoint allowlist", () => {
       "GET /brand/campaigns/options",
       "GET /brand/offers",
       "GET /brand/offers/:id",
+      "GET /brand/offers/:id/funding",
+      "GET /brand/payments",
       "GET /creator/applications/current",
       "GET /creator/applications/options",
       "GET /creator/offers",
@@ -37,6 +39,7 @@ describe("endpoint allowlist", () => {
       "POST /brand/offers/:id/accept",
       "POST /brand/offers/:id/cancel",
       "POST /brand/offers/:id/decline",
+      "POST /brand/offers/:id/fund",
       "POST /creator/applications/current/submit",
       "POST /creator/applications/reapply",
       "POST /creator/offers/:id/accept",
@@ -68,6 +71,27 @@ describe("endpoint allowlist", () => {
     expect(() => buildApiPath(ENDPOINTS.me, { username: "kevin.fitness" })).toThrow();
     expect(() => buildApiPath(ENDPOINTS.brandOfferAccept, { id: "not-a-uuid" })).toThrow();
     expect(buildApiPath(ENDPOINTS.brandOfferAccept, { id: "44444444-4444-4444-8444-444444444444" })).toBe("/brand/offers/44444444-4444-4444-8444-444444444444/accept");
+  });
+
+  it("only money-moving operations take an Idempotency-Key, and they refuse a call without a valid one", async () => {
+    expect(Object.values(ENDPOINTS).filter((e) => "idempotent" in e && e.idempotent).map((e) => e.name)).toEqual(["brandFund"]);
+    const { fetch, calls } = fakeFetch(jsonResponse(200, { data: { funding: {}, replayed: false } }));
+    const id = "44444444-4444-4444-8444-444444444444";
+    for (const bad of [undefined, "", "short", "has space in it", "x".repeat(101)]) {
+      await expect(callApi(ENDPOINTS.brandFund, { session: TOKEN, params: { id }, body: {}, ...(bad === undefined ? {} : { idempotencyKey: bad }) }, { config: TEST_CONFIG, fetchImpl: fetch })).rejects.toThrow();
+    }
+    await expect(callApi(ENDPOINTS.me, { session: TOKEN, idempotencyKey: "fund-0123456789" }, { config: TEST_CONFIG, fetchImpl: fetch })).rejects.toThrow();
+    expect(calls).toHaveLength(0);
+  });
+
+  it("sends a valid Idempotency-Key as a header only", async () => {
+    const { fetch, calls } = fakeFetch(jsonResponse(200, { data: { funding: { offerId: "44444444-4444-4444-8444-444444444444", amountXaf: 1, deadline: null, status: "not_started", canStart: true, simulated: false, payment: null, attempts: [] }, replayed: false } }));
+    const id = "44444444-4444-4444-8444-444444444444";
+    await callApi(ENDPOINTS.brandFund, { session: TOKEN, params: { id }, body: { paymentMethod: "mtn_momo", payerPhone: "677123456" }, idempotencyKey: "fund-0123456789" }, { config: TEST_CONFIG, fetchImpl: fetch });
+    const headers = new Headers(calls[0]!.init.headers as HeadersInit);
+    expect(headers.get("idempotency-key")).toBe("fund-0123456789");
+    expect(String(calls[0]!.url)).not.toContain("fund-0123456789");
+    expect(String(calls[0]!.init.body)).not.toContain("fund-0123456789");
   });
 
   it("accepts only the frozen table objects, not copies or look-alikes", () => {

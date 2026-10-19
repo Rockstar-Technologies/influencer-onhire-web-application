@@ -1,17 +1,8 @@
-import type { Metadata } from "next";
-import { PaymentsPage } from "@/features/brand/payments/payments-page";
+import { redirect } from "next/navigation";
 import { requireBrand } from "@/lib/auth/session";
 
-export const metadata: Metadata = {
-  title: "Payments & Escrow | Influencer On Hire",
-};
-
-export default async function Page({
-  searchParams,
-}: {
-  searchParams: Promise<{ q?: string }>;
-}) {
+/** Compatibility route: the brand's payments live at `/brand/payments` (real data). The old mock dashboard page is gone. */
+export default async function Page() {
   await requireBrand("/brand/campaign-payments");
-  const { q } = await searchParams;
-  return <PaymentsPage query={q ?? ""} />;
+  redirect("/brand/payments");
 }

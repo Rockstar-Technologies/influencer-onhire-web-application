@@ -7,7 +7,7 @@ vi.mock("@/lib/auth/action-access", () => ({
   PAYMENTS_NOT_CONNECTED: "Payments are not connected to the live service yet, so nothing was submitted and no money has been moved.",
 }));
 vi.mock("@/services/user-management.service");
-vi.mock("@/services/payments.service", async () => ({ ...(await vi.importActual<object>("@/services/payments.service")), releasePayment: vi.fn(), requestCashout: vi.fn(), requestWithdrawal: vi.fn(), fundCampaign: vi.fn() }));
+vi.mock("@/services/payments.service", async () => ({ ...(await vi.importActual<object>("@/services/payments.service")), releasePayment: vi.fn(), requestCashout: vi.fn(), requestWithdrawal: vi.fn() }));
 vi.mock("@/services/support.service");
 vi.mock("@/services/influencers.service");
 
@@ -15,7 +15,6 @@ const { authorizeAction } = await import("@/lib/auth/action-access");
 const users = await import("@/features/admin-panel/users/actions");
 const support = await import("@/features/admin-panel/support/actions");
 const adminPayments = await import("@/features/admin-panel/payments/actions");
-const brandPayments = await import("@/features/account/brand-payments/actions");
 const creatorPayments = await import("@/features/account/creator-payments/actions");
 const userService = await import("@/services/user-management.service");
 const paymentsService = await import("@/services/payments.service");
@@ -29,7 +28,6 @@ function form(entries: Record<string, string>): FormData {
   return data;
 }
 
-const VALID_FUND = { creatorId: "c1", campaign: "My campaign", amount: "50000", method: "mtn_momo", phone: "670000001" };
 const VALID_CASHOUT = { paymentId: "p1", summary: "I delivered the agreed reel and three stories.", links: "https://example.com/post" };
 const VALID_WITHDRAW = { amount: "5000", method: "mtn_momo", phone: "670000001" };
 const VALID_TICKET = { subject: "Payment question", message: "The brand asks about a release.", fromName: "Acme", fromRole: "brand", priority: "normal" };
@@ -49,7 +47,6 @@ const CASES: Case[] = [
   { name: "invite a team member", requirement: ADMIN("team.manage"), run: () => users.inviteTeamMemberAction({ status: "idle" } as never, form(VALID_INVITE)), service: () => userService.inviteTeamMember },
   { name: "create a support ticket", requirement: ADMIN("tickets.manage"), run: () => support.createTicketAction({ status: "idle" } as never, form(VALID_TICKET)), service: () => supportService.createSupportTicket },
   { name: "release a payment", requirement: ADMIN("payments.release"), run: () => adminPayments.releasePaymentAction("pay-1"), service: () => paymentsService.releasePayment },
-  { name: "fund a campaign", requirement: { role: "brand" }, run: () => brandPayments.fundCampaignAction({ status: "idle" }, form(VALID_FUND)), service: () => paymentsService.fundCampaign },
   { name: "request a cashout", requirement: { role: "creator" }, run: () => creatorPayments.requestCashoutAction({ status: "idle" }, form(VALID_CASHOUT)), service: () => paymentsService.requestCashout },
   { name: "withdraw funds", requirement: { role: "creator" }, run: () => creatorPayments.withdrawAction({ status: "idle" }, form(VALID_WITHDRAW)), service: () => paymentsService.requestWithdrawal },
 ];
@@ -73,15 +70,8 @@ describe.each(CASES)("$name", ({ requirement, run, service }) => {
   });
 });
 
-describe("money actions that are not connected to the live service yet", () => {
+describe("creator money actions that are not connected to the live service yet", () => {
   const session = { ok: true, session: {} } as never;
-
-  it("fund: an allowed brand with valid input still gets an honest refusal and nothing is created", async () => {
-    authorize.mockResolvedValue(session);
-    const result = await brandPayments.fundCampaignAction({ status: "idle" }, form(VALID_FUND));
-    expect(result).toMatchObject({ status: "error", message: expect.stringContaining("no money has been moved") });
-    expect(paymentsService.fundCampaign).not.toHaveBeenCalled();
-  });
 
   it("cashout and withdraw: same honest refusal, never a success state", async () => {
     authorize.mockResolvedValue(session);
@@ -90,12 +80,6 @@ describe("money actions that are not connected to the live service yet", () => {
     for (const result of [cashout, withdraw]) expect(result).toMatchObject({ status: "error", message: expect.stringContaining("no money has been moved") });
     expect(paymentsService.requestCashout).not.toHaveBeenCalled();
     expect(paymentsService.requestWithdrawal).not.toHaveBeenCalled();
-  });
-
-  it("still validates input before refusing (invalid input gets field errors)", async () => {
-    authorize.mockResolvedValue(session);
-    const result = await brandPayments.fundCampaignAction({ status: "idle" }, form({ ...VALID_FUND, amount: "5" }));
-    expect(result).toMatchObject({ status: "error", errors: { amount: expect.any(String) } });
   });
 });
 

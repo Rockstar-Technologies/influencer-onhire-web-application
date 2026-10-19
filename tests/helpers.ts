@@ -248,3 +248,47 @@ export function notificationView(overrides: Partial<NotificationView> = {}): Not
     ...overrides,
   };
 }
+
+// ---- funding fixtures (shapes captured from the running API's /brand/offers/:id/funding and /brand/payments) -----------------------------------
+import type { BrandPayment, FundingView } from "@/lib/api/schemas";
+
+export function fundingView(overrides: Partial<FundingView> = {}): FundingView {
+  return {
+    offerId: OFFER_ID,
+    amountXaf: 250_000,
+    deadline: "2031-01-08T10:00:00.000Z",
+    status: "not_started",
+    canStart: true,
+    simulated: false,
+    payment: null,
+    attempts: [],
+    ...overrides,
+  };
+}
+
+export function fundedView(overrides: Partial<FundingView> = {}): FundingView {
+  return fundingView({
+    status: "funded",
+    canStart: false,
+    simulated: true,
+    payment: { id: "88888888-8888-4888-8888-888888888888", reference: "INV-5", status: "held" },
+    attempts: [{ id: "99999999-9999-4999-8999-999999999999", status: "succeeded", confirmation: "succeeded", failure: null, startedAt: "2031-01-01T10:00:00.000Z", completedAt: "2031-01-01T10:00:02.000Z", simulated: true }],
+    ...overrides,
+  });
+}
+
+export function brandPayment(overrides: Partial<BrandPayment> = {}): BrandPayment {
+  return {
+    id: "88888888-8888-4888-8888-888888888888",
+    reference: "INV-5",
+    status: "held",
+    amountXaf: 250_000,
+    fundedAt: "2031-01-01T10:00:02.000Z",
+    simulated: true,
+    requestedAt: null,
+    releasedAt: null,
+    engagement: { offerId: OFFER_ID, origin: "direct_hire", campaign: null },
+    creator: { username: "kevin.fitness", displayName: "Kevin Fitness" },
+    ...overrides,
+  };
+}

@@ -7,10 +7,14 @@ import { cn } from "@/lib/utils";
 import { hireAnswerBy, offerKind } from "../mapping";
 import { BRAND_OFFER_KIND_LABELS, OfferStatusBadge } from "../offer-status";
 import { BrandOfferActions } from "./brand-offer-actions";
+import { fundingMessage } from "@/features/funding/mapping";
+import { fundPath, loadFundingStates } from "@/features/funding/server";
 
 /** The signed-in brand's side of offers: the hires it sent and the applications and invitations on its campaigns. The API only returns this brand's rows. */
 export async function BrandOffersPage({ status, cursor }: { status?: string; cursor?: string }) {
   const page = await loadBrandOffers({ ...(status ? { status } : {}), ...(cursor ? { cursor } : {}) });
+  // Accepted bookings are paid for: show where each payment stands, as the API reports it (an unreadable state simply shows no badge).
+  const funding = await loadFundingStates(page.items.filter((offer) => offer.status === "accepted").map((offer) => offer.id));
   const href = (next: { status?: string | null; cursor?: string | null }) => {
     const query = new URLSearchParams();
     if (next.status) query.set("status", next.status);
@@ -121,6 +125,18 @@ export async function BrandOffersPage({ status, cursor }: { status?: string; cur
                   <p className="mt-3 text-sm text-body">
                     <span className="font-medium text-heading">Their pitch:</span> {offer.pitch}
                   </p>
+                )}
+
+                {offer.status === "accepted" && (
+                  <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl bg-surface-alt px-4 py-3 text-sm">
+                    <span data-testid="funding-state" className="font-semibold text-heading">
+                      {funding.get(offer.id) ? fundingMessage(funding.get(offer.id)!).title : "Payment"}
+                    </span>
+                    {funding.get(offer.id)?.simulated && <span className="rounded-full bg-warning-light px-2 py-0.5 text-[11px] font-semibold text-warning">Simulated</span>}
+                    <Link href={fundPath(offer.id)} className="ml-auto rounded-lg bg-primary px-4 py-2 font-semibold text-white hover:bg-primary-hover">
+                      {funding.get(offer.id)?.status === "funded" ? "View payment" : "Pay for this booking"}
+                    </Link>
+                  </div>
                 )}
 
                 <BrandOfferActions id={offer.id} status={offer.status} kind={kind} />
