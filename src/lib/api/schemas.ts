@@ -242,3 +242,25 @@ export const hireCreatorSchema = z.object({
   }),
 });
 export type HireCreator = z.infer<typeof hireCreatorSchema>["creator"];
+
+// ---- notifications (verified against the running API, backend docs/NOTIFICATIONS.md) ----------------------------------------------------
+/** `type` is kept as text: a kind added later must not break the page (the app shows it neutrally). Titles and bodies are the API's fixed snapshots. */
+export const notificationViewSchema = z.object({
+  id: z.uuid(),
+  type: z.string(),
+  title: z.string(),
+  body: z.string(),
+  createdAt: z.string(),
+  readAt: z.string().nullable(),
+  links: z.object({
+    campaignId: z.uuid().nullable(),
+    offerId: z.uuid().nullable(),
+    paymentId: z.uuid().nullable(),
+    withdrawalId: z.uuid().nullable(),
+  }),
+});
+export type NotificationView = z.infer<typeof notificationViewSchema>;
+export const notificationListSchema = z.array(notificationViewSchema);
+export const unreadCountSchema = z.object({ unread: z.number().int().nonnegative() });
+export const markReadResultSchema = z.object({ notification: notificationViewSchema });
+export const markAllReadResultSchema = z.object({ updated: z.number().int().nonnegative(), unread: z.number().int().nonnegative() });

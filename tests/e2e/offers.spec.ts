@@ -18,6 +18,19 @@ function inDays(days: number) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
+/** The cursor that opens the brand-offers page (20 rows, newest first) containing `offerId`; null when it is on the first page. */
+async function cursorOfPageWith(request: APIRequestContext, token: string, offerId: string): Promise<string | null> {
+  let cursor: string | null = null;
+  for (let page = 0; page < 500; page += 1) {
+    const response = await request.get(`${API_MAIN}/brand/offers?limit=20&sort=created_at&dir=desc${cursor ? `&cursor=${cursor}` : ""}`, { headers: cookie(token) });
+    const body = (await response.json()) as { data: { id: string }[]; meta: { nextCursor: string | null } };
+    if (body.data.some((o) => o.id === offerId)) return cursor;
+    if (!body.meta.nextCursor) break;
+    cursor = body.meta.nextCursor;
+  }
+  throw new Error("the invitation is not in the brand's offers");
+}
+
 async function signedIn(browser: Browser, email: string, landing: RegExp): Promise<{ context: BrowserContext; page: Page; token: string }> {
   const context = await browser.newContext();
   const page = await context.newPage();
@@ -184,7 +197,10 @@ test.describe("direct hires and the creator inbox against the real API", () => {
     await expect(article.getByLabel(/Start date/)).toHaveCount(0);
 
     // The brand sees the invitation but cannot decide it.
-    await brand.page.goto(`${APP}/brand/offers`);
+    // An opened campaign invites EVERY matching creator, so the brand's list can be hundreds of rows long. Find the page that holds this invitation
+    // through the API (same page size as the app) and open that page of the app by its cursor.
+    const cursorToInvitation = await cursorOfPageWith(request, brand.token, invitation.id);
+    await brand.page.goto(`${APP}/brand/offers${cursorToInvitation ? `?cursor=${encodeURIComponent(cursorToInvitation)}` : ""}`);
     const brandCard = brand.page.getByRole("listitem").filter({ hasText: invitation.reference });
     await expect(brandCard).toContainText("Platform invitation");
     await expect(brandCard.getByRole("button")).toHaveCount(0);

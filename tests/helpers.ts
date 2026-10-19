@@ -230,3 +230,21 @@ export function hireCreator(overrides: Partial<HireCreator> = {}): HireCreator {
     ...overrides,
   };
 }
+
+// ---- notification fixtures (shape captured from the running API's GET /notifications) ------------------------------------------------------
+import type { NotificationView } from "@/lib/api/schemas";
+
+export const NOTIFICATION_ID = "66666666-6666-4666-8666-666666666666";
+
+export function notificationView(overrides: Partial<NotificationView> = {}): NotificationView {
+  return {
+    id: NOTIFICATION_ID,
+    type: "offer_received",
+    title: "New hire request",
+    body: "You have a new hire request. Reference HR-12.",
+    createdAt: new Date(Date.now() - 5 * 60_000).toISOString(),
+    readAt: null,
+    links: { campaignId: null, offerId: OFFER_ID, paymentId: null, withdrawalId: null },
+    ...overrides,
+  };
+}

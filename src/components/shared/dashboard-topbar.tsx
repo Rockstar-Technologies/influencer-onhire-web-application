@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import type { ReactNode } from "react";
 import type { FormEvent } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { DashboardAccount } from "@/types/account";
@@ -66,10 +67,13 @@ export function DashboardTopbar({
   account,
   searchPlaceholder,
   placeholdersByPath,
+  bell,
 }: {
   account: DashboardAccount;
   searchPlaceholder: string;
   placeholdersByPath?: Record<string, string>;
+  /** Server-rendered notification bell (shows the API's unread count). */
+  bell?: ReactNode;
 }) {
   // Re-mount the form whenever ?q= or the page changes so the box matches the URL.
   const q = useSearchParams().get("q") ?? "";
@@ -81,6 +85,7 @@ export function DashboardTopbar({
       <SearchForm key={`${pathname}?${q}`} initialQuery={q} placeholder={placeholder} />
 
       <div className="order-1 ml-auto flex items-center gap-3 sm:order-2 sm:ml-0">
+        {bell}
         <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-light text-xs font-bold text-primary">
           {account.initials}
         </span>

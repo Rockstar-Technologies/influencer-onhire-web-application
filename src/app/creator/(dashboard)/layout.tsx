@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { DashboardSidebar } from "@/components/shared/dashboard-sidebar";
 import { DashboardTopbar } from "@/components/shared/dashboard-topbar";
 import { CREATOR_DASHBOARD_NAV } from "@/constants/design-tokens";
+import { NotificationBell } from "@/features/notifications/notification-bell";
 import { requireCreator } from "@/lib/auth/session";
 import { initials } from "@/lib/utils";
 
@@ -17,6 +18,7 @@ export default async function CreatorLayout({ children }: { children: ReactNode 
       <Suspense>
         <DashboardTopbar
           account={account}
+          bell={<NotificationBell area="creator" />}
           searchPlaceholder="Search requests..."
           placeholdersByPath={{ "/creator/earnings": "Search your campaigns..." }}
         />

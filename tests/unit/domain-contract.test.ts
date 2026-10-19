@@ -55,6 +55,7 @@ describe.skipIf(!present)("frontend vocabulary matches the backend repository", 
     ["alert_severity", v.ALERT_SEVERITY.values],
     ["flag_field", v.FLAG_FIELD.values],
     ["flag_resolution", v.FLAG_RESOLUTION.values],
+    ["notification_type", v.NOTIFICATION_TYPE.values],
   ] as const)("enum %s", (name, values) => {
     const backend = enums.get(name);
     expect(backend, `${name} not found in the backend migrations`).toBeDefined();

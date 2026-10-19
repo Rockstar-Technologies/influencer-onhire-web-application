@@ -7,6 +7,7 @@ import type { ApiUser } from "@/lib/api/schemas";
 import { headers } from "next/headers";
 import { signOutAction } from "@/features/auth/actions";
 import { REQUEST_PATH_HEADER } from "@/lib/auth/request-path";
+import { NotificationBell } from "@/features/notifications/notification-bell";
 
 export async function AccountShell({ account, children }: { account: ApiUser; children: ReactNode }) {
   const isBrand = account.role === "brand";
@@ -46,6 +47,7 @@ export async function AccountShell({ account, children }: { account: ApiUser; ch
           </nav>
 
           <div className="ml-auto flex items-center gap-3">
+            <NotificationBell area={isBrand ? "brand" : "creator"} />
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-info-light text-xs font-bold text-navy">{initials(account.fullName)}</span>
             <span className="hidden leading-tight sm:block">
               <span className="block text-sm font-semibold text-heading">{account.fullName}</span>

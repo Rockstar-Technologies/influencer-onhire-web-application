@@ -1,5 +1,5 @@
-import { expect } from "@playwright/test";
-import type { BrowserContext, Page } from "@playwright/test";
+import { expect, request as pwRequest } from "@playwright/test";
+import type { Browser, BrowserContext, Page } from "@playwright/test";
 
 export const APP = "http://127.0.0.1:3100";
 export const APP_RATE = "http://127.0.0.1:3101";
@@ -139,7 +139,7 @@ export async function managerToken(request: APIRequestContext): Promise<string> 
 }
 
 // ---- offers: approved creators and campaigns created through the real API ---------------------------------------------------------------
-import type { Browser } from "@playwright/test";
+
 
 export interface ApprovedCreator {
   email: string;
@@ -173,9 +173,33 @@ export async function approvedCreator(browser: Browser, request: APIRequestConte
   return { email, username };
 }
 
-/** A brand's session token obtained straight from the API (not through the app), for checking server-side state. */
-export async function apiToken(request: APIRequestContext, email: string): Promise<string> {
-  const response = await request.post(`${API_MAIN}/auth/login`, { data: { email, password: PASSWORD } });
-  const header = response.headersArray().find((h) => h.name.toLowerCase() === "set-cookie" && h.value.startsWith("ioh_session="))!;
-  return header.value.split(";")[0]!.split("=")[1]!;
+/**
+ * A session token obtained straight from the API (not through the app), for checking server-side state. It logs in with a throw-away client:
+ * a shared client would keep the cookie and send two different session cookies once a second account logs in through it.
+ */
+export async function apiToken(_request: APIRequestContext, email: string): Promise<string> {
+  const client = await pwRequest.newContext();
+  try {
+    const response = await client.post(`${API_MAIN}/auth/login`, { data: { email, password: PASSWORD } });
+    const header = response.headersArray().find((h) => h.name.toLowerCase() === "set-cookie" && h.value.startsWith("ioh_session="))!;
+    return header.value.split(";")[0]!.split("=")[1]!;
+  } finally {
+    await client.dispose();
+  }
+}
+
+/** Signs a brand-new brand up in a new browser context (signed in on return), so counts such as unread notifications start from zero. */
+export async function newBrandSession(browser: Browser): Promise<{ context: BrowserContext; page: Page; token: string; email: string }> {
+  const email = uniqueEmail("brand");
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  await page.goto(`${APP}/sign-up`);
+  await page.getByLabel(/business name|full name/i).fill("Fresh Brand");
+  await page.getByLabel("Email").fill(email);
+  await page.getByLabel(/mobile number/i).fill(`67${Math.floor(1000000 + Math.random() * 8999999)}`);
+  await page.getByLabel("Password").fill(PASSWORD);
+  await page.getByRole("checkbox").check();
+  await page.getByRole("button", { name: /create account/i }).click();
+  await page.waitForURL((url) => !url.pathname.includes("sign-up"));
+  return { context, page, token: await tokenOf(context), email };
 }

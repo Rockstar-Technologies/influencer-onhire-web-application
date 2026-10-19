@@ -294,3 +294,36 @@ describe("offers, invitations and direct hires are no longer backed by mock serv
     }
   });
 });
+
+describe("notifications are real and server-side", () => {
+  const FILES_N = FILES.filter((f) => f.rel.startsWith("src/features/notifications/"));
+
+  it("no mock or service is imported and browser code never calls the API", () => {
+    expect(FILES_N.length).toBeGreaterThan(6);
+    for (const f of FILES_N) {
+      expect(importsOf(f.text).filter((i) => /\/services\/|\/mock\//.test(i)), f.rel).toEqual([]);
+      if (isClientComponent(f.text)) expect(f.text, f.rel).not.toMatch(/callApi|callWithSession|from "@\/lib\/api\/(?:client|config)"|\bfetch\(/);
+    }
+  });
+
+  it("every notification Server Action checks the session first and accepts only an id", () => {
+    const actions = FILES_N.find((f) => f.rel.endsWith("actions.ts"))!;
+    for (const name of ["markNotificationReadAction", "markAllNotificationsReadAction"]) {
+      const body = actions.text.slice(actions.text.indexOf(`export async function ${name}`));
+      expect(body.indexOf("await gate()"), name).toBeGreaterThan(-1);
+      expect(body.indexOf("await gate()"), name).toBeLessThan(body.indexOf("callWithSession"));
+    }
+    const schemas = FILES_N.find((f) => f.rel.endsWith("schemas.ts"))!;
+    expect(stripComments(schemas.text)).not.toMatch(/userId|readAt|title|body/);
+  });
+
+  it("the screens never promise e-mail or SMS delivery", () => {
+    for (const f of FILES_N) {
+      const text = stripComments(f.text);
+      for (const match of text.matchAll(/e-?mail|sms/gi)) {
+        const around = text.slice(Math.max(0, match.index! - 40), match.index! + 40);
+        expect(around, f.rel).toMatch(/nothing is sent|only/i);
+      }
+    }
+  });
+});

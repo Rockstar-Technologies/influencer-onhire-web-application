@@ -9,7 +9,7 @@ import { TEST_CONFIG, TOKEN, apiUser, errorBody, fakeFetch, jsonResponse, sessio
 const deps = (fetchImpl: typeof fetch, config = TEST_CONFIG) => ({ config, fetchImpl, newRequestId: () => "req-test-0001" });
 
 describe("endpoint allowlist", () => {
-  it("lists exactly the allowed operations (auth, creator application wizard, brand campaigns, offers and hires) with fixed paths", () => {
+  it("lists exactly the allowed operations (auth, creator application wizard, brand campaigns, offers and hires, notifications) with fixed paths", () => {
     expect(Object.values(ENDPOINTS).map((e) => `${e.method} ${e.path}`).sort()).toEqual([
       "DELETE /brand/campaigns/:id",
       "GET /auth/me",
@@ -24,6 +24,8 @@ describe("endpoint allowlist", () => {
       "GET /creator/offers/:id",
       "GET /creator/offers/decline-reasons",
       "GET /creators/:username",
+      "GET /notifications",
+      "GET /notifications/unread-count",
       "PATCH /brand/campaigns/:id",
       "POST /auth/login",
       "POST /auth/logout",
@@ -39,6 +41,8 @@ describe("endpoint allowlist", () => {
       "POST /creator/applications/reapply",
       "POST /creator/offers/:id/accept",
       "POST /creator/offers/:id/decline",
+      "POST /notifications/:id/read",
+      "POST /notifications/read-all",
       "PUT /creator/applications/current/audience",
       "PUT /creator/applications/current/profile",
       "PUT /creator/applications/current/rates",
@@ -51,7 +55,7 @@ describe("endpoint allowlist", () => {
       const variable: string[] = operation.path.match(/:[a-z]+/g) ?? [];
       expect(variable.every((part) => part === ":id" || part === ":username")).toBe(true);
       if (variable.includes(":username")) expect(operation.path).toBe("/creators/:username");
-      if (variable.includes(":id")) expect(/^\/(?:brand\/(?:campaigns|offers)|creator\/offers)\//.test(operation.path), operation.path).toBe(true);
+      if (variable.includes(":id")) expect(/^\/(?:brand\/(?:campaigns|offers)|creator\/offers|notifications)\//.test(operation.path), operation.path).toBe(true);
     }
   });
 

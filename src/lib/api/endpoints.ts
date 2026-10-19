@@ -10,9 +10,13 @@ import {
   declineReasonsSchema,
   emptyDataSchema,
   hireCreatorSchema,
+  markAllReadResultSchema,
+  markReadResultSchema,
+  notificationListSchema,
   meDataSchema,
   offerEnvelopeSchema,
   offerListSchema,
+  unreadCountSchema,
   reapplyResultSchema,
   submitResultSchema,
 } from "./schemas";
@@ -79,6 +83,12 @@ export const ENDPOINTS = {
   brandOfferDecline: endpoint({ name: "brandOfferDecline", method: "POST", path: "/brand/offers/:id/decline", auth: "session", schema: offerEnvelopeSchema }),
   brandOfferCancel: endpoint({ name: "brandOfferCancel", method: "POST", path: "/brand/offers/:id/cancel", auth: "session", schema: offerEnvelopeSchema }),
   hireCreator: endpoint({ name: "hireCreator", method: "GET", path: "/creators/:username", auth: "session", schema: hireCreatorSchema }),
+
+  // In-app notifications (backend docs/NOTIFICATIONS.md): the signed-in user's own rows only; no user id is ever sent.
+  notifications: endpoint({ name: "notifications", method: "GET", path: "/notifications", query: ["unread", "cursor", "limit"], auth: "session", schema: notificationListSchema }),
+  notificationUnreadCount: endpoint({ name: "notificationUnreadCount", method: "GET", path: "/notifications/unread-count", auth: "session", schema: unreadCountSchema }),
+  notificationRead: endpoint({ name: "notificationRead", method: "POST", path: "/notifications/:id/read", auth: "session", schema: markReadResultSchema }),
+  notificationsReadAll: endpoint({ name: "notificationsReadAll", method: "POST", path: "/notifications/read-all", auth: "session", schema: markAllReadResultSchema }),
 
   applicationReapply: endpoint({ name: "applicationReapply", method: "POST", path: "/creator/applications/reapply", auth: "session", schema: reapplyResultSchema }),
 } as const;

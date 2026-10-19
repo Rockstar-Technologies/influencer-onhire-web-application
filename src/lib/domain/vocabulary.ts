@@ -130,3 +130,19 @@ export type FlagField = (typeof FLAG_FIELD.values)[number];
 
 export const FLAG_RESOLUTION = define(["removed", "dismissed"] as const);
 export type FlagResolution = (typeof FLAG_RESOLUTION.values)[number];
+
+// ---- notifications --------------------------------------------------------------------------------------------------------------
+/** Every `notification_type` the backend can write (an in-app notification's kind). A value this list does not know is shown neutrally, never as an error. */
+export const NOTIFICATION_TYPE = define([
+  "account_approved", "account_rejected", "account_suspended", "account_reactivated",
+  "admin_message", "content_removed",
+  "campaign_approved", "campaign_rejected", "campaign_cancelled",
+  "offer_received", "offer_accepted", "offer_declined", "offer_withdrawn", "offer_cancelled", "offer_expired",
+  "payment_held", "payment_failed", "funding_expired",
+  "delivery_report_submitted", "delivery_acknowledged",
+  "dispute_opened", "dispute_withdrawn", "dispute_resolved", "dispute_upheld",
+  "payment_released",
+  "refund_request_decided", "refund_pending", "refund_completed", "refund_cancelled",
+  "withdrawal_requested", "withdrawal_under_review", "withdrawal_approved", "withdrawal_rejected", "withdrawal_cancelled", "withdrawal_completed", "withdrawal_failed",
+] as const);
+export type NotificationType = (typeof NOTIFICATION_TYPE.values)[number];
