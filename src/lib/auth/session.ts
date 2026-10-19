@@ -54,9 +54,12 @@ async function restoreSession(clearInvalid: boolean): Promise<Session | null> {
 /** For Server Components: one `/auth/me` call per render, shared by every caller. Cannot clear a stale cookie (rendering may not write cookies). */
 export const getSession = cache(() => restoreSession(false));
 
-/** For Server Actions: same, but also deletes a cookie the API no longer accepts. */
-export function getSessionForAction(): Promise<Session | null> {
-  return restoreSession(true);
+/**
+ * For Server Actions: same as getSession, and by default also deletes a cookie the API no longer accepts. Pass `clearInvalid: false` where the page must
+ * keep showing what the person typed: deleting the cookie makes Next.js refresh the route, and the refreshed page would redirect away from the form.
+ */
+export function getSessionForAction(options: { clearInvalid?: boolean } = {}): Promise<Session | null> {
+  return restoreSession(options.clearInvalid ?? true);
 }
 
 /** The page being rendered, as recorded by proxy.ts, if it passes the same-site/role-neutral checks; otherwise the caller's fallback. */

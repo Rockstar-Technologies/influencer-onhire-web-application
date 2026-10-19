@@ -159,7 +159,7 @@ describe("authorizeAction (Server Actions)", () => {
   it("denies anonymous callers with a sign-in message", async () => {
     nextState.cookies.clear();
     const result = await authorizeAction({ role: "brand" });
-    expect(result).toEqual({ ok: false, message: expect.stringMatching(/sign in again/i) });
+    expect(result).toEqual({ ok: false, message: expect.stringMatching(/sign in again/i), reason: "anonymous" });
   });
 
   it("denies a stale session and removes the cookie", async () => {
@@ -172,9 +172,9 @@ describe("authorizeAction (Server Actions)", () => {
     stubUpstream(me({ role: "creator" }));
     expect((await authorizeAction({ role: "brand" })).ok).toBe(false);
     stubUpstream(me({ role: "creator", status: "pending" }));
-    expect(await authorizeAction({ role: "creator" })).toEqual({ ok: false, message: expect.stringMatching(/approved/i) });
+    expect(await authorizeAction({ role: "creator" })).toEqual({ ok: false, message: expect.stringMatching(/approved/i), reason: "pending_creator" });
     stubUpstream(me({ role: "admin", phone: null }, ["users.view"]));
-    expect(await authorizeAction({ role: "admin", permission: "payments.release" })).toEqual({ ok: false, message: expect.stringMatching(/permission/i) });
+    expect(await authorizeAction({ role: "admin", permission: "payments.release" })).toEqual({ ok: false, message: expect.stringMatching(/permission/i), reason: "missing_permission" });
     stubUpstream(me({ role: "admin", phone: null }, ["payments.release"]));
     expect((await authorizeAction({ role: "admin", permission: "payments.release" })).ok).toBe(true);
   });

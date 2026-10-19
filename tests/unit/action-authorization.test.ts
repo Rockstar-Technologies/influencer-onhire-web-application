@@ -28,7 +28,7 @@ const hireService = await import("@/services/hire-requests.service");
 const campaignService = await import("@/services/direct-campaigns.service");
 
 const authorize = vi.mocked(authorizeAction);
-const DENIED = { ok: false, message: "denied" } as const;
+const DENIED = { ok: false, message: "denied", reason: "wrong_role" } as const;
 function form(entries: Record<string, string>): FormData {
   const data = new FormData();
   for (const [key, value] of Object.entries(entries)) data.set(key, value);

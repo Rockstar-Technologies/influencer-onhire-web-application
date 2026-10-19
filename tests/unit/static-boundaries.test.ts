@@ -16,6 +16,7 @@ function walk(dir: string, out: string[] = []): string[] {
 }
 
 const FILES = walk(SRC).map((file) => ({ file, rel: path.relative(ROOT, file), text: readFileSync(file, "utf8") }));
+const stripComments = (text: string) => text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
 const isClientComponent = (text: string) => /^\s*(?:\/\/[^\n]*\n|\/\*[\s\S]*?\*\/\s*)*["']use client["']/.test(text);
 const importsOf = (text: string) => [...text.matchAll(/(?:import|export)\s[^;]*?from\s+["']([^"']+)["']/g)].map((m) => m[1] as string);
 
@@ -152,7 +153,6 @@ describe("financial wording", () => {
 });
 
 describe("one vocabulary: legacy spellings are gone from the source", () => {
-  const stripComments = (text: string) => text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
   // The only place allowed to mention the old spellings is the boundary mapper that translates saved links and display text.
   const SOURCE = FILES.filter((f) => !["src/lib/domain/mappers.ts", "src/lib/domain/labels.ts"].includes(f.rel));
 
@@ -176,6 +176,48 @@ describe("one vocabulary: legacy spellings are gone from the source", () => {
       const text = readFileSync(path.join(ROOT, rel), "utf8");
       expect(text, rel).toContain("@/lib/domain/vocabulary");
       expect(text, rel).not.toMatch(/export type EscrowStatus\s*=\s*["']/);
+    }
+  });
+});
+
+describe("the creator application wizard is no longer backed by mock services", () => {
+  const WIZARD = FILES.filter((f) => f.rel.startsWith("src/features/public/creator-apply/") || f.rel.startsWith("src/features/creator-application/"));
+
+  it("the wizard files import neither the application mock nor the old service functions", () => {
+    expect(WIZARD.length).toBeGreaterThan(8);
+    for (const f of WIZARD) {
+      expect(f.text, f.rel).not.toMatch(/creator-application\.mock|services\/creator-application\.service/);
+      expect(f.text, f.rel).not.toMatch(/getCreatorApplication(?:Draft|Options)?\b|saveCreator(?:Basics|Audience|Rates)|submitCreatorApplication/);
+    }
+  });
+
+  it("the old mock data and service functions are gone (only the static For-creators content remains)", () => {
+    const service = FILES.find((f) => f.rel === "src/services/creator-application.service.ts")!;
+    expect(service.text).not.toMatch(/MOCK_CREATOR_APPLICATION|export async function (?:save|submit|getCreatorApplication)/);
+    const mock = FILES.find((f) => f.rel === "src/services/mock/creator-application.mock.ts")!;
+    expect(mock.text).not.toMatch(/MOCK_CREATOR_APPLICATION/);
+    expect(mock.text).not.toMatch(/contacts you on the mobile number/);
+  });
+
+  it("no wizard code sends a photo as data: there is no data URL, FileReader or file input", () => {
+    for (const f of WIZARD) {
+      const code = stripComments(f.text).replace(/Photo upload isn.t available yet[\s\S]*?later[^<]*/, "");
+      expect(code, f.rel).not.toMatch(/photoDataUrl|FileReader|readAsDataURL|type="file"|data:image/);
+    }
+  });
+
+  it("wizard browser code never calls the API itself: it only calls the wizard Server Actions", () => {
+    for (const f of WIZARD.filter((file) => isClientComponent(file.text))) {
+      expect(f.text, f.rel).not.toMatch(/callApi|callWithSession|from "@\/lib\/api\/(?:client|config)"/);
+    }
+  });
+
+  it("every wizard Server Action checks the session first (authorizeAction) and no action accepts an identifier", () => {
+    const actions = FILES.find((f) => f.rel === "src/features/creator-application/actions.ts")!;
+    expect(actions.text).toContain("authorizeAction");
+    expect(actions.text).not.toMatch(/creatorId|userId|applicationId/);
+    for (const name of ["saveProfileAction", "saveAudienceAction", "saveRatesAction", "submitApplicationAction", "reapplyAction"]) {
+      expect(actions.text).toContain(`export async function ${name}`);
     }
   });
 });

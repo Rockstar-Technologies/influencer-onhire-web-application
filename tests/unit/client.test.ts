@@ -9,13 +9,24 @@ import { TEST_CONFIG, TOKEN, apiUser, errorBody, fakeFetch, jsonResponse, sessio
 const deps = (fetchImpl: typeof fetch, config = TEST_CONFIG) => ({ config, fetchImpl, newRequestId: () => "req-test-0001" });
 
 describe("endpoint allowlist", () => {
-  it("lists exactly the four auth operations with fixed paths", () => {
+  it("lists exactly the allowed operations (auth and the creator application wizard) with fixed paths", () => {
     expect(Object.values(ENDPOINTS).map((e) => `${e.method} ${e.path}`).sort()).toEqual([
       "GET /auth/me",
+      "GET /creator/applications/current",
+      "GET /creator/applications/options",
       "POST /auth/login",
       "POST /auth/logout",
       "POST /auth/register",
+      "POST /creator/applications/current/submit",
+      "POST /creator/applications/reapply",
+      "PUT /creator/applications/current/audience",
+      "PUT /creator/applications/current/profile",
+      "PUT /creator/applications/current/rates",
     ]);
+  });
+
+  it("no allowed operation takes an identifier in its path: the creator always comes from the session", () => {
+    for (const operation of Object.values(ENDPOINTS)) expect(operation.path).not.toMatch(/:|\{|\[/);
   });
 
   it("accepts only the frozen table objects, not copies or look-alikes", () => {

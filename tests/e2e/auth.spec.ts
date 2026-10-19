@@ -179,9 +179,9 @@ test.describe("sign-up", () => {
     await page.goto(`${APP}/admin`);
     await expect(page).toHaveURL(/\/sign-in\?denied=admin/);
 
-    // The application pages stay open to them.
+    // The application stays open to them; a later step needs the earlier ones, so a fresh draft is sent back to step 1.
     await page.goto(`${APP}/for-creators/apply/audience`);
-    await expect(page).toHaveURL(`${APP}/for-creators/apply/audience`);
+    await expect(page).toHaveURL(`${APP}/for-creators/apply/profile`);
   });
 
   test("a taken e-mail offers a sign-in link", async ({ page }) => {

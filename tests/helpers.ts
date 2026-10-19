@@ -63,3 +63,63 @@ export function fakeFetch(...answers: Array<Response | Error | ((call: RecordedC
 }
 
 export const sessionCookie = (token = TOKEN, extra = "") => `ioh_session=${token}; Path=/; HttpOnly; SameSite=Lax${extra}`;
+
+// ---- creator application wizard fixtures ----------------------------------------------------------------------------------------------
+import optionsJson from "./fixtures/application-options.json";
+import type { ApplicationOptions, ApplicationState } from "@/lib/api/schemas";
+
+/** Captured from the running API's GET /creator/applications/options (not hand-written), so tests use the real slugs, ids and limits. */
+export const OPTIONS = optionsJson as unknown as ApplicationOptions;
+
+export const APPLICATION_ID = "22222222-2222-4222-8222-222222222222";
+
+export function applicationState(overrides: Partial<ApplicationState> & Record<string, unknown> = {}): ApplicationState {
+  const base: ApplicationState = {
+    application: { id: APPLICATION_ID, status: "draft", editable: true, createdAt: "2026-10-19T10:00:00.000Z", submittedAt: null, reviewedAt: null, feedback: null },
+    profile: { displayName: null, primaryNiche: null, otherNiches: [], city: null, bio: null, photoFileId: null, language: null, contentStyle: null, engagementRatePct: null },
+    audience: { platforms: [], collaborations: [], brandFit: [] },
+    rates: { prices: [], minimumBooking: null, deliverables: null, revisionsRounds: null, usageRightsMonths: null, depositTerms: null, payoutAccounts: [] },
+    progress: {
+      profile: { complete: false, missing: ["displayName", "primaryNiche", "city", "bio"] },
+      audience: { complete: false, missing: ["platforms", "brandFit"] },
+      rates: { complete: false, missing: ["prices"] },
+    },
+    canSubmit: false,
+    nextStep: "profile",
+    canReapply: false,
+  };
+  return { ...base, ...overrides } as ApplicationState;
+}
+
+export const BIO = "A creator bio that is certainly long enough to pass the forty character rule.";
+
+/** A fully filled draft, as the API returns it after the three steps were saved. */
+export function completeDraft(overrides: Record<string, unknown> = {}): ApplicationState {
+  return applicationState({
+    profile: { displayName: "Amina Beauty", primaryNiche: "beauty", otherNiches: ["fashion"], city: "douala", bio: BIO, photoFileId: null, language: "bilingual", contentStyle: "Short reels", engagementRatePct: 4.5 },
+    audience: { platforms: [{ platform: "instagram", handle: "@amina", followers: 25000 }], collaborations: [{ brandName: "MTN", description: null, year: 2024 }], brandFit: [1, 2] },
+    rates: { prices: [{ platform: "instagram", priceXaf: 85000 }], minimumBooking: "1-week", deliverables: "1 reel", revisionsRounds: 2, usageRightsMonths: 6, depositTerms: "full_in_escrow", payoutAccounts: [{ method: "mtn_momo", last3: "113" }] },
+    progress: { profile: { complete: true, missing: [] }, audience: { complete: true, missing: [] }, rates: { complete: true, missing: [] } },
+    canSubmit: true,
+    nextStep: "submit",
+    ...overrides,
+  });
+}
+
+/** A fake upstream API that answers by "METHOD /path" (the part after the base URL) and records every call. Unexpected calls fail loudly. */
+export function routeFetch(routes: Record<string, Response | Error | ((call: RecordedCall) => Response | Promise<Response>)>) {
+  const calls: RecordedCall[] = [];
+  const impl = (async (input: URL | RequestInfo, init: RequestInit = {}) => {
+    const url = new URL(String(input));
+    const key = `${init.method ?? "GET"} ${url.pathname.replace(/^\/api\/v1/, "")}`;
+    const call: RecordedCall = { url: String(input), init, headers: { ...(init.headers as Record<string, string>) } };
+    calls.push(call);
+    const answer = routes[key];
+    if (answer === undefined) throw new Error(`routeFetch: unexpected call ${key}`);
+    if (answer instanceof Error) throw answer;
+    if (typeof answer === "function") return answer(call);
+    return new Response(await answer.clone().text(), { status: answer.status, headers: answer.headers });
+  }) as typeof fetch;
+  const keys = () => calls.map((c) => `${c.init.method ?? "GET"} ${new URL(c.url).pathname.replace(/^\/api\/v1/, "")}`);
+  return { fetch: impl, calls, keys };
+}

@@ -3,7 +3,9 @@ import { decideAccess } from "./access";
 import type { Requirement, Session } from "./access";
 import { getSessionForAction } from "./session";
 
-export type ActionAccess = { ok: true; session: Session } | { ok: false; message: string };
+export type DenialReason = "anonymous" | "wrong_role" | "inactive" | "pending_creator" | "missing_permission";
+
+export type ActionAccess = { ok: true; session: Session } | { ok: false; message: string; reason: DenialReason };
 
 const MESSAGES = {
   anonymous: "Your session has ended. Please sign in again.",
@@ -17,11 +19,12 @@ const MESSAGES = {
  * First line of every Server Action that does anything on behalf of a user. Server Actions are reachable by a direct POST, so each
  * one must check the session itself: page guards and layouts do not protect them. The API remains the final authority.
  */
-export async function authorizeAction(requirement: Requirement): Promise<ActionAccess> {
-  const session = await getSessionForAction();
+export async function authorizeAction(requirement: Requirement, options: { clearInvalidSession?: boolean } = {}): Promise<ActionAccess> {
+  const session = await getSessionForAction({ clearInvalid: options.clearInvalidSession ?? true });
   const decision = decideAccess(session, requirement);
   if (decision.allowed && session) return { ok: true, session };
-  return { ok: false, message: MESSAGES[decision.allowed ? "wrong_role" : decision.reason] };
+  const reason: DenialReason = decision.allowed ? "wrong_role" : decision.reason;
+  return { ok: false, message: MESSAGES[reason], reason };
 }
 
 export const PAYMENTS_NOT_CONNECTED =

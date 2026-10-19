@@ -1,0 +1,204 @@
+{
+ "niches": [
+  {
+   "slug": "beauty",
+   "name": "Beauty"
+  },
+  {
+   "slug": "fashion",
+   "name": "Fashion"
+  },
+  {
+   "slug": "lifestyle",
+   "name": "Lifestyle"
+  },
+  {
+   "slug": "sports-fitness",
+   "name": "Sports & Fitness"
+  },
+  {
+   "slug": "fitness",
+   "name": "Fitness"
+  },
+  {
+   "slug": "sports",
+   "name": "Sports"
+  },
+  {
+   "slug": "business",
+   "name": "Business"
+  },
+  {
+   "slug": "food",
+   "name": "Food"
+  },
+  {
+   "slug": "tech",
+   "name": "Tech"
+  },
+  {
+   "slug": "travel",
+   "name": "Travel"
+  },
+  {
+   "slug": "music",
+   "name": "Music"
+  },
+  {
+   "slug": "comedy",
+   "name": "Comedy"
+  }
+ ],
+ "cities": [
+  {
+   "slug": "douala",
+   "name": "Douala"
+  },
+  {
+   "slug": "yaounde",
+   "name": "Yaound\u00e9"
+  },
+  {
+   "slug": "bamenda",
+   "name": "Bamenda"
+  },
+  {
+   "slug": "buea",
+   "name": "Buea"
+  },
+  {
+   "slug": "bafoussam",
+   "name": "Bafoussam"
+  },
+  {
+   "slug": "garoua",
+   "name": "Garoua"
+  },
+  {
+   "slug": "kribi",
+   "name": "Kribi"
+  }
+ ],
+ "platforms": [
+  {
+   "code": "facebook",
+   "name": "Facebook"
+  },
+  {
+   "code": "instagram",
+   "name": "Instagram"
+  },
+  {
+   "code": "tiktok",
+   "name": "TikTok"
+  },
+  {
+   "code": "youtube",
+   "name": "YouTube"
+  }
+ ],
+ "brandFit": [
+  {
+   "id": 1,
+   "name": "Beauty & Skincare"
+  },
+  {
+   "id": 2,
+   "name": "Fashion & Apparel"
+  },
+  {
+   "id": 3,
+   "name": "Sports Apparel & Footwear"
+  },
+  {
+   "id": 4,
+   "name": "Fitness Supplements"
+  },
+  {
+   "id": 5,
+   "name": "Food & Drinks"
+  },
+  {
+   "id": 6,
+   "name": "Energy Drinks"
+  },
+  {
+   "id": 7,
+   "name": "Tech & Wearables"
+  },
+  {
+   "id": 8,
+   "name": "Telecom & Mobile Money"
+  },
+  {
+   "id": 9,
+   "name": "Automotive"
+  },
+  {
+   "id": 10,
+   "name": "Travel & Hospitality"
+  }
+ ],
+ "minimumBookingOptions": [
+  {
+   "code": "1-week",
+   "label": "1 week",
+   "days": 7
+  },
+  {
+   "code": "2-weeks",
+   "label": "2 weeks",
+   "days": 14
+  },
+  {
+   "code": "1-month",
+   "label": "1 month",
+   "days": 30
+  }
+ ],
+ "revisionsRounds": [
+  1,
+  2,
+  3
+ ],
+ "usageRightsMonths": [
+  3,
+  6,
+  12
+ ],
+ "depositTerms": [
+  {
+   "value": "deposit_50_balance_on_delivery",
+   "label": "50% deposit, balance on delivery"
+  },
+  {
+   "value": "full_in_escrow",
+   "label": "Full amount held in escrow until delivery"
+  }
+ ],
+ "paymentMethods": [
+  {
+   "code": "mtn_momo",
+   "name": "MTN MoMo"
+  },
+  {
+   "code": "orange_money",
+   "name": "Orange Money"
+  }
+ ],
+ "languages": [
+  "english",
+  "french",
+  "bilingual"
+ ],
+ "limits": {
+  "minTotalFollowers": 1000,
+  "minPricePerPlatformXaf": 5000,
+  "maxCollaborations": 3,
+  "maxPlatforms": 4,
+  "maxOtherNiches": 4,
+  "bioMinLength": 40,
+  "bioMaxLength": 1000,
+  "maxBrandFitTags": 10
+ }
+}

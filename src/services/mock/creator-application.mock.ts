@@ -1,9 +1,4 @@
-import type {
-  CreatorApplication,
-  CreatorApplicationDraft,
-  CreatorApplicationOptions,
-  ForCreatorsContent,
-} from "@/types/creator-application";
+import type { ForCreatorsContent } from "@/types/creator-application";
 
 export const MOCK_FOR_CREATORS_CONTENT: ForCreatorsContent = {
   hero: {
@@ -38,43 +33,7 @@ export const MOCK_FOR_CREATORS_CONTENT: ForCreatorsContent = {
     },
     {
       question: "What happens after I apply?",
-      answer: "Our team reviews your application and contacts you on the mobile number you provide. Once approved, your profile goes live and brands can find you.",
+      answer: "Our team reviews your application. You can sign in at any time to see its status. Once approved, your profile goes live and brands can find you.",
     },
   ],
 };
-
-export const MOCK_CREATOR_APPLICATION_OPTIONS: CreatorApplicationOptions = {
-  niches: ["Beauty", "Fashion", "Lifestyle", "Sports & Fitness", "Food", "Tech", "Travel", "Music", "Comedy"],
-  cities: ["Douala", "Yaoundé", "Bamenda", "Buea", "Bafoussam", "Garoua", "Kribi"],
-  platforms: [
-    { id: "facebook", label: "Facebook" },
-    { id: "instagram", label: "Instagram" },
-    { id: "tiktok", label: "TikTok" },
-    { id: "youtube", label: "YouTube" },
-  ],
-  brandFit: [
-    "Beauty & Skincare",
-    "Fashion & Apparel",
-    "Sports Apparel & Footwear",
-    "Fitness Supplements",
-    "Food & Drinks",
-    "Energy Drinks",
-    "Tech & Wearables",
-    "Telecom & Mobile Money",
-    "Automotive",
-    "Travel & Hospitality",
-  ],
-  minimumBooking: ["1 week", "2 weeks", "1 month"],
-  revisions: ["1 round of content revisions", "2 rounds of content revisions", "3 rounds of content revisions"],
-  usageRights: ["Content usage rights: 3 months", "Content usage rights: 6 months", "Content usage rights: 12 months"],
-  depositTerms: ["50% deposit, balance on delivery", "Full amount held in escrow until delivery"],
-  defaultDeliverables: "1 dedicated post + 3 stories per platform",
-  minFollowers: 1000,
-  minPricePerPlatform: 5000,
-  maxCollaborations: 3,
-};
-
-export const MOCK_CREATOR_APPLICATIONS: CreatorApplication[] = [];
-
-// The in-progress application, filled in one step at a time.
-export const MOCK_CREATOR_APPLICATION_DRAFT: CreatorApplicationDraft = {};

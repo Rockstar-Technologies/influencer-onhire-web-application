@@ -1,27 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useRef, useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { getCreatorApplicationDraft, saveCreatorBasics } from "@/services/creator-application.service";
-import type { CreatorApplicationOptions, CreatorProfileBasics } from "@/types/creator-application";
+import { saveProfileAction } from "@/features/creator-application/actions";
+import { failureNotice, fieldError } from "@/features/creator-application/messages";
+import type { FailureNotice } from "@/features/creator-application/messages";
+import { profileToApi } from "@/features/creator-application/mapping";
+import type { PreservedProfile, ProfileForm } from "@/features/creator-application/mapping";
+import type { ApplicationOptions } from "@/lib/api/schemas";
 import { Field, StepActions, controlClass } from "../apply-ui";
 
-const EMPTY: CreatorProfileBasics = { fullName: "", niche: "", city: "", bio: "" };
-const MIN_BIO = 40;
-const MAX_PHOTO_BYTES = 3 * 1024 * 1024;
-
-type Errors = Partial<Record<keyof CreatorProfileBasics, string>>;
-
-function validate(values: CreatorProfileBasics): Errors {
-  const errors: Errors = {};
-  // One name is fine — many creators go by a single stage name.
-  if (values.fullName.trim().length < 2) errors.fullName = "Enter your creator name.";
-  if (!values.niche) errors.niche = "Choose the niche you're known for.";
-  if (!values.city) errors.city = "Choose your city.";
-  if (values.bio.trim().length < MIN_BIO) errors.bio = `Write at least ${MIN_BIO} characters so brands get to know you.`;
-  return errors;
-}
+const MAX_NAME = 80;
+type Errors = Record<string, string>;
 
 function initialsOf(name: string) {
   return (
@@ -35,91 +26,119 @@ function initialsOf(name: string) {
   );
 }
 
-export function ProfileStep({ options }: { options: CreatorApplicationOptions }) {
+export function ProfileStep({ options, initial, preserved }: { options: ApplicationOptions; initial: ProfileForm; preserved: PreservedProfile }) {
   const router = useRouter();
-  const [values, setValues] = useState<CreatorProfileBasics>(EMPTY);
+  const [values, setValues] = useState<ProfileForm>(initial);
   const [attempted, setAttempted] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [photoError, setPhotoError] = useState<string | null>(null);
+  const inFlight = useRef(false); // set synchronously: state alone cannot stop two submits fired in the same tick
+  const [notice, setNotice] = useState<FailureNotice | null>(null);
+  const [serverErrors, setServerErrors] = useState<Errors>({});
 
-  useEffect(() => {
-    getCreatorApplicationDraft().then((draft) => {
-      if (draft.basics) setValues(draft.basics);
-    });
-  }, []);
+  const { bioMinLength, bioMaxLength } = options.limits;
 
-  const errors = attempted ? validate(values) : {};
-  const set = (key: keyof CreatorProfileBasics) => (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-    setValues((current) => ({ ...current, [key]: event.target.value }));
-
-  function handlePhoto(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith("image/")) return setPhotoError("Choose an image file (JPG or PNG).");
-    if (file.size > MAX_PHOTO_BYTES) return setPhotoError("Choose a photo under 3 MB.");
-    setPhotoError(null);
-    const reader = new FileReader();
-    reader.onload = () => setValues((current) => ({ ...current, photoDataUrl: String(reader.result) }));
-    reader.readAsDataURL(file);
+  function validate(): Errors {
+    const errors: Errors = {};
+    // One name is fine — many creators go by a single stage name.
+    const name = values.displayName.trim();
+    if (name.length < 2) errors.displayName = "Enter your creator name.";
+    else if (name.length > MAX_NAME) errors.displayName = `Keep your creator name under ${MAX_NAME} characters.`;
+    if (!values.primaryNiche) errors.primaryNiche = "Choose the niche you're known for.";
+    if (!values.city) errors.city = "Choose your city.";
+    const bio = values.bio.trim().length;
+    if (bio < bioMinLength) errors.bio = `Write at least ${bioMinLength} characters so brands get to know you.`;
+    else if (bio > bioMaxLength) errors.bio = `Keep it under ${bioMaxLength} characters.`;
+    return errors;
   }
+
+  const errors: Errors = attempted ? { ...serverErrors, ...validate() } : serverErrors;
+  const set = (key: keyof ProfileForm) => (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    setValues((current) => ({ ...current, [key]: event.target.value }));
+    setServerErrors((current) => {
+      if (!current[key]) return current;
+      const next = { ...current };
+      delete next[key];
+      return next;
+    });
+  };
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (inFlight.current) return; // a second click or Enter press while saving must not send a second request
     setAttempted(true);
-    if (Object.keys(validate(values)).length) return;
+    setNotice(null);
+    if (Object.keys(validate()).length) return;
+    inFlight.current = true;
     setSaving(true);
-    await saveCreatorBasics({ ...values, fullName: values.fullName.trim(), bio: values.bio.trim() });
-    router.push("/for-creators/apply/audience");
+    try {
+      const result = await saveProfileAction(profileToApi(values, preserved));
+      if (result.ok) {
+        router.push("/for-creators/apply/audience");
+        return;
+      }
+      setServerErrors(result.error.kind === "validation" ? result.error.fields : {});
+      setNotice(failureNotice(result.error, "/for-creators/apply/profile"));
+    } catch {
+      setNotice(failureNotice({ kind: "unavailable", requestId: null }, "/for-creators/apply/profile"));
+    }
+    inFlight.current = false;
+    setSaving(false);
   }
 
   return (
     <form noValidate onSubmit={handleSubmit} className="flex flex-col gap-5">
       <div className="flex items-center gap-4">
-        {values.photoDataUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element -- local preview of an unsaved upload
-          <img src={values.photoDataUrl} alt="Your profile photo" className="h-20 w-20 rounded-full object-cover" />
-        ) : (
-          <span className="flex h-20 w-20 items-center justify-center rounded-full bg-primary-light text-xl font-bold text-primary">
-            {initialsOf(values.fullName)}
-          </span>
-        )}
+        <span className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-primary-light text-xl font-bold text-primary" aria-hidden>
+          {initialsOf(values.displayName)}
+        </span>
         <div>
-          <label
-            htmlFor="apply-photo"
-            className="inline-flex cursor-pointer rounded-full border border-border px-4 py-2 text-sm font-semibold text-heading hover:bg-surface-alt"
-          >
-            {values.photoDataUrl ? "Change photo" : "Upload photo"}
-          </label>
-          <input id="apply-photo" type="file" accept="image/*" onChange={handlePhoto} className="sr-only" />
-          <p className={photoError ? "mt-1.5 text-xs font-medium text-danger" : "mt-1.5 text-xs text-muted"}>
-            {photoError ?? "Optional — profiles with a clear photo get more requests."}
+          <p className="text-sm font-semibold text-heading">Profile photo</p>
+          <p className="mt-1 text-xs text-muted">
+            Photo upload isn&apos;t available yet, so your profile will show your initials for now. You&apos;ll be able to add a photo later; it
+            doesn&apos;t affect your application.
           </p>
         </div>
       </div>
 
       <Field
-        id="apply-fullName"
+        id="apply-displayName"
         label="Creator name"
         hint="Your real name or the name your audience knows you by — one name is fine."
-        error={errors.fullName}
+        error={fieldError(errors, "displayName")}
       >
-        <input id="apply-fullName" value={values.fullName} onChange={set("fullName")} placeholder="e.g. Francis Ngannou or Tenor" className={controlClass(Boolean(errors.fullName)) + " h-11"} />
+        <input
+          id="apply-displayName"
+          value={values.displayName}
+          onChange={set("displayName")}
+          maxLength={MAX_NAME + 20}
+          placeholder="e.g. Francis Ngannou or Tenor"
+          className={controlClass(Boolean(errors.displayName)) + " h-11"}
+        />
       </Field>
 
       <div className="grid gap-5 sm:grid-cols-2">
-        <Field id="apply-niche" label="Niche" error={errors.niche}>
-          <select id="apply-niche" value={values.niche} onChange={set("niche")} className={controlClass(Boolean(errors.niche)) + " h-11 cursor-pointer"}>
+        <Field id="apply-niche" label="Niche" error={fieldError(errors, "primaryNiche")}>
+          <select
+            id="apply-niche"
+            value={values.primaryNiche}
+            onChange={set("primaryNiche")}
+            className={controlClass(Boolean(errors.primaryNiche)) + " h-11 cursor-pointer"}
+          >
             <option value="">Select your niche</option>
             {options.niches.map((niche) => (
-              <option key={niche}>{niche}</option>
+              <option key={niche.slug} value={niche.slug}>
+                {niche.name}
+              </option>
             ))}
           </select>
         </Field>
-        <Field id="apply-city" label="City" error={errors.city}>
+        <Field id="apply-city" label="City" error={fieldError(errors, "city")}>
           <select id="apply-city" value={values.city} onChange={set("city")} className={controlClass(Boolean(errors.city)) + " h-11 cursor-pointer"}>
             <option value="">Select your city</option>
             {options.cities.map((city) => (
-              <option key={city}>{city}</option>
+              <option key={city.slug} value={city.slug}>
+                {city.name}
+              </option>
             ))}
           </select>
         </Field>
@@ -129,7 +148,7 @@ export function ProfileStep({ options }: { options: CreatorApplicationOptions })
         id="apply-bio"
         label="About you"
         hint={`${values.bio.trim().length} characters — who you are and what your audience loves about you.`}
-        error={errors.bio}
+        error={fieldError(errors, "bio")}
       >
         <textarea
           id="apply-bio"
@@ -141,7 +160,13 @@ export function ProfileStep({ options }: { options: CreatorApplicationOptions })
         />
       </Field>
 
-      <StepActions submitLabel="Continue →" busyLabel="Saving…" busy={saving} />
+      <StepActions
+        submitLabel="Continue →"
+        busyLabel="Saving…"
+        busy={saving}
+        error={notice?.text ?? null}
+        {...(notice?.link ? { errorLink: notice.link } : {})}
+      />
     </form>
   );
 }
