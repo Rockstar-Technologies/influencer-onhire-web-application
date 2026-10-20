@@ -9,7 +9,7 @@ import { TEST_CONFIG, TOKEN, apiUser, errorBody, fakeFetch, jsonResponse, sessio
 const deps = (fetchImpl: typeof fetch, config = TEST_CONFIG) => ({ config, fetchImpl, newRequestId: () => "req-test-0001" });
 
 describe("endpoint allowlist", () => {
-  it("lists exactly the allowed operations (auth, creator application wizard, brand campaigns, offers and hires, notifications, funding, administration, public creator pages) with fixed paths", () => {
+  it("lists exactly the allowed operations (auth, creator application wizard, brand campaigns, offers and hires, notifications, funding, administration, public creator pages, creator campaigns) with fixed paths", () => {
     expect(Object.values(ENDPOINTS).map((e) => `${e.method} ${e.path}`).sort()).toEqual([
       "DELETE /brand/campaigns/:id",
       "GET /admin/campaigns",
@@ -30,9 +30,13 @@ describe("endpoint allowlist", () => {
       "GET /brand/payments",
       "GET /creator/applications/current",
       "GET /creator/applications/options",
+      "GET /creator/campaigns",
+      "GET /creator/campaigns/:id",
+      "GET /creator/campaigns/filters",
       "GET /creator/offers",
       "GET /creator/offers/:id",
       "GET /creator/offers/decline-reasons",
+      "GET /creator/profile",
       "GET /creators/:username",
       "GET /notifications",
       "GET /notifications/unread-count",
@@ -61,8 +65,10 @@ describe("endpoint allowlist", () => {
       "POST /brand/offers/:id/fund",
       "POST /creator/applications/current/submit",
       "POST /creator/applications/reapply",
+      "POST /creator/campaigns/:id/offers",
       "POST /creator/offers/:id/accept",
       "POST /creator/offers/:id/decline",
+      "POST /creator/offers/:id/withdraw",
       "POST /notifications/:id/read",
       "POST /notifications/read-all",
       "PUT /creator/applications/current/audience",
@@ -77,7 +83,7 @@ describe("endpoint allowlist", () => {
       const variable: string[] = operation.path.match(/:[a-z]+/g) ?? [];
       expect(variable.every((part) => part === ":id" || part === ":username")).toBe(true);
       if (variable.includes(":username")) expect(["/creators/:username", "/public/creators/:username"]).toContain(operation.path);
-      if (variable.includes(":id")) expect(/^\/(?:brand\/(?:campaigns|offers)|creator\/offers|notifications|admin\/(?:users|creator-applications|campaigns|payments))\//.test(operation.path), operation.path).toBe(true);
+      if (variable.includes(":id")) expect(/^\/(?:brand\/(?:campaigns|offers)|creator\/offers|notifications|admin\/(?:users|creator-applications|campaigns|payments)|creator\/campaigns)\//.test(operation.path), operation.path).toBe(true);
     }
   });
 

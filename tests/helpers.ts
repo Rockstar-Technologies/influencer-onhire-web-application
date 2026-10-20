@@ -419,3 +419,28 @@ export const publicFilters: PublicFilters = {
   languages: ["english", "bilingual"],
   sorts: [{ value: "recommended", label: "Recommended" }, { value: "top_rated", label: "Top rated" }, { value: "price_asc", label: "Price: low to high" }, { value: "weird_sort", label: "Not ours" }],
 };
+
+// ---- creator campaign fixtures (shape captured from the running API's /creator/campaigns) ----------------------------------------------------
+import type { CreatorCampaign } from "@/lib/api/schemas";
+
+export function creatorCampaign(overrides: Partial<CreatorCampaign> = {}): CreatorCampaign {
+  return {
+    id: CAMPAIGN_ID,
+    reference: "CMP-9",
+    title: "Summer Glow Launch",
+    niche: { slug: "beauty", name: "Beauty" },
+    budgetXaf: 200_000,
+    startDate: "2075-03-01",
+    endDate: "2075-03-15",
+    deliverables: "Two stories and one reel",
+    minEngagement: null,
+    brand: { name: "Glow Cosmetics" },
+    cities: [{ slug: "douala", name: "Douala" }],
+    interests: [],
+    ageRanges: [],
+    openedAt: "2026-10-19T10:00:00.000Z",
+    myOffer: null,
+    eligibility: { meetsMinEngagement: true, canApply: true },
+    ...overrides,
+  };
+}

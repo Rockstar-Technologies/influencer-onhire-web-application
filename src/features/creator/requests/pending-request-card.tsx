@@ -8,6 +8,7 @@ import type { FailureNotice } from "@/features/offers/failure";
 import { HIRE_VALID_DAYS, hireAnswerBy, startDateProblem } from "@/features/offers/mapping";
 import type { OfferKind } from "@/features/offers/mapping";
 import type { DeclineReason, OfferView } from "@/lib/api/schemas";
+import { WithdrawButton } from "@/features/creator/campaigns/withdraw-button";
 import { formatDate, formatFcfa } from "@/lib/format";
 
 /** What the creator decided: accepting a direct hire may carry the chosen start date; declining always carries one of the API's reasons. */
@@ -109,6 +110,11 @@ export function PendingRequestCard({ offer, kind, reasons, responding, locked, n
         <p className="mt-4 text-sm text-body">
           The platform invited you to this campaign because your niche, city and rates fit it. Accepting books you for the campaign&apos;s dates at the price above.
         </p>
+      )}
+      {kind === "application" && (
+        <div className="mt-4">
+          <WithdrawButton offerId={offer.id} returnTo="/creator/requests" />
+        </div>
       )}
       {kind === "application" && offer.pitch && (
         <p className="mt-4 text-sm text-body">

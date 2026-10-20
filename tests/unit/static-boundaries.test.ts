@@ -463,3 +463,33 @@ describe("public creator pages are real, anonymous and limited to public fields"
     expect(hire.text).toContain("requireBrand");
   });
 });
+
+describe("creator campaign browse and apply are real and server-side", () => {
+  const CC = FILES.filter((f) => f.rel.startsWith("src/features/creator/campaigns/"));
+
+  it("imports no mock or service module; browser code never calls the API", () => {
+    expect(CC.length).toBeGreaterThan(8);
+    for (const f of CC) {
+      expect(importsOf(f.text).filter((i) => /\/services\/|\/mock\//.test(i)), f.rel).toEqual([]);
+      if (isClientComponent(f.text)) expect(f.text, f.rel).not.toMatch(/callApi|callWithSession|from "@\/lib\/api\/(?:client|config)"|\bfetch\(/);
+    }
+  });
+
+  it("each Server Action checks the active creator first, and the input has no creator, brand, status or date", () => {
+    const actions = CC.find((f) => f.rel.endsWith("actions.ts"))!;
+    expect(actions.text).toContain('authorizeAction({ role: "creator" }');
+    for (const name of ["applyToCampaignAction", "withdrawApplicationAction"]) {
+      const body = actions.text.slice(actions.text.indexOf(`export async function ${name}`));
+      expect(body.indexOf("await gate()"), name).toBeGreaterThan(-1);
+      expect(body.indexOf("await gate()"), name).toBeLessThan(body.indexOf("callWithSession"));
+    }
+    const schemas = CC.find((f) => f.rel.endsWith("schemas.ts"))!;
+    expect(stripComments(schemas.text)).not.toMatch(/creatorId|brandId|status|startDate|endDate|origin/);
+  });
+
+  it("both pages require an active creator before rendering", () => {
+    for (const file of ["src/app/creator/(dashboard)/campaigns/page.tsx", "src/app/creator/(dashboard)/campaigns/[id]/page.tsx"]) {
+      expect(FILES.find((f) => f.rel === file)!.text, file).toMatch(/await requireCreator\(/);
+    }
+  });
+});

@@ -515,3 +515,41 @@ export const publicFiltersSchema = z.object({
   sorts: z.array(z.object({ value: z.string(), label: z.string() })),
 });
 export type PublicFilters = z.infer<typeof publicFiltersSchema>;
+
+// ---- creator campaign browse and application (verified against the running API: backend docs/CAMPAIGN_DISCOVERY_OFFERS.md) -------------------------
+/** An open campaign as a creator sees it. Never present: the brand's id, e-mail or phone, the reviewer, other creators' offers. */
+export const creatorCampaignSchema = z.object({
+  id: z.uuid(),
+  reference: z.string(),
+  title: z.string(),
+  niche: z.object({ slug: z.string(), name: z.string() }),
+  /** The MAXIMUM the brand will pay each creator (not a total to be shared). */
+  budgetXaf: z.number().int(),
+  startDate: z.string(),
+  endDate: z.string(),
+  deliverables: z.string(),
+  minEngagement: z.object({ pct: z.number(), label: z.string() }).nullable(),
+  brand: z.object({ name: z.string() }),
+  cities: z.array(z.object({ slug: z.string(), name: z.string() })),
+  interests: z.array(z.object({ slug: z.string(), name: z.string() })),
+  ageRanges: z.array(z.object({ code: z.string(), label: z.string() })),
+  openedAt: z.string(),
+  /** The caller's own application to this campaign, if any (one per creator and campaign, ever). */
+  myOffer: z.object({ id: z.uuid(), status: z.enum(OFFER_STATUS.values) }).nullable(),
+  eligibility: z.object({ meetsMinEngagement: z.boolean(), canApply: z.boolean() }),
+});
+export type CreatorCampaign = z.infer<typeof creatorCampaignSchema>;
+export const creatorCampaignListSchema = z.array(creatorCampaignSchema);
+export const creatorCampaignEnvelopeSchema = z.object({ campaign: creatorCampaignSchema });
+export const creatorCampaignFiltersSchema = z.object({
+  niches: z.array(z.object({ slug: z.string(), name: z.string() })),
+  cities: z.array(z.object({ slug: z.string(), name: z.string() })),
+  interests: z.array(z.object({ slug: z.string(), name: z.string() })),
+  ageRanges: z.array(z.object({ code: z.string(), label: z.string() })),
+  budgetXaf: z.object({ min: z.number().int(), max: z.number().int() }).nullable().optional(),
+});
+export type CreatorCampaignFilters = z.infer<typeof creatorCampaignFiltersSchema>;
+/** The parts of the creator's own live profile an application needs: the platforms they can apply with, and their current rates. */
+export const creatorPlatformsSchema = z.object({
+  profile: z.object({ platforms: z.array(z.object({ platform: z.enum(PLATFORM.values), name: z.string(), handle: z.string(), followers: z.number().int(), priceXaf: z.number().int() })) }),
+});

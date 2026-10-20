@@ -16,6 +16,10 @@ import {
   campaignEnvelopeSchema,
   campaignListSchema,
   campaignOptionsSchema,
+  creatorCampaignEnvelopeSchema,
+  creatorCampaignFiltersSchema,
+  creatorCampaignListSchema,
+  creatorPlatformsSchema,
   declineReasonsSchema,
   fundResultSchema,
   fundingEnvelopeSchema,
@@ -134,6 +138,14 @@ export const ENDPOINTS = {
   publicCreators: endpoint({ name: "publicCreators", method: "GET", path: "/public/creators", query: ["q", "niche", "city", "platform", "language", "minEngagement", "followersMin", "followersMax", "priceMin", "priceMax", "minRating", "minSuccessRate", "sort", "cursor", "limit"], auth: "none", schema: publicCardListSchema }),
   publicCreator: endpoint({ name: "publicCreator", method: "GET", path: "/public/creators/:username", auth: "none", schema: publicProfileSchema }),
   publicCreatorFilters: endpoint({ name: "publicCreatorFilters", method: "GET", path: "/public/creators/filters", auth: "none", schema: publicFiltersSchema }),
+
+  // Creator campaign discovery and applications (backend docs/CAMPAIGN_DISCOVERY_OFFERS.md). The creator is always the session; `:id` is a campaign or offer UUID.
+  creatorCampaigns: endpoint({ name: "creatorCampaigns", method: "GET", path: "/creator/campaigns", query: ["q", "niche", "city", "interest", "ageRange", "budgetMin", "budgetMax", "startsAfter", "endsBefore", "eligibleOnly", "sort", "dir", "limit", "cursor"], auth: "session", schema: creatorCampaignListSchema }),
+  creatorCampaignFilters: endpoint({ name: "creatorCampaignFilters", method: "GET", path: "/creator/campaigns/filters", auth: "session", schema: creatorCampaignFiltersSchema }),
+  creatorCampaign: endpoint({ name: "creatorCampaign", method: "GET", path: "/creator/campaigns/:id", auth: "session", schema: creatorCampaignEnvelopeSchema }),
+  creatorApply: endpoint({ name: "creatorApply", method: "POST", path: "/creator/campaigns/:id/offers", auth: "session", schema: offerEnvelopeSchema }),
+  creatorWithdraw: endpoint({ name: "creatorWithdraw", method: "POST", path: "/creator/offers/:id/withdraw", auth: "session", schema: offerEnvelopeSchema }),
+  creatorProfile: endpoint({ name: "creatorProfile", method: "GET", path: "/creator/profile", auth: "session", schema: creatorPlatformsSchema }),
 
   applicationReapply: endpoint({ name: "applicationReapply", method: "POST", path: "/creator/applications/reapply", auth: "session", schema: reapplyResultSchema }),
 } as const;
