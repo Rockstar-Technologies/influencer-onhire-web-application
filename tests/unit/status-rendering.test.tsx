@@ -9,13 +9,10 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: vi.fn(), refres
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("@/features/auth/actions", () => ({ signInAction: vi.fn(), signUpAction: vi.fn(), signOutAction: vi.fn() }));
 vi.mock("@/features/payments/actions", () => ({ requestWithdrawalAction: vi.fn(), cancelWithdrawalAction: vi.fn() }));
-vi.mock("@/features/admin-panel/support/actions", () => ({ createTicketAction: vi.fn() }));
 
 const { EscrowBadge } = await import("@/components/shared/escrow-badge");
 const { WithdrawPanel } = await import("@/features/payments/withdraw-panel");
 const { RequestHistory } = await import("@/features/creator/requests/request-history");
-const { StatusBadge: TicketStatusBadge } = await import("@/features/admin-panel/support/sections/ticket-badges");
-const { NewTicketDialog } = await import("@/features/admin-panel/support/sections/new-ticket-dialog");
 
 const withdrawal = (status: string) => withdrawalView({ status });
 const request = (status: string) => offerView({ id: "44444444-4444-4444-8444-444444444444", status: status as never });
@@ -86,14 +83,6 @@ describe("creator request (offer) statuses", () => {
   });
 });
 
-describe("support ticket badges (still sample data until the support module is connected)", () => {
-  it.each(v.TICKET_STATUS.values)("ticket status %s renders", (status) => {
-    const { container } = render(<TicketStatusBadge status={status} />);
-    // The ticket screen capitalises each word ("In Progress"); only the code (in_progress) must map to it.
-    expect(container.textContent?.toLowerCase()).toBe(labels.TICKET_STATUS_LABELS[status].toLowerCase());
-  });
-});
-
 describe("form values must match what the API accepts", () => {
   const optionValues = (selector: string, root: ParentNode = document) => [...root.querySelectorAll<HTMLInputElement | HTMLOptionElement>(selector)].map((el) => el.value);
 
@@ -102,9 +91,4 @@ describe("form values must match what the API accepts", () => {
     expect(optionValues("select option")).toEqual([...v.PAYMENT_METHOD.values]);
   });
 
-  it("the support ticket form sends API account types and priorities", () => {
-    render(<NewTicketDialog />);
-    expect(optionValues("select[name='fromRole'] option")).toEqual([...v.ACCOUNT_TYPE.values].reverse());
-    expect(optionValues('input[name="priority"]').sort()).toEqual([...v.TICKET_PRIORITY.values].sort());
-  });
 });

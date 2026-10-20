@@ -43,7 +43,7 @@ const NAV: NavItem[] = [
   { label: "Refunds", icon: FiCornerUpLeft, href: "/admin/refunds", permission: "payments.view" },
   { label: "Withdrawals", icon: FiArrowUpRight, href: "/admin/withdrawals", permission: "payments.view" },
   { label: "Reconciliation", icon: FiAlertTriangle, href: "/admin/reconciliation", permission: "payments.view" },
-  { label: "Support", icon: FiLifeBuoy, href: "/admin/support", permission: "tickets.manage", search: { action: "/admin/support", placeholder: "Search tickets..." } },
+  { label: "Support", icon: FiLifeBuoy, href: "/admin/support", permission: "tickets.manage" },
   { label: "Reports", icon: FiBarChart2 },
   { label: "Settings", icon: FiSettings },
 ];
