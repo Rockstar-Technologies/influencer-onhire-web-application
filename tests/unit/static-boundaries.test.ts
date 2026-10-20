@@ -144,9 +144,9 @@ describe("financial wording", () => {
     }
   });
 
-  it("the approved replacement wording is used on both withdrawal screens", () => {
+  it("the approved replacement wording is used on the withdrawal screen", () => {
     const wording = "Withdrawal requests are subject to review. Any applicable fees and estimated processing times will be shown when confirmed.";
-    for (const rel of ["src/features/account/creator-payments/sections/withdraw-dialog.tsx", "src/features/creator/earnings/sections/withdraw-panel.tsx"]) {
+    for (const rel of ["src/features/payments/withdraw-panel.tsx"]) {
       expect(readFileSync(path.join(ROOT, rel), "utf8")).toContain(wording);
     }
   });
@@ -491,5 +491,37 @@ describe("creator campaign browse and apply are real and server-side", () => {
     for (const file of ["src/app/creator/(dashboard)/campaigns/page.tsx", "src/app/creator/(dashboard)/campaigns/[id]/page.tsx"]) {
       expect(FILES.find((f) => f.rel === file)!.text, file).toMatch(/await requireCreator\(/);
     }
+  });
+});
+
+describe("creator and brand payments are real, server-side and never claim money moved", () => {
+  const PAYMENTS = FILES.filter((f) => f.rel.startsWith("src/features/payments/"));
+
+  it("the legacy mock creator payment and earnings code is gone", () => {
+    for (const gone of ["src/features/account/creator-payments", "src/features/creator/earnings", "src/services/earnings.service.ts", "src/services/mock/payments.mock.ts", "src/services/mock/earnings.mock.ts"]) {
+      expect(FILES.some((f) => f.rel === gone || f.rel.startsWith(`${gone}/`)), gone).toBe(false);
+    }
+    expect(FILES.find((f) => f.rel === "src/services/payments.service.ts")!.text).not.toMatch(/MOCK_|requestWithdrawal|requestCashout|getCreatorWallet/);
+  });
+
+  it("payment code imports no mock or service module, and browser components never call the API", () => {
+    expect(PAYMENTS.length).toBeGreaterThan(6);
+    for (const f of PAYMENTS) {
+      expect(importsOf(f.text).filter((i) => /\/services\/|\/mock\//.test(i)), f.rel).toEqual([]);
+      if (isClientComponent(f.text)) expect(f.text, f.rel).not.toMatch(/callApi|callWithSession|from "@\/lib\/api\/(?:client|config)"|\bfetch\(/);
+    }
+  });
+
+  it("every Server Action checks the session first and none accepts a status, owner, phone or computed amount from the browser", () => {
+    const actions = PAYMENTS.find((f) => f.rel === "src/features/payments/actions.ts")!.text;
+    const bodies = actions.split(/export async function /).slice(1);
+    expect(bodies.length).toBe(6);
+    for (const body of bodies) expect(body.indexOf("gate(")).toBeGreaterThan(-1);
+    const schemas = PAYMENTS.find((f) => f.rel === "src/features/payments/schemas.ts")!.text;
+    expect(schemas).not.toMatch(/\b(?:phone|payerPhone|status|netXaf|feeXaf|balanceXaf|creatorId|brandId)\s*:/);
+  });
+
+  it("no wording claims withdrawals are free, fast or paid out unless the API says completed", () => {
+    for (const f of PAYMENTS) expect(f.text, f.rel).not.toMatch(/Withdrawals are free|within 24 hours|usually (?:arrive|credited)|on its way/i);
   });
 });

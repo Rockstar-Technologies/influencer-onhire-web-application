@@ -23,6 +23,8 @@ vi.mock("next/navigation", () => ({
     throw new Error("NEXT_NOT_FOUND");
   },
 }));
+vi.mock("@/features/payments/server", () => ({ loadBrandRefundRequests: vi.fn(async () => []) }));
+vi.mock("@/features/payments/actions", () => ({ decideDeliveryAction: vi.fn(), requestRefundReviewAction: vi.fn(), withdrawRefundReviewAction: vi.fn() }));
 vi.mock("@/features/funding/actions", () => ({
   startFundingAction: (...a: unknown[]) => startFundingAction(...a),
   refreshFundingAction: (...a: unknown[]) => refreshFundingAction(...a),

@@ -26,6 +26,3 @@ export async function authorizeAction(requirement: Requirement, options: { clear
   const reason: DenialReason = decision.allowed ? "wrong_role" : decision.reason;
   return { ok: false, message: MESSAGES[reason], reason };
 }
-
-export const PAYMENTS_NOT_CONNECTED =
-  "Payments are not connected to the live service yet, so nothing was submitted and no money has been moved.";

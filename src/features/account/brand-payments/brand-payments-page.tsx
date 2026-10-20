@@ -2,12 +2,15 @@ import Link from "next/link";
 import { EscrowBadge } from "@/components/shared/escrow-badge";
 import { EscrowSteps } from "@/components/shared/escrow-steps";
 import { loadBrandPayments, PAYMENTS_PATH } from "@/features/funding/server";
+import { DeliveryActions, RefundRequestActions } from "@/features/payments/brand-payment-actions";
+import { brandDeliveryNote } from "@/features/payments/labels";
+import { loadBrandRefundRequests } from "@/features/payments/server";
 import { PAYMENT_STATUS } from "@/lib/domain/vocabulary";
 import { formatDate, formatFcfa } from "@/lib/format";
 
 /** The brand's own payments, as the API holds them (it only ever returns this brand's rows). The fee and the creator's net are never shown to a brand. */
 export async function BrandPaymentsPage({ cursor }: { cursor?: string }) {
-  const page = await loadBrandPayments({ ...(cursor ? { cursor } : {}) });
+  const [page, refunds] = await Promise.all([loadBrandPayments({ ...(cursor ? { cursor } : {}) }), loadBrandRefundRequests(PAYMENTS_PATH)]);
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
@@ -67,6 +70,9 @@ export async function BrandPaymentsPage({ cursor }: { cursor?: string }) {
                         {PAYMENT_STATUS.is(payment.status) ? <EscrowBadge status={payment.status} /> : <span className="text-body">Unknown</span>}
                         {payment.simulated && <span className="rounded-full bg-warning-light px-2 py-0.5 text-[11px] font-semibold text-warning">Simulated</span>}
                       </span>
+                      {brandDeliveryNote(payment) && <span className="mt-1 block max-w-xs text-xs text-body">{brandDeliveryNote(payment)}</span>}
+                      {payment.dispute?.status === "open" && <span className="mt-1 block text-xs font-semibold text-warning">Dispute open</span>}
+                      <div className="mt-2 max-w-sm"><DeliveryActions payment={payment} /></div>
                     </td>
                   </tr>
                 ))}
@@ -80,6 +86,25 @@ export async function BrandPaymentsPage({ cursor }: { cursor?: string }) {
               Show more
             </Link>
           </div>
+        )}
+      </section>
+
+      <section aria-labelledby="refund-requests-heading" className="rounded-2xl border border-border bg-surface p-5 shadow-sm sm:p-6">
+        <h2 id="refund-requests-heading" className="font-display text-base font-bold text-heading">Refund review requests</h2>
+        <p className="mt-1 text-sm text-body">A request asks our team to review a refund. It is not a refund: no money has been returned by any request listed here.</p>
+        {refunds.length === 0 ? (
+          <p className="mt-4 text-sm text-muted">No refund review requests.</p>
+        ) : (
+          <ul className="mt-4 divide-y divide-border">
+            {refunds.map((r) => (
+              <li key={r.id} className="space-y-2 py-3">
+                <p className="text-sm font-semibold text-heading">{r.reference} · <span className="capitalize">{r.status}</span></p>
+                <p className="text-xs text-muted">Requested {formatDate(r.requestedAt)}</p>
+                <p className="text-sm text-body">{r.reason}</p>
+                <RefundRequestActions request={r} />
+              </li>
+            ))}
+          </ul>
         )}
       </section>
     </div>

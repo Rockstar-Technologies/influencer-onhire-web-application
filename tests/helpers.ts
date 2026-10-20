@@ -66,7 +66,7 @@ export const sessionCookie = (token = TOKEN, extra = "") => `ioh_session=${token
 
 // ---- creator application wizard fixtures ----------------------------------------------------------------------------------------------
 import optionsJson from "./fixtures/application-options.json";
-import type { ApplicationOptions, ApplicationState } from "@/lib/api/schemas";
+import type { ApplicationOptions, ApplicationState, CreatorPayment, CreatorWallet, Withdrawal } from "@/lib/api/schemas";
 
 /** Captured from the running API's GET /creator/applications/options (not hand-written), so tests use the real slugs, ids and limits. */
 export const OPTIONS = optionsJson as unknown as ApplicationOptions;
@@ -289,6 +289,63 @@ export function brandPayment(overrides: Partial<BrandPayment> = {}): BrandPaymen
     releasedAt: null,
     engagement: { offerId: OFFER_ID, origin: "direct_hire", campaign: null },
     creator: { username: "kevin.fitness", displayName: "Kevin Fitness" },
+    delivery: { reportedAt: null, acknowledgedAt: null, disputeDeadline: null, disputeWindowOpen: false, releaseEligible: false },
+    dispute: null,
+    actions: { canAcknowledge: false, canDispute: false, canWithdrawDispute: false },
+    ...overrides,
+  };
+}
+
+export function creatorPayment(overrides: Partial<CreatorPayment> = {}): CreatorPayment {
+  return {
+    id: "88888888-8888-4888-8888-888888888888",
+    reference: "INV-5",
+    status: "held",
+    amountXaf: 250_000,
+    feeXaf: 50_000,
+    netXaf: 200_000,
+    feeRatePct: 20,
+    fundedAt: "2031-01-01T10:00:02.000Z",
+    simulated: false,
+    requestedAt: null,
+    releasedAt: null,
+    delivery: { reportedAt: null, acknowledgedAt: null, disputeDeadline: null, releaseEligible: false },
+    dispute: null,
+    actions: { canSubmitDelivery: true },
+    engagement: { offerId: OFFER_ID, origin: "direct_hire", campaign: null },
+    brand: { name: "Acme" },
+    ...overrides,
+  };
+}
+
+export function creatorWallet(overrides: Partial<CreatorWallet> = {}): CreatorWallet {
+  return {
+    currency: "XAF",
+    availableXaf: 10_000,
+    releasedEarningsXaf: 10_000,
+    totalEarningsXaf: 10_000,
+    inEscrowXaf: 0,
+    awaitingReleaseXaf: 0,
+    pendingWithdrawalsXaf: 0,
+    completedWithdrawalsXaf: 0,
+    minimumWithdrawalXaf: 1_000,
+    simulated: { withdrawable: false, balanceXaf: 0, releasedEarningsXaf: 0, totalEarningsXaf: 0, inEscrowXaf: 0, awaitingReleaseXaf: 0 },
+    includesSimulatedFunds: false,
+    ...overrides,
+  };
+}
+
+export function withdrawalView(overrides: Partial<Withdrawal> = {}): Withdrawal {
+  return {
+    id: "77777777-7777-4777-8777-777777777777",
+    amountXaf: 5_000,
+    currency: "XAF",
+    status: "requested",
+    requestedAt: "2031-01-02T10:00:00.000Z",
+    closedAt: null,
+    completedAt: null,
+    failedAt: null,
+    destination: { method: "mtn_momo", last3: "001" },
     ...overrides,
   };
 }

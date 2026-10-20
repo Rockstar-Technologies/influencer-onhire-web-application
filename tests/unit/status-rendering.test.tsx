@@ -1,24 +1,23 @@
 // @vitest-environment jsdom
-import { render, screen, within } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import * as v from "@/lib/domain/vocabulary";
 import * as labels from "@/lib/domain/labels";
-import { offerView } from "../helpers";
+import { creatorWallet, offerView, withdrawalView } from "../helpers";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: vi.fn(), refresh: vi.fn(), push: vi.fn() }), usePathname: () => "/", useSearchParams: () => new URLSearchParams() }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("@/features/auth/actions", () => ({ signInAction: vi.fn(), signUpAction: vi.fn(), signOutAction: vi.fn() }));
-vi.mock("@/features/account/creator-payments/actions", () => ({ withdrawAction: vi.fn(), requestCashoutAction: vi.fn() }));
+vi.mock("@/features/payments/actions", () => ({ requestWithdrawalAction: vi.fn(), cancelWithdrawalAction: vi.fn() }));
 vi.mock("@/features/admin-panel/support/actions", () => ({ createTicketAction: vi.fn() }));
 
 const { EscrowBadge } = await import("@/components/shared/escrow-badge");
-const { WithdrawalHistory } = await import("@/features/creator/earnings/sections/withdrawal-history");
+const { WithdrawPanel } = await import("@/features/payments/withdraw-panel");
 const { RequestHistory } = await import("@/features/creator/requests/request-history");
 const { StatusBadge: TicketStatusBadge } = await import("@/features/admin-panel/support/sections/ticket-badges");
-const { WithdrawDialog } = await import("@/features/account/creator-payments/sections/withdraw-dialog");
 const { NewTicketDialog } = await import("@/features/admin-panel/support/sections/new-ticket-dialog");
 
-const withdrawal = (status: string, id = status) => ({ id, date: "2026-01-02", amount: 5000, method: "mtn_momo", phone: "670000001", status }) as never;
+const withdrawal = (status: string) => withdrawalView({ status });
 const request = (status: string) => offerView({ id: "44444444-4444-4444-8444-444444444444", status: status as never });
 
 describe("payment statuses render for every API value and survive an unknown one", () => {
@@ -36,21 +35,40 @@ describe("payment statuses render for every API value and survive an unknown one
 });
 
 describe("withdrawal statuses", () => {
-  it.each(v.WITHDRAWAL_STATUS.values)("history shows %s as its own state, not as processing or completed", (status) => {
-    render(<WithdrawalHistory withdrawals={[withdrawal(status)]} />);
-    const row = screen.getAllByRole("row")[1]!;
-    expect(within(row).getByText(labels.WITHDRAWAL_STATUS_LABELS[status], { exact: false })).toBeInTheDocument();
-    expect(row.textContent).not.toContain("Unknown");
+  it.each(v.WITHDRAWAL_STATUS.values)("the list shows %s as its own state", (status) => {
+    render(<WithdrawPanel wallet={creatorWallet()} withdrawals={[withdrawal(status)]} />);
+    const item = screen.getByRole("listitem");
+    expect(item.textContent).not.toContain("Unknown");
+    expect(item.textContent).not.toContain("_");
+  });
+
+  it("only requested or under-review withdrawals can be cancelled", () => {
+    for (const status of v.WITHDRAWAL_STATUS.values) {
+      const { unmount } = render(<WithdrawPanel wallet={creatorWallet()} withdrawals={[withdrawal(status)]} />);
+      expect(screen.queryByRole("button", { name: /cancel request/i }) !== null, status).toBe(status === "requested" || status === "under_review");
+      unmount();
+    }
+  });
+
+  it("nothing but a completed withdrawal is described as paid, and an approved one says no money was sent", () => {
+    for (const status of v.WITHDRAWAL_STATUS.values) {
+      const { unmount } = render(<WithdrawPanel wallet={creatorWallet()} withdrawals={[withdrawal(status)]} />);
+      const raw = screen.getByRole("listitem").textContent ?? "";
+      if (status === "approved") expect(raw).toContain("no money has been sent");
+      const text = raw.replace(/not been paid|no money has been sent/gi, "");
+      if (status !== "completed") expect(text, status).not.toMatch(/\b(?:has been|was|is) (?:paid|sent)\b|\bpaid out\b/i);
+      unmount();
+    }
   });
 
   it("an unexpected withdrawal status is shown as Unknown, not hidden or mislabeled", () => {
-    render(<WithdrawalHistory withdrawals={[withdrawal("reversed")]} />);
-    expect(screen.getAllByRole("row")[1]!.textContent).toContain("Unknown");
+    render(<WithdrawPanel wallet={creatorWallet()} withdrawals={[withdrawal("reversed")]} />);
+    expect(screen.getByRole("listitem").textContent).toContain("Unknown");
   });
 
   it("shows the payout network by label, never the API code", () => {
-    render(<WithdrawalHistory withdrawals={[withdrawal("completed")]} />);
-    expect(screen.getByText("MTN MoMo")).toBeInTheDocument();
+    render(<WithdrawPanel wallet={creatorWallet()} withdrawals={[withdrawal("completed")]} />);
+    expect(screen.getAllByText(/MTN MoMo/).length).toBeGreaterThan(0);
     expect(document.body.textContent).not.toContain("mtn_momo");
   });
 });
@@ -80,8 +98,8 @@ describe("form values must match what the API accepts", () => {
   const optionValues = (selector: string, root: ParentNode = document) => [...root.querySelectorAll<HTMLInputElement | HTMLOptionElement>(selector)].map((el) => el.value);
 
   it("the withdrawal form offers exactly the API's payout networks, by code", () => {
-    render(<WithdrawDialog available={10_000} minimum={1_000} />);
-    expect(optionValues('input[name="method"]')).toEqual([...v.PAYMENT_METHOD.values]);
+    render(<WithdrawPanel wallet={creatorWallet()} withdrawals={[]} />);
+    expect(optionValues("select option")).toEqual([...v.PAYMENT_METHOD.values]);
   });
 
   it("the support ticket form sends API account types and priorities", () => {

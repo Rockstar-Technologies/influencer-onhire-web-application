@@ -9,7 +9,7 @@ import { TEST_CONFIG, TOKEN, apiUser, errorBody, fakeFetch, jsonResponse, sessio
 const deps = (fetchImpl: typeof fetch, config = TEST_CONFIG) => ({ config, fetchImpl, newRequestId: () => "req-test-0001" });
 
 describe("endpoint allowlist", () => {
-  it("lists exactly the allowed operations (auth, creator application wizard, brand campaigns, offers and hires, notifications, funding, administration, public creator pages, creator campaigns) with fixed paths", () => {
+  it("lists exactly the allowed operations (auth, creator application wizard, brand campaigns, offers and hires, notifications, funding, payments and withdrawals, administration, public creator pages, creator campaigns) with fixed paths", () => {
     expect(Object.values(ENDPOINTS).map((e) => `${e.method} ${e.path}`).sort()).toEqual([
       "DELETE /brand/campaigns/:id",
       "GET /admin/campaigns",
@@ -28,6 +28,7 @@ describe("endpoint allowlist", () => {
       "GET /brand/offers/:id",
       "GET /brand/offers/:id/funding",
       "GET /brand/payments",
+      "GET /brand/refund-requests",
       "GET /creator/applications/current",
       "GET /creator/applications/options",
       "GET /creator/campaigns",
@@ -36,7 +37,12 @@ describe("endpoint allowlist", () => {
       "GET /creator/offers",
       "GET /creator/offers/:id",
       "GET /creator/offers/decline-reasons",
+      "GET /creator/payments",
+      "GET /creator/payments/:id",
       "GET /creator/profile",
+      "GET /creator/wallet",
+      "GET /creator/withdrawals",
+      "GET /creator/withdrawals/:id",
       "GET /creators/:username",
       "GET /notifications",
       "GET /notifications/unread-count",
@@ -63,12 +69,20 @@ describe("endpoint allowlist", () => {
       "POST /brand/offers/:id/cancel",
       "POST /brand/offers/:id/decline",
       "POST /brand/offers/:id/fund",
+      "POST /brand/payments/:id/acknowledge-delivery",
+      "POST /brand/payments/:id/dispute",
+      "POST /brand/payments/:id/dispute/withdraw",
+      "POST /brand/payments/:id/refund-request",
+      "POST /brand/refund-requests/:id/withdraw",
       "POST /creator/applications/current/submit",
       "POST /creator/applications/reapply",
       "POST /creator/campaigns/:id/offers",
       "POST /creator/offers/:id/accept",
       "POST /creator/offers/:id/decline",
       "POST /creator/offers/:id/withdraw",
+      "POST /creator/payments/:id/delivery-report",
+      "POST /creator/withdrawals",
+      "POST /creator/withdrawals/:id/cancel",
       "POST /notifications/:id/read",
       "POST /notifications/read-all",
       "PUT /creator/applications/current/audience",
@@ -83,7 +97,7 @@ describe("endpoint allowlist", () => {
       const variable: string[] = operation.path.match(/:[a-z]+/g) ?? [];
       expect(variable.every((part) => part === ":id" || part === ":username")).toBe(true);
       if (variable.includes(":username")) expect(["/creators/:username", "/public/creators/:username"]).toContain(operation.path);
-      if (variable.includes(":id")) expect(/^\/(?:brand\/(?:campaigns|offers)|creator\/offers|notifications|admin\/(?:users|creator-applications|campaigns|payments)|creator\/campaigns)\//.test(operation.path), operation.path).toBe(true);
+      if (variable.includes(":id")) expect(/^\/(?:brand\/(?:campaigns|offers)|creator\/offers|notifications|admin\/(?:users|creator-applications|campaigns|payments)|creator\/(?:campaigns|payments|withdrawals)|brand\/(?:payments|refund-requests))\//.test(operation.path), operation.path).toBe(true);
     }
   });
 
@@ -99,7 +113,7 @@ describe("endpoint allowlist", () => {
   });
 
   it("only money-moving operations take an Idempotency-Key, and they refuse a call without a valid one", async () => {
-    expect(Object.values(ENDPOINTS).filter((e) => "idempotent" in e && e.idempotent).map((e) => e.name)).toEqual(["brandFund"]);
+    expect(Object.values(ENDPOINTS).filter((e) => "idempotent" in e && e.idempotent).map((e) => e.name)).toEqual(["brandFund", "creatorWithdrawalRequest"]);
     const { fetch, calls } = fakeFetch(jsonResponse(200, { data: { funding: {}, replayed: false } }));
     const id = "44444444-4444-4444-8444-444444444444";
     for (const bad of [undefined, "", "short", "has space in it", "x".repeat(101)]) {

@@ -6,6 +6,15 @@ import {
   adminCampaignEnvelopeSchema,
   adminCampaignListSchema,
   adminPaymentEnvelopeSchema,
+  brandPaymentEnvelopeSchema,
+  creatorPaymentEnvelopeSchema,
+  creatorPaymentListSchema,
+  refundRequestEnvelopeSchema,
+  refundRequestListSchema,
+  walletSchema,
+  withdrawalEnvelopeSchema,
+  withdrawalListSchema,
+  withdrawalRequestResultSchema,
   adminPaymentListSchema,
   adminUserEnvelopeSchema,
   adminUserListSchema,
@@ -115,6 +124,24 @@ export const ENDPOINTS = {
   brandFund: endpoint({ name: "brandFund", method: "POST", path: "/brand/offers/:id/fund", auth: "session", idempotent: true, schema: fundResultSchema }),
   brandFunding: endpoint({ name: "brandFunding", method: "GET", path: "/brand/offers/:id/funding", auth: "session", schema: fundingEnvelopeSchema }),
   brandPayments: endpoint({ name: "brandPayments", method: "GET", path: "/brand/payments", query: ["status", "cursor", "limit"], auth: "session", schema: paymentListSchema }),
+
+  // Delivery, dispute and refund-review requests by the brand (backend docs/PAYMENTS_DELIVERY_RELEASE.md, PAYMENTS_DISPUTES_AND_REFUND_REQUESTS.md). Nothing here moves money.
+  brandPaymentAcknowledge: endpoint({ name: "brandPaymentAcknowledge", method: "POST", path: "/brand/payments/:id/acknowledge-delivery", auth: "session", schema: brandPaymentEnvelopeSchema }),
+  brandPaymentDispute: endpoint({ name: "brandPaymentDispute", method: "POST", path: "/brand/payments/:id/dispute", auth: "session", schema: brandPaymentEnvelopeSchema }),
+  brandPaymentDisputeWithdraw: endpoint({ name: "brandPaymentDisputeWithdraw", method: "POST", path: "/brand/payments/:id/dispute/withdraw", auth: "session", schema: brandPaymentEnvelopeSchema }),
+  brandRefundRequestCreate: endpoint({ name: "brandRefundRequestCreate", method: "POST", path: "/brand/payments/:id/refund-request", auth: "session", schema: refundRequestEnvelopeSchema }),
+  brandRefundRequests: endpoint({ name: "brandRefundRequests", method: "GET", path: "/brand/refund-requests", query: ["status", "cursor", "limit"], auth: "session", schema: refundRequestListSchema }),
+  brandRefundRequestWithdraw: endpoint({ name: "brandRefundRequestWithdraw", method: "POST", path: "/brand/refund-requests/:id/withdraw", auth: "session", schema: refundRequestEnvelopeSchema }),
+
+  // The creator's payments, delivery report, wallet and withdrawal REQUESTS (backend docs/PAYMENTS_WALLET_WITHDRAWALS.md). No payout provider exists: a request is never a payment.
+  creatorPayments: endpoint({ name: "creatorPayments", method: "GET", path: "/creator/payments", query: ["status", "cursor", "limit"], auth: "session", schema: creatorPaymentListSchema }),
+  creatorPayment: endpoint({ name: "creatorPayment", method: "GET", path: "/creator/payments/:id", auth: "session", schema: creatorPaymentEnvelopeSchema }),
+  creatorDeliveryReport: endpoint({ name: "creatorDeliveryReport", method: "POST", path: "/creator/payments/:id/delivery-report", auth: "session", schema: creatorPaymentEnvelopeSchema }),
+  creatorWallet: endpoint({ name: "creatorWallet", method: "GET", path: "/creator/wallet", auth: "session", schema: walletSchema }),
+  creatorWithdrawals: endpoint({ name: "creatorWithdrawals", method: "GET", path: "/creator/withdrawals", query: ["status", "cursor", "limit"], auth: "session", schema: withdrawalListSchema }),
+  creatorWithdrawal: endpoint({ name: "creatorWithdrawal", method: "GET", path: "/creator/withdrawals/:id", auth: "session", schema: withdrawalEnvelopeSchema }),
+  creatorWithdrawalRequest: endpoint({ name: "creatorWithdrawalRequest", method: "POST", path: "/creator/withdrawals", auth: "session", idempotent: true, schema: withdrawalRequestResultSchema }),
+  creatorWithdrawalCancel: endpoint({ name: "creatorWithdrawalCancel", method: "POST", path: "/creator/withdrawals/:id/cancel", auth: "session", schema: withdrawalEnvelopeSchema }),
 
   // Administration (every route needs an explicit permission, checked by the API): users, creator applications, campaign review, payments.
   adminUsers: endpoint({ name: "adminUsers", method: "GET", path: "/admin/users", query: ["q", "role", "status", "flagged", "sort", "dir", "limit", "cursor"], auth: "session", schema: adminUserListSchema }),

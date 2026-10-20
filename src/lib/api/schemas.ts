@@ -312,9 +312,95 @@ export const brandPaymentSchema = z.object({
     campaign: z.object({ id: z.uuid(), reference: z.string(), title: z.string() }).nullable(),
   }),
   creator: z.object({ username: z.string(), displayName: z.string() }),
+  delivery: z.object({
+    reportedAt: z.string().nullable(),
+    acknowledgedAt: z.string().nullable(),
+    disputeDeadline: z.string().nullable(),
+    disputeWindowOpen: z.boolean(),
+    releaseEligible: z.boolean(),
+  }),
+  dispute: z.object({ id: z.uuid(), status: z.string(), reason: z.string().nullable(), openedAt: z.string().nullable(), resolvedAt: z.string().nullable(), awaitingPolicyDecision: z.boolean() }).nullable(),
+  /** Hints for the buttons only; the API re-checks every action under lock. */
+  actions: z.object({ canAcknowledge: z.boolean(), canDispute: z.boolean(), canWithdrawDispute: z.boolean() }),
 });
 export type BrandPayment = z.infer<typeof brandPaymentSchema>;
 export const paymentListSchema = z.array(brandPaymentSchema);
+/** The payment as returned by a delivery action: only the parts the pages use. */
+export const brandPaymentEnvelopeSchema = z.object({ payment: brandPaymentSchema });
+
+/** One of the creator's own payments. The creator sees the frozen gross, fee and net; the brand's name is the only brand detail. */
+export const creatorPaymentSchema = z.object({
+  id: z.uuid(),
+  reference: z.string(),
+  status: z.string(),
+  amountXaf: z.number().int(),
+  feeXaf: z.number().int(),
+  netXaf: z.number().int(),
+  feeRatePct: z.number(),
+  fundedAt: z.string(),
+  simulated: z.boolean(),
+  requestedAt: z.string().nullable(),
+  releasedAt: z.string().nullable(),
+  delivery: z.object({ reportedAt: z.string().nullable(), acknowledgedAt: z.string().nullable(), disputeDeadline: z.string().nullable(), releaseEligible: z.boolean() }),
+  dispute: z.object({ id: z.uuid(), status: z.string(), reason: z.string().nullable(), awaitingPolicyDecision: z.boolean() }).nullable(),
+  actions: z.object({ canSubmitDelivery: z.boolean() }),
+  engagement: z.object({ offerId: z.uuid(), origin: z.string(), campaign: z.object({ id: z.uuid(), reference: z.string(), title: z.string() }).nullable() }),
+  brand: z.object({ name: z.string() }),
+});
+export type CreatorPayment = z.infer<typeof creatorPaymentSchema>;
+export const creatorPaymentListSchema = z.array(creatorPaymentSchema);
+export const creatorPaymentEnvelopeSchema = z.object({ payment: creatorPaymentSchema });
+
+/** The creator's wallet. Top-level figures are real money only; simulated money is reported separately and is never withdrawable. */
+export const walletSchema = z.object({
+  wallet: z.object({
+    currency: z.literal("XAF"),
+    availableXaf: z.number().int(),
+    releasedEarningsXaf: z.number().int(),
+    totalEarningsXaf: z.number().int(),
+    inEscrowXaf: z.number().int(),
+    awaitingReleaseXaf: z.number().int(),
+    pendingWithdrawalsXaf: z.number().int(),
+    completedWithdrawalsXaf: z.number().int(),
+    minimumWithdrawalXaf: z.number().int(),
+    simulated: z.object({ withdrawable: z.literal(false), balanceXaf: z.number().int(), releasedEarningsXaf: z.number().int(), totalEarningsXaf: z.number().int(), inEscrowXaf: z.number().int(), awaitingReleaseXaf: z.number().int() }),
+    includesSimulatedFunds: z.boolean(),
+  }),
+});
+export type CreatorWallet = z.infer<typeof walletSchema>["wallet"];
+
+export const withdrawalSchema = z.object({
+  id: z.uuid(),
+  amountXaf: z.number().int(),
+  currency: z.string(),
+  status: z.string(),
+  requestedAt: z.string(),
+  closedAt: z.string().nullable(),
+  completedAt: z.string().nullable(),
+  failedAt: z.string().nullable(),
+  destination: z.object({ method: z.string(), last3: z.string().nullable() }),
+});
+export type Withdrawal = z.infer<typeof withdrawalSchema>;
+export const withdrawalListSchema = z.array(withdrawalSchema);
+export const withdrawalEnvelopeSchema = z.object({ withdrawal: withdrawalSchema });
+export const withdrawalRequestResultSchema = z.object({ withdrawal: withdrawalSchema, replayed: z.boolean() });
+
+/** A brand's post-campaign refund REVIEW request. It never creates a refund and no money is returned by it. */
+export const refundRequestSchema = z.object({
+  id: z.uuid(),
+  paymentId: z.uuid(),
+  reference: z.string(),
+  status: z.string(),
+  reason: z.string(),
+  requestedAt: z.string(),
+  decidedAt: z.string().nullable(),
+  withdrawnAt: z.string().nullable(),
+  engagementEndedOn: z.string().nullable().optional(),
+  canWithdraw: z.boolean(),
+});
+export type RefundRequest = z.infer<typeof refundRequestSchema>;
+export const refundRequestListSchema = z.array(refundRequestSchema);
+export const refundRequestEnvelopeSchema = z.object({ request: refundRequestSchema });
 
 // ---- administration (verified against the running API: backend docs/ADMIN_ACCOUNT_MANAGEMENT.md, CAMPAIGN_MANAGEMENT.md, PAYMENTS_DELIVERY_RELEASE.md) ----------
 const isoText = z.string();
