@@ -7,5 +7,5 @@ export const metadata: Metadata = { title: "Payment · Admin · Influencer On Hi
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const session = await requireAdmin(`/admin/payments/${encodeURIComponent(id)}`, "payments.view");
-  return <PaymentDetailPage id={id} viewer={{ permissions: session.permissions }} />;
+  return <PaymentDetailPage id={id} viewer={{ permissions: session.permissions, userId: session.user.id }} />;
 }

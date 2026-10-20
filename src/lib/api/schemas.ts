@@ -520,10 +520,20 @@ export const adminPaymentSchema = z.object({
   releasedAt: isoText.nullable(),
   delivery: z.object({ reportedAt: isoText.nullable(), acknowledgedAt: isoText.nullable(), disputeDeadline: isoText.nullable(), disputeWindowOpen: z.boolean(), releaseEligible: z.boolean() }),
   dispute: z
-    .object({ id: z.uuid(), status: z.string().nullable(), reason: z.string().nullable(), openedAt: isoText.nullable(), resolvedAt: isoText.nullable(), awaitingPolicyDecision: z.boolean() })
+    .object({
+      id: z.uuid(),
+      status: z.string().nullable(),
+      reason: z.string().nullable(),
+      openedAt: isoText.nullable(),
+      resolvedAt: isoText.nullable(),
+      resolutionNote: z.string().nullable().optional(),
+      awaitingPolicyDecision: z.boolean(),
+      /** The two-administrator upheld-outcome proposal, if any (staff only). */
+      outcome: z.object({ status: z.string(), proposedBy: z.string().nullable(), proposedAt: isoText.nullable(), confirmedBy: z.string().nullable(), confirmedAt: isoText.nullable() }).nullable().optional(),
+    })
     .loose()
     .nullable(),
-  actions: z.object({ canRelease: z.boolean() }).loose(),
+  actions: z.object({ canRelease: z.boolean(), canResolveDispute: z.boolean().optional(), canRefund: z.boolean().optional(), canProposeUphold: z.boolean().optional(), awaitingSecondConfirmation: z.boolean().optional() }).loose(),
   engagement: z.object({ offerId: z.uuid(), origin: z.string(), campaign: z.object({ id: z.uuid(), reference: z.string(), title: z.string() }).nullable() }),
   feeXaf: z.number().int(),
   netXaf: z.number().int(),
@@ -639,3 +649,137 @@ export type CreatorCampaignFilters = z.infer<typeof creatorCampaignFiltersSchema
 export const creatorPlatformsSchema = z.object({
   profile: z.object({ platforms: z.array(z.object({ platform: z.enum(PLATFORM.values), name: z.string(), handle: z.string(), followers: z.number().int(), priceXaf: z.number().int() })) }),
 });
+
+
+// ---- finance administration (verified against the backend source and the running API: PAYMENTS_DISPUTES_AND_REFUND_REQUESTS.md, PAYMENTS_REFUNDS_EXCEPTIONS.md, PAYMENTS_WALLET_WITHDRAWALS.md) ----
+const refundLinkSchema = z.object({ id: z.uuid(), status: z.string(), simulated: z.boolean(), requestedAt: isoText, completedAt: isoText.nullable(), realMoneyReturned: z.literal(false) });
+
+/** A brand's refund review request as staff see it. A request is not a refund. */
+export const adminRefundRequestSchema = z.object({
+  id: z.uuid(),
+  paymentId: z.uuid(),
+  reference: z.string(),
+  status: z.string(),
+  reason: z.string(),
+  requestedAt: isoText,
+  decidedAt: isoText.nullable(),
+  withdrawnAt: isoText.nullable(),
+  engagementEndedOn: z.string().nullable().optional(),
+  refundCreated: z.literal(false),
+  brand: z.object({ id: z.uuid(), name: z.string() }),
+  paymentStatus: z.string(),
+  eligibleFrom: z.string().nullable().optional(),
+  decidedBy: z.string().nullable(),
+  decisionNote: z.string().nullable(),
+  canDecide: z.boolean(),
+  followUp: z.string().nullable().optional(),
+  payment: z.object({ id: z.uuid(), reference: z.string(), status: z.string(), amountXaf: z.number().int() }),
+  refund: refundLinkSchema.nullable(),
+  refunds: z.array(refundLinkSchema.extend({ cancelledAt: isoText.nullable().optional() })).optional(),
+});
+export type AdminRefundRequest = z.infer<typeof adminRefundRequestSchema>;
+export const adminRefundRequestListSchema = z.array(adminRefundRequestSchema);
+export const adminRefundRequestEnvelopeSchema = z.object({ request: adminRefundRequestSchema });
+
+/** A recorded refund. `realMoneyReturned` is always false: no provider refund exists, and a simulated one moves no money. */
+export const adminRefundSchema = z.object({
+  id: z.uuid(),
+  paymentId: z.uuid(),
+  invoiceNo: z.union([z.string(), z.number()]),
+  offerId: z.uuid().nullable().optional(),
+  amountXaf: z.number().int(),
+  status: z.string(),
+  paymentStatus: z.string(),
+  refundRequest: z.object({ id: z.uuid(), status: z.string().nullable() }).nullable(),
+  reason: z.string(),
+  requestedAt: isoText,
+  completedAt: isoText.nullable(),
+  cancelledAt: isoText.nullable(),
+  cancelNote: z.string().nullable(),
+  simulated: z.boolean(),
+  realMoneyReturned: z.literal(false),
+  note: z.string(),
+  canCancel: z.boolean(),
+});
+export type AdminRefund = z.infer<typeof adminRefundSchema>;
+export const adminRefundListSchema = z.array(adminRefundSchema);
+export const adminRefundEnvelopeSchema = z.object({ refund: adminRefundSchema });
+export const adminRefundRequestResultSchema = z.object({ refund: adminRefundSchema, replayed: z.boolean() });
+
+/** A withdrawal as the review queue sees it. Risk reasons are internal and never shown to the creator. */
+export const adminWithdrawalSchema = withdrawalSchema.extend({
+  creator: z.object({ id: z.uuid(), username: z.string(), displayName: z.string() }),
+  riskReasons: z.array(z.string()).nullable().optional(),
+  review: z.object({ reviewedBy: z.string().nullable(), reviewedAt: isoText.nullable(), note: z.string().nullable() }),
+  simulatedFunds: z.literal(false),
+  canApprove: z.boolean(),
+  canReject: z.boolean(),
+  ledger: z.array(z.object({ id: z.string(), entryType: z.string(), amountXaf: z.number().int() })).optional(),
+  payoutAttempts: z.array(z.unknown()).optional(),
+});
+export type AdminWithdrawal = z.infer<typeof adminWithdrawalSchema>;
+export const adminWithdrawalListSchema = z.array(adminWithdrawalSchema);
+export const adminWithdrawalEnvelopeSchema = z.object({ withdrawal: adminWithdrawalSchema });
+
+/** A reconciliation issue. A resolution is an audited annotation only: it never changes a payment. */
+export const adminIssueSchema = z.object({
+  id: z.uuid(),
+  kind: z.string(),
+  detail: z.string().nullable(),
+  attemptId: z.string().nullable(),
+  offerId: z.string().nullable(),
+  eventKey: z.string().nullable(),
+  detectedAt: isoText,
+  resolvedAt: isoText.nullable(),
+  resolvedBy: z.string().nullable(),
+  resolution: z.string().nullable(),
+  resolutionNote: z.string().nullable(),
+  collectionStatus: z.string().nullable(),
+  canResolve: z.boolean(),
+  canDismiss: z.boolean(),
+});
+export type AdminIssue = z.infer<typeof adminIssueSchema>;
+export const adminIssueListSchema = z.array(adminIssueSchema);
+export const adminIssueEnvelopeSchema = z.object({ issue: adminIssueSchema });
+
+const queue = { count: z.number().int(), note: z.string().nullable().optional() };
+/** The "what is waiting" view. Counts are exact; `items` are capped lists of ids and ages. */
+export const attentionSchema = z.object({
+  attention: z.object({
+    generatedAt: isoText,
+    withdrawalReview: z.object({ count: z.number().int(), overdue: z.number().int(), sla: z.object({ businessDays: z.number().int(), calendar: z.string() }), items: z.array(z.object({ id: z.uuid(), requestedAt: isoText, dueAt: isoText, overdue: z.boolean() })) }),
+    pendingCollections: z.object({ ...queue, overdue: z.number().int() }),
+    paymentsReleasable: z.object({ ...queue, disputeWindowOpen: z.number().int() }),
+    openDisputes: z.object({ count: z.number().int(), proposalsAwaitingSecondAdministrator: z.number().int(), items: z.array(z.object({ id: z.uuid(), paymentId: z.uuid(), openedAt: isoText })) }),
+    upheldDisputesAwaitingPolicy: z.object({ ...queue, items: z.array(z.object({ id: z.uuid(), paymentId: z.uuid(), upheldAt: isoText })) }),
+    refundRequests: z.object({ ...queue, awaitingDecision: z.number().int(), awaitingRefund: z.number().int(), refundPending: z.number().int() }),
+    pendingRefunds: z.object({ ...queue }),
+    approvedWithdrawals: z.object({ ...queue }),
+    campaignsWithoutAcceptedOffer: z.object({ ...queue }),
+  }),
+});
+export type Attention = z.infer<typeof attentionSchema>["attention"];
+
+export const readinessSchema = z.object({
+  readiness: z.object({
+    ready: z.boolean(),
+    checkedAt: isoText,
+    problems: z.array(z.object({ code: z.string(), message: z.string(), count: z.number().int().optional() })),
+    warnings: z.array(z.object({ code: z.string(), message: z.string(), count: z.number().int().optional() })),
+    paymentsEnabled: z.boolean(),
+  }),
+});
+export type Readiness = z.infer<typeof readinessSchema>["readiness"];
+
+export const diagnosticsSchema = z.object({
+  diagnostics: z.object({
+    generatedAt: isoText,
+    production: z.boolean(),
+    provider: z.object({ configured: z.string(), trust: z.string(), simulated: z.boolean(), implemented: z.boolean(), collectionsEnabled: z.boolean(), payoutExecution: z.string(), refundExecution: z.string() }),
+    collections: z.object({ pending: z.number().int(), awaitingConfirmation: z.number().int(), indeterminate: z.number().int(), olderThan24Hours: z.number().int(), lastCheckFailed: z.number().int() }),
+    exceptions: z.object({ open: z.number().int(), openByKind: z.record(z.string(), z.number().int()) }),
+    queues: z.object({ paymentsAwaitingRelease: z.number().int(), disputesOpen: z.number().int(), refundsPending: z.number().int(), withdrawalsRequested: z.number().int(), withdrawalsUnderReview: z.number().int(), withdrawalsApprovedAwaitingPayout: z.number().int() }),
+    integrity: z.object({ ok: z.boolean() }),
+  }),
+});
+export type Diagnostics = z.infer<typeof diagnosticsSchema>["diagnostics"];

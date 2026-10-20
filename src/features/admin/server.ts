@@ -10,7 +10,7 @@ import { signInUrl } from "@/lib/auth/paths";
 export const PAGE_SIZE = 20;
 
 /** A 401 means the session ended since the page guard ran: send the person to sign in and back. A 404 or a malformed id is the same "not found" page. */
-async function guarded<T>(returnTo: string, run: () => Promise<T>): Promise<T> {
+export async function guarded<T>(returnTo: string, run: () => Promise<T>): Promise<T> {
   try {
     return await run();
   } catch (error) {
@@ -20,16 +20,16 @@ async function guarded<T>(returnTo: string, run: () => Promise<T>): Promise<T> {
   }
 }
 
-const cursorOf = (value: unknown) => (typeof value === "string" && /^[A-Za-z0-9_=-]{1,512}$/.test(value) ? value : undefined);
+export const cursorOf = (value: unknown) => (typeof value === "string" && /^[A-Za-z0-9_=-]{1,512}$/.test(value) ? value : undefined);
 const textOf = (value: unknown, max = 100) => (typeof value === "string" && value.trim().length >= 2 && value.trim().length <= max ? value.trim() : undefined);
-const pick = <T extends string>(allowed: readonly T[], value: unknown): T | undefined => (typeof value === "string" && (allowed as readonly string[]).includes(value) ? (value as T) : undefined);
+export const pick = <T extends string>(allowed: readonly T[], value: unknown): T | undefined => (typeof value === "string" && (allowed as readonly string[]).includes(value) ? (value as T) : undefined);
 
 export interface Page<T> {
   items: T[];
   nextCursor: string | null;
 }
 
-async function list<T>(returnTo: string, endpoint: Endpoint<T[]>, query: Record<string, string | number | undefined>): Promise<Page<T>> {
+export async function list<T>(returnTo: string, endpoint: Endpoint<T[]>, query: Record<string, string | number | undefined>): Promise<Page<T>> {
   return guarded(returnTo, async () => {
     const result = await callWithSession(endpoint, undefined, { query: { limit: PAGE_SIZE, ...query } });
     const next = result.meta?.nextCursor;

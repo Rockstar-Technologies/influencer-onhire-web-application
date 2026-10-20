@@ -9,7 +9,7 @@ import { TEST_CONFIG, TOKEN, apiUser, errorBody, fakeFetch, jsonResponse, sessio
 const deps = (fetchImpl: typeof fetch, config = TEST_CONFIG) => ({ config, fetchImpl, newRequestId: () => "req-test-0001" });
 
 describe("endpoint allowlist", () => {
-  it("lists exactly the allowed operations (auth, creator application wizard, brand campaigns, offers and hires, notifications, funding, payments and withdrawals, administration, public creator pages, creator campaigns) with fixed paths", () => {
+  it("lists exactly the allowed operations (auth, creator application wizard, brand campaigns, offers and hires, notifications, funding, payments and withdrawals, administration (including finance), public creator pages, creator campaigns) with fixed paths", () => {
     expect(Object.values(ENDPOINTS).map((e) => `${e.method} ${e.path}`).sort()).toEqual([
       "DELETE /brand/campaigns/:id",
       "GET /admin/campaigns",
@@ -18,8 +18,19 @@ describe("endpoint allowlist", () => {
       "GET /admin/creator-applications/:id",
       "GET /admin/payments",
       "GET /admin/payments/:id",
+      "GET /admin/payments/attention",
+      "GET /admin/payments/diagnostics",
+      "GET /admin/payments/issues",
+      "GET /admin/payments/issues/:id",
+      "GET /admin/payments/readiness",
+      "GET /admin/refund-requests",
+      "GET /admin/refund-requests/:id",
+      "GET /admin/refunds",
+      "GET /admin/refunds/:id",
       "GET /admin/users",
       "GET /admin/users/:id",
+      "GET /admin/withdrawals",
+      "GET /admin/withdrawals/:id",
       "GET /auth/me",
       "GET /brand/campaigns",
       "GET /brand/campaigns/:id",
@@ -54,10 +65,23 @@ describe("endpoint allowlist", () => {
       "POST /admin/campaigns/:id/reject",
       "POST /admin/creator-applications/:id/approve",
       "POST /admin/creator-applications/:id/reject",
+      "POST /admin/payments/:id/dispute/resolve",
+      "POST /admin/payments/:id/dispute/uphold/confirm",
+      "POST /admin/payments/:id/dispute/uphold/decline",
+      "POST /admin/payments/:id/dispute/uphold/propose",
+      "POST /admin/payments/:id/dispute/uphold/withdraw",
+      "POST /admin/payments/:id/refund",
       "POST /admin/payments/:id/release",
+      "POST /admin/payments/issues/:id/dismiss",
+      "POST /admin/payments/issues/:id/resolve",
+      "POST /admin/refund-requests/:id/accept",
+      "POST /admin/refund-requests/:id/reject",
+      "POST /admin/refunds/:id/cancel",
       "POST /admin/users/:id/reactivate",
       "POST /admin/users/:id/reject",
       "POST /admin/users/:id/suspend",
+      "POST /admin/withdrawals/:id/approve",
+      "POST /admin/withdrawals/:id/reject",
       "POST /auth/login",
       "POST /auth/logout",
       "POST /auth/register",
@@ -97,7 +121,7 @@ describe("endpoint allowlist", () => {
       const variable: string[] = operation.path.match(/:[a-z]+/g) ?? [];
       expect(variable.every((part) => part === ":id" || part === ":username")).toBe(true);
       if (variable.includes(":username")) expect(["/creators/:username", "/public/creators/:username"]).toContain(operation.path);
-      if (variable.includes(":id")) expect(/^\/(?:brand\/(?:campaigns|offers)|creator\/offers|notifications|admin\/(?:users|creator-applications|campaigns|payments)|creator\/(?:campaigns|payments|withdrawals)|brand\/(?:payments|refund-requests))\//.test(operation.path), operation.path).toBe(true);
+      if (variable.includes(":id")) expect(/^\/(?:brand\/(?:campaigns|offers)|creator\/offers|notifications|admin\/(?:users|creator-applications|campaigns|payments|refund-requests|refunds|withdrawals)|creator\/(?:campaigns|payments|withdrawals)|brand\/(?:payments|refund-requests))\//.test(operation.path), operation.path).toBe(true);
     }
   });
 
@@ -113,7 +137,7 @@ describe("endpoint allowlist", () => {
   });
 
   it("only money-moving operations take an Idempotency-Key, and they refuse a call without a valid one", async () => {
-    expect(Object.values(ENDPOINTS).filter((e) => "idempotent" in e && e.idempotent).map((e) => e.name)).toEqual(["brandFund", "creatorWithdrawalRequest"]);
+    expect(Object.values(ENDPOINTS).filter((e) => "idempotent" in e && e.idempotent).map((e) => e.name)).toEqual(["brandFund", "creatorWithdrawalRequest", "adminRefundCreate"]);
     const { fetch, calls } = fakeFetch(jsonResponse(200, { data: { funding: {}, replayed: false } }));
     const id = "44444444-4444-4444-8444-444444444444";
     for (const bad of [undefined, "", "short", "has space in it", "x".repeat(101)]) {

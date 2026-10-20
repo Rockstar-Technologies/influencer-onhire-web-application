@@ -39,6 +39,7 @@ vi.mock("@/features/admin/actions", () => ({
   decideCampaignAction: (...a: unknown[]) => decideCampaignAction(...a),
   releasePaymentAction: (...a: unknown[]) => releasePaymentAction(...a),
 }));
+vi.mock("@/features/admin/finance-actions", () => ({}));
 vi.mock("@/features/admin/server", async (original) => {
   const real = await original<typeof import("@/features/admin/server")>();
   return { ...real, loadUsers: (...a: unknown[]) => s.loadUsers(...a), loadUser: (...a: unknown[]) => s.loadUser(...a), loadApplications: (...a: unknown[]) => s.loadApplications(...a), loadApplication: (...a: unknown[]) => s.loadApplication(...a), loadReviewCampaigns: (...a: unknown[]) => s.loadReviewCampaigns(...a), loadReviewCampaign: (...a: unknown[]) => s.loadReviewCampaign(...a), loadPayments: (...a: unknown[]) => s.loadPayments(...a), loadPayment: (...a: unknown[]) => s.loadPayment(...a), queueSize: (...a: unknown[]) => s.queueSize(...a) };
@@ -59,7 +60,7 @@ beforeEach(() => {
 });
 
 const page = (items: unknown[], nextCursor: string | null = null) => ({ items, nextCursor });
-const viewer = (...permissions: string[]) => ({ id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee", permissions: permissions as never });
+const viewer = (...permissions: string[]) => ({ id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee", userId: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee", permissions: permissions as never });
 
 describe("lists", () => {
   it("users: shows each account with role and status, filters from the URL, and pages by cursor", async () => {

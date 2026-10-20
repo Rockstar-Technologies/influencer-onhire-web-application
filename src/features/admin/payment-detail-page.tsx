@@ -3,14 +3,19 @@ import { FiArrowLeft } from "react-icons/fi";
 import type { PermissionCode } from "@/lib/domain/vocabulary";
 import { formatFcfa } from "@/lib/format";
 import { PaymentRelease } from "./decisions";
+import { DisputeDecision, RefundCreate } from "./finance-decisions";
+import { DISPUTE_TEXT } from "./finance-mapping";
 import { PAYMENT_STATUS_TEXT, dateTime, label } from "./mapping";
 import { loadPayment } from "./server";
 import { AdminHeader, Card, Facts, Pill } from "./ui";
 
 /** One payment as staff see it. Release is allowed only when the API says so (`actions.canRelease`); the API re-checks everything when it is pressed. */
-export async function PaymentDetailPage({ id, viewer }: { id: string; viewer: { permissions: readonly PermissionCode[] } }) {
+export async function PaymentDetailPage({ id, viewer }: { id: string; viewer: { permissions: readonly PermissionCode[]; userId: string } }) {
   const payment = await loadPayment(id);
   const mayRelease = viewer.permissions.includes("payments.release");
+  const mayUphold = viewer.permissions.includes("disputes.uphold");
+  const mayRefund = viewer.permissions.includes("payments.refund");
+  const outcome = payment.dispute?.outcome ?? null;
   const note = !mayRelease
     ? "Your role can see payments but not release them."
     : payment.status === "released"
@@ -53,11 +58,24 @@ export async function PaymentDetailPage({ id, viewer }: { id: string; viewer: { 
             ["Delivery reported", dateTime(payment.delivery.reportedAt)],
             ["Brand acknowledged", dateTime(payment.delivery.acknowledgedAt)],
             ["Dispute window ends", dateTime(payment.delivery.disputeDeadline)],
-            ["Dispute", payment.dispute ? `${payment.dispute.status ?? "—"}${payment.dispute.reason ? `: ${payment.dispute.reason}` : ""}` : "None"],
+            ["Dispute", payment.dispute ? `${label(DISPUTE_TEXT, payment.dispute.status)}${payment.dispute.reason ? `: ${payment.dispute.reason}` : ""}` : "None"],
+            ...(outcome ? ([["Upheld-outcome proposal", `${outcome.status}${outcome.proposedAt ? `, proposed ${dateTime(outcome.proposedAt)}` : ""}${outcome.proposedBy === viewer.userId ? " (by you)" : ""}`]] as [string, string][]) : []),
             ["Released", dateTime(payment.releasedAt)],
           ]}
         />
       </Card>
+      {payment.dispute && (
+        <Card title="Dispute decision">
+          <p className="mb-3 text-sm text-body">Dismissing makes the payment releasable. Upholding needs two different administrators, keeps the payment in escrow and returns no money.</p>
+          <DisputeDecision paymentId={payment.id} me={viewer.userId} mayDismiss={mayRelease} mayUphold={mayUphold} canResolve={payment.actions.canResolveDispute ?? false} canPropose={payment.actions.canProposeUphold ?? false} awaitingSecond={payment.actions.awaitingSecondConfirmation ?? false} outcome={outcome ? { status: outcome.status, proposedBy: outcome.proposedBy } : null} />
+        </Card>
+      )}
+      {mayRefund && (payment.status === "held" || payment.status === "refund_pending" || payment.status === "refunded") && (
+        <Card title="Refund">
+          <p className="mb-3 text-sm text-body">A full refund can be recorded only while the payment is held in escrow. No provider refund exists: a simulated refund moves no money and a real one is a recorded decision only.</p>
+          <RefundCreate paymentId={payment.id} canRefund={payment.actions.canRefund ?? false} simulated={payment.simulated} />
+        </Card>
+      )}
       <Card title="Release">
         <PaymentRelease id={payment.id} canRelease={mayRelease && payment.actions.canRelease} eligibleNote={note} />
         <p className="mt-4 text-xs text-muted">Release credits the creator’s wallet with the net amount. No money leaves the platform here: withdrawals are reviewed separately.</p>

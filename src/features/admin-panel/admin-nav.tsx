@@ -6,6 +6,9 @@ import { usePathname } from "next/navigation";
 import type { IconType } from "react-icons";
 import {
   FiAlertTriangle,
+  FiArrowUpRight,
+  FiCornerUpLeft,
+  FiRotateCcw,
   FiCheckSquare,
   FiBarChart2,
   FiCreditCard,
@@ -36,8 +39,11 @@ const NAV: NavItem[] = [
   { label: "Applications", icon: FiCheckSquare, href: "/admin/applications", permission: "applications.review", search: { action: "/admin/applications", placeholder: "Search applicants..." } },
   { label: "Campaigns", icon: FiSpeaker, href: "/admin/campaigns", permission: "campaigns.review", search: { action: "/admin/campaigns", placeholder: "Search campaign titles..." } },
   { label: "Payments", icon: FiCreditCard, href: "/admin/payments", permission: "payments.view" },
+  { label: "Refund requests", icon: FiRotateCcw, href: "/admin/refund-requests", permission: "payments.view" },
+  { label: "Refunds", icon: FiCornerUpLeft, href: "/admin/refunds", permission: "payments.view" },
+  { label: "Withdrawals", icon: FiArrowUpRight, href: "/admin/withdrawals", permission: "payments.view" },
+  { label: "Reconciliation", icon: FiAlertTriangle, href: "/admin/reconciliation", permission: "payments.view" },
   { label: "Support", icon: FiLifeBuoy, href: "/admin/support", permission: "tickets.manage", search: { action: "/admin/support", placeholder: "Search tickets..." } },
-  { label: "Disputes", icon: FiAlertTriangle },
   { label: "Reports", icon: FiBarChart2 },
   { label: "Settings", icon: FiSettings },
 ];

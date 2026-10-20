@@ -525,3 +525,28 @@ describe("creator and brand payments are real, server-side and never claim money
     for (const f of PAYMENTS) expect(f.text, f.rel).not.toMatch(/Withdrawals are free|within 24 hours|usually (?:arrive|credited)|on its way/i);
   });
 });
+
+describe("finance administration is real, permission-gated and never claims money moved", () => {
+  const FINANCE = FILES.filter((f) => /^src\/features\/admin\/finance-/.test(f.rel));
+
+  it("finance code imports no mock or service module, and browser components never call the API", () => {
+    expect(FINANCE.length).toBeGreaterThanOrEqual(6);
+    for (const f of FINANCE) {
+      expect(importsOf(f.text).filter((i) => /\/services\/|\/mock\//.test(i)), f.rel).toEqual([]);
+      if (isClientComponent(f.text)) expect(f.text, f.rel).not.toMatch(/callApi|callWithSession|from "@\/lib\/api\/(?:client|config)"|\bfetch\(/);
+    }
+  });
+
+  it("every finance Server Action checks the exact permission first, and the refund amount is never an input", () => {
+    const actions = FINANCE.find((f) => f.rel === "src/features/admin/finance-actions.ts")!.text;
+    const bodies = actions.split(/export async function /).slice(1);
+    expect(bodies.length).toBe(7);
+    for (const body of bodies) expect(body.slice(0, body.indexOf("callWithSession")), body.slice(0, 40)).toMatch(/await gate\("(?:payments\.release|payments\.refund|disputes\.uphold|withdrawals\.review|reconciliation\.resolve)"\)/);
+    const schemas = FINANCE.find((f) => f.rel === "src/features/admin/finance-schemas.ts")!.text;
+    expect(schemas).not.toMatch(/\b(?:amountXaf|amount|proposedBy|decidedBy|status|actor|adminId|permission)\s*:/);
+  });
+
+  it("no finance wording says a refund, payout or release happened without the API's say-so", () => {
+    for (const f of FINANCE) expect(f.text, f.rel).not.toMatch(/(?<!\bno (?:real )?)money (?:was|has been) (?:returned|sent|paid)|refund(?:ed)? (?:has been|was) (?:sent|paid)|paid out/i);
+  });
+});
