@@ -12,12 +12,6 @@ export const MOCK_FOR_BRANDS_CONTENT: ForBrandsContent = {
       "No agencies, no hidden fees, no chasing invoices",
     ],
   },
-  stats: [
-    { value: "300+", label: "Verified creators" },
-    { value: "9", label: "Content niches" },
-    { value: "7", label: "Cities covered" },
-    { value: "100%", label: "Escrow-protected payments" },
-  ],
   features: [
     {
       id: "matching",

@@ -1,13 +1,6 @@
-import type {
-  Campaign,
-  CampaignOverview,
-  CampaignPreview,
-  EngagementRateOption,
-  MatchableInfluencer,
-} from "@/types/campaign";
+import type { CampaignOverview, CampaignPreview } from "@/types/campaign";
 
 export const MOCK_CAMPAIGN_OVERVIEW: CampaignOverview = {
-  influencerReach: "1.2m",
   steps: [
     {
       id: "targeting",
@@ -19,7 +12,7 @@ export const MOCK_CAMPAIGN_OVERVIEW: CampaignOverview = {
       id: "post",
       title: "Post Campaign",
       description:
-        "Centralize your images, requirements, and more in a campaign brief sent to 1.2m influencers.",
+        "Centralize your images, requirements, and more in a campaign brief sent to the influencers it matches.",
     },
     {
       id: "apply",
@@ -47,34 +40,3 @@ export const MOCK_CAMPAIGN_PREVIEW: CampaignPreview = {
     packages: [{ name: "Instagram stories", price: 250 }],
   },
 };
-
-export const MOCK_CAMPAIGNS: Campaign[] = [];
-
-
-export const MOCK_ENGAGEMENT_RATE_OPTIONS: EngagementRateOption[] = [
-  { value: 0, label: "Any" },
-  { value: 1, label: "1%+" },
-  { value: 2, label: "2%+" },
-  { value: 3, label: "3%+" },
-  { value: 5, label: "5%+" },
-  { value: 8, label: "8%+" },
-];
-
-
-const NICHES = ["Beauty", "Fashion", "Lifestyle", "Food", "Tech", "Travel", "Music", "Comedy", "Fitness"];
-const FIRST_NAMES = ["Lindiwe", "Amara", "Muriel", "Brenda", "Kevin", "Sandra", "Joel", "Grace", "Nadia", "Paul", "Aïcha", "Boris", "Carine", "Estelle", "Franck", "Gaëlle", "Hervé"];
-const LAST_NAMES = ["Osei", "Kilonzo", "Blanch", "Mbah", "Tabi", "Eyong", "Ngono", "Fouda", "Ateba", "Nkeng", "Tchoua", "Manga", "Essomba"];
-// Douala and Yaoundé repeat so the pool leans toward the two biggest markets.
-const CITIES = ["Douala", "Yaoundé", "Douala", "Bamenda", "Yaoundé", "Buea", "Douala", "Yaoundé", "Bafoussam", "Garoua", "Kribi"];
-
-// Deterministic pool of creators the matching step filters against.
-export const MOCK_MATCHABLE_INFLUENCERS: MatchableInfluencer[] = Array.from({ length: 360 }, (_, i) => ({
-  id: `inf-${i + 1}`,
-  name: `${FIRST_NAMES[i % FIRST_NAMES.length]} ${LAST_NAMES[(i * 7) % LAST_NAMES.length]}`,
-  niche: NICHES[i % NICHES.length],
-  city: CITIES[(i * 7) % CITIES.length],
-  engagementRate: Math.round((((i * 141 + 11) % 97) / 10 + 0.5) * 10) / 10,
-  verified: i % 6 !== 5,
-  active: i % 7 !== 3,
-  hasConflictingDeal: i % 11 === 4,
-}));

@@ -7,7 +7,6 @@ export interface CampaignStep {
 }
 
 export interface CampaignOverview {
-  influencerReach: string;
   steps: CampaignStep[];
 }
 

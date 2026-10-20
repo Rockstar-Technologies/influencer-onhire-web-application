@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import Link from "next/link";
 import type { ForBrandsContent } from "@/types/brand";
 
@@ -11,11 +10,11 @@ function CheckIcon() {
   );
 }
 
-export function BrandsHero({ hero, finder }: { hero: ForBrandsContent["hero"]; finder: ReactNode }) {
+export function BrandsHero({ hero }: { hero: ForBrandsContent["hero"] }) {
   return (
     <section className="relative overflow-hidden bg-[#0b1220] px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
       <div aria-hidden className="pointer-events-none absolute -left-32 -top-32 h-96 w-96 rounded-full bg-primary/25 blur-3xl" />
-      <div className="relative mx-auto grid max-w-6xl items-start gap-10 lg:grid-cols-2 lg:gap-14">
+      <div className="relative mx-auto grid max-w-3xl items-start gap-10">
         <div className="lg:pt-6">
           <p className="text-xs font-bold uppercase tracking-widest text-primary-border">{hero.eyebrow}</p>
           <h1 className="mt-3 text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl">{hero.title}</h1>
@@ -43,7 +42,6 @@ export function BrandsHero({ hero, finder }: { hero: ForBrandsContent["hero"]; f
             </Link>
           </div>
         </div>
-        {finder}
       </div>
     </section>
   );

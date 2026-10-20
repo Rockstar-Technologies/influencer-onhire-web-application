@@ -1,7 +1,6 @@
 import { CreatorAvatar } from "@/components/shared/creator-avatar";
 import { buildSearchOptions } from "../../creators/query";
 import { loadFeatured, loadFilters } from "../../creators/server";
-import { getPlatformStats } from "@/services/platform.service";
 import { HeroSearch } from "./hero-search";
 
 function FlagStar({ className }: { className?: string }) {
@@ -24,10 +23,9 @@ function FlagStripe({ className }: { className?: string }) {
 }
 
 export async function Hero() {
-  const [filters, featured, stats] = await Promise.all([loadFilters(), loadFeatured(5), getPlatformStats()]);
+  const [filters, featured] = await Promise.all([loadFilters(), loadFeatured(5)]);
   const searchOptions = buildSearchOptions(filters);
   const faces = featured.items;
-  const [creators, brands] = stats;
 
   return (
     <section className="relative overflow-hidden bg-surface px-4 pb-20 pt-14 sm:px-6 sm:pt-20 lg:px-8">
@@ -73,20 +71,11 @@ export async function Hero() {
 
         {faces.length > 0 && (
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
-            <div className="flex -space-x-3">
+            <div role="group" aria-label="Some of our approved creators" className="flex -space-x-3">
               {faces.map((influencer) => (
                 <CreatorAvatar key={influencer.username} name={influencer.displayName} className="h-10 w-10 text-xs ring-2 ring-surface" />
               ))}
             </div>
-            <p className="text-sm text-body">
-              {creators && <span className="font-semibold text-heading">{creators.value}</span>} {creators?.label.toLowerCase()}
-              {brands && (
-                <>
-                  {" "}
-                  · trusted by <span className="font-semibold text-heading">{brands.value}</span> brands
-                </>
-              )}
-            </p>
           </div>
         )}
       </div>

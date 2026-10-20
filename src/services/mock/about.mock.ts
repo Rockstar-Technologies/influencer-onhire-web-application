@@ -10,7 +10,6 @@ export const MOCK_ABOUT_CONTENT: AboutContent = {
   facts: [
     { value: "100%", label: "of campaign payments held in escrow" },
     { value: "2", label: "mobile money options — MTN MoMo & Orange Money" },
-    { value: "24h", label: "typical time to receive a withdrawal" },
     { value: "0 FCFA", label: "charged until an influencer accepts your campaign" },
   ],
   story: {
