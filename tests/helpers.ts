@@ -361,3 +361,61 @@ export function adminPaymentDetail(overrides: Partial<AdminPaymentDetail> = {}):
 export function adminMe(permissions: string[], user: Record<string, unknown> = {}) {
   return jsonResponse(200, { data: { user: apiUser({ role: "admin", phone: null, id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee", ...user }), session: { expiresAt: "2026-12-31T00:00:00.000Z" }, permissions } });
 }
+
+// ---- public creator fixtures (shapes captured from the running API's /public/creators) ----------------------------------------------------------
+import type { PublicCard, PublicFilters, PublicProfile } from "@/lib/api/schemas";
+
+export function publicCard(overrides: Partial<PublicCard> = {}): PublicCard {
+  return {
+    username: "amina.beauty",
+    displayName: "Amina Beauty",
+    primaryNiche: "beauty",
+    niches: [{ slug: "beauty", name: "Beauty" }],
+    city: { slug: "douala", name: "Douala" },
+    language: "bilingual",
+    engagementRatePct: 5.2,
+    verifiedFields: [],
+    followers: { total: 77_000, platforms: [{ platform: "instagram", followers: 52_000 }, { platform: "tiktok", followers: 25_000 }] },
+    startingPriceXaf: 85_000,
+    rating: { average: 4.8, count: 12 },
+    successRatePct: 100,
+    joinedAt: "2026-10-01T10:00:00.000Z",
+    ...overrides,
+  };
+}
+
+export function publicProfile(overrides: Partial<PublicProfile> = {}): PublicProfile {
+  return {
+    username: "amina.beauty",
+    displayName: "Amina Beauty",
+    primaryNiche: "beauty",
+    niches: [{ slug: "beauty", name: "Beauty", isPrimary: true }],
+    city: { slug: "douala", name: "Douala" },
+    bio: "I make short beauty reels for audiences in Douala.",
+    language: "bilingual",
+    contentStyle: "Honest reviews",
+    engagementRatePct: 5.2,
+    verifiedFields: ["engagement_rate"],
+    joinedAt: "2026-10-01T10:00:00.000Z",
+    followers: { total: 77_000 },
+    startingPriceXaf: 85_000,
+    minimumBooking: { code: "2-weeks", label: "2 weeks", days: 14 },
+    terms: { deliverables: "1 reel + 3 stories", revisionsRounds: 2, usageRightsMonths: 6 },
+    brandFit: ["Beauty & Skincare"],
+    collaborations: [{ brandName: "MTN Cameroon", description: "Brand ambassador", year: 2024 }],
+    platforms: [
+      { platform: "instagram", name: "Instagram", handle: "@amina.beauty", followers: 52_000, priceXaf: 85_000 },
+      { platform: "tiktok", name: "TikTok", handle: "@amina", followers: 25_000, priceXaf: 120_000 },
+    ],
+    metrics: { rating: { average: 4.8, count: 12 }, successRatePct: 100 },
+    ...overrides,
+  };
+}
+
+export const publicFilters: PublicFilters = {
+  niches: [{ slug: "beauty", name: "Beauty" }, { slug: "tech", name: "Tech" }],
+  cities: [{ slug: "douala", name: "Douala" }, { slug: "yaounde", name: "Yaoundé" }],
+  platforms: [{ code: "instagram", name: "Instagram" }, { code: "tiktok", name: "TikTok" }],
+  languages: ["english", "bilingual"],
+  sorts: [{ value: "recommended", label: "Recommended" }, { value: "top_rated", label: "Top rated" }, { value: "price_asc", label: "Price: low to high" }, { value: "weird_sort", label: "Not ours" }],
+};

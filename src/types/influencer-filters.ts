@@ -14,10 +14,3 @@ export interface InfluencerSearchOptions {
   sortOptions: FilterOption[];
   filterGroups: FilterGroup[];
 }
-
-// Parsed from the browse page URL. `filters` is keyed by FilterGroup.key.
-export interface InfluencerQuery {
-  q: string;
-  sort: string;
-  filters: Record<string, string[]>;
-}

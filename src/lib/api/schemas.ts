@@ -457,3 +457,61 @@ export const adminPaymentDetailSchema = adminPaymentSchema.extend({
 });
 export type AdminPaymentDetail = z.infer<typeof adminPaymentDetailSchema>;
 export const adminPaymentEnvelopeSchema = z.object({ payment: adminPaymentDetailSchema });
+
+// ---- anonymous public creator pages (verified against the running API: backend docs/PUBLIC_CREATORS.md) -----------------------------------------
+/** Only fields the backend explicitly allows to be public. The API names them one by one; anything else it sends is ignored (zod strips unknown keys). */
+const publicNiche = z.object({ slug: z.string(), name: z.string() });
+const publicCity = z.object({ slug: z.string(), name: z.string() });
+const publicRating = z.object({ average: z.number(), count: z.number().int() });
+
+export const publicCardSchema = z.object({
+  username: z.string(),
+  displayName: z.string(),
+  primaryNiche: z.string().nullable(),
+  niches: z.array(publicNiche),
+  city: publicCity,
+  language: z.enum(LANGUAGE.values).nullable(),
+  engagementRatePct: z.number().nullable(),
+  verifiedFields: z.array(z.string()),
+  followers: z.object({ total: z.number().int(), platforms: z.array(z.object({ platform: z.enum(PLATFORM.values), followers: z.number().int() })) }),
+  startingPriceXaf: z.number().int(),
+  rating: publicRating.nullable(),
+  successRatePct: z.number().nullable(),
+  joinedAt: z.string(),
+});
+export type PublicCard = z.infer<typeof publicCardSchema>;
+export const publicCardListSchema = z.array(publicCardSchema);
+
+export const publicProfileSchema = z.object({
+  creator: z.object({
+    username: z.string(),
+    displayName: z.string(),
+    primaryNiche: z.string().nullable(),
+    niches: z.array(z.object({ slug: z.string(), name: z.string(), isPrimary: z.boolean() })),
+    city: publicCity,
+    bio: z.string().nullable(),
+    language: z.enum(LANGUAGE.values).nullable(),
+    contentStyle: z.string().nullable(),
+    engagementRatePct: z.number().nullable(),
+    verifiedFields: z.array(z.string()),
+    joinedAt: z.string(),
+    followers: z.object({ total: z.number().int() }),
+    startingPriceXaf: z.number().int(),
+    minimumBooking: z.object({ code: z.string(), label: z.string(), days: z.number().int() }),
+    terms: z.object({ deliverables: z.string().nullable(), revisionsRounds: z.number().int().nullable(), usageRightsMonths: z.number().int().nullable() }),
+    brandFit: z.array(z.string()),
+    collaborations: z.array(z.object({ brandName: z.string(), description: z.string().nullable(), year: z.number().int() })),
+    platforms: z.array(z.object({ platform: z.enum(PLATFORM.values), name: z.string(), handle: z.string(), followers: z.number().int(), priceXaf: z.number().int() })),
+    metrics: z.object({ rating: publicRating.nullable(), successRatePct: z.number().nullable() }),
+  }),
+});
+export type PublicProfile = z.infer<typeof publicProfileSchema>["creator"];
+
+export const publicFiltersSchema = z.object({
+  niches: z.array(publicNiche),
+  cities: z.array(publicCity),
+  platforms: z.array(z.object({ code: z.string(), name: z.string() })),
+  languages: z.array(z.string()),
+  sorts: z.array(z.object({ value: z.string(), label: z.string() })),
+});
+export type PublicFilters = z.infer<typeof publicFiltersSchema>;

@@ -423,3 +423,43 @@ describe("administration is real, permissioned and honest", () => {
     for (const f of ADMIN) expect(stripComments(f.text), f.rel).not.toMatch(/bulk|toggleFlag|sendUserMessage|inviteTeamMember|platform revenue|Total revenue/i);
   });
 });
+
+describe("public creator pages are real, anonymous and limited to public fields", () => {
+  const PUBLIC = FILES.filter((f) => f.rel.startsWith("src/features/public/creators/"));
+
+  it("the mock influencer services, data and types are gone", () => {
+    for (const gone of ["src/services/influencers.service.ts", "src/services/mock/influencers.mock.ts", "src/services/mock/influencer-profiles.mock.ts", "src/services/mock/influencer-filters.mock.ts", "src/features/public/influencer-profile/sections/payment-methods.tsx", "src/features/public/influencers/influencer-query.ts"]) {
+      expect(FILES.some((f) => f.rel === gone), gone).toBe(false);
+    }
+    expect(FILES.some((f) => importsOf(f.text).some((i) => /influencers\.service|influencers\.mock|influencer-profiles\.mock|influencer-filters\.mock/.test(i)))).toBe(false);
+  });
+
+  it("the loaders never read the session: only the visitor's address is forwarded", () => {
+    const server = PUBLIC.find((f) => f.rel.endsWith("server.ts"))!;
+    const code = stripComments(server.text);
+    expect(code).not.toMatch(/callWithSession|readSessionToken|getSession\b|cookies\(/);
+    expect(code).toContain("getForwardedClientIp");
+  });
+
+  it("every public API operation takes no session", () => {
+    const endpoints = FILES.find((f) => f.rel === "src/lib/api/endpoints.ts")!;
+    for (const name of ["publicCreators", "publicCreator", "publicCreatorFilters"]) expect(endpoints.text).toMatch(new RegExp(`${name}: endpoint\\(\\{[^}]*auth: "none"`));
+  });
+
+  it("the public pages show no photo, payment method, deposit wording, activity badge or mock marketing claim", () => {
+    const files = FILES.filter((f) => f.rel.startsWith("src/features/public/influencer-profile/") || f.rel.startsWith("src/features/public/influencers/") || f.rel === "src/components/shared/influencer-card.tsx" || f.rel === "src/features/public/home/sections/featured-influencers.tsx");
+    for (const f of files) {
+      const code = stripComments(f.text);
+      expect(code, f.rel).not.toMatch(/imageUrl|next\/image|paymentMethods|acceptedPaymentMethods|depositTerms|photoFileId|\bactivity\b/);
+      expect(code, f.rel).not.toMatch(/most sought-after|proven reach/);
+    }
+  });
+
+  it("the Hire buttons lead to the real hire flow, which requires a signed-in brand", () => {
+    const card = FILES.find((f) => f.rel === "src/components/shared/influencer-card.tsx")!;
+    const header = FILES.find((f) => f.rel === "src/features/public/influencer-profile/sections/profile-header.tsx")!;
+    for (const f of [card, header]) expect(f.text, f.rel).toMatch(/\/influencers\/\$\{[a-zA-Z.]*username\}\/hire/);
+    const hire = FILES.find((f) => f.rel === "src/app/(public)/influencers/[username]/hire/page.tsx")!;
+    expect(hire.text).toContain("requireBrand");
+  });
+});

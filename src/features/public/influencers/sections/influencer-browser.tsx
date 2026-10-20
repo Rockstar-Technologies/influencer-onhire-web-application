@@ -1,10 +1,11 @@
-import { getInfluencerSearchOptions } from "@/services/influencers.service";
-import type { InfluencerQuery } from "@/types/influencer-filters";
+import { buildSearchOptions } from "../../creators/query";
+import type { DirectoryQuery } from "../../creators/query";
+import { loadFilters } from "../../creators/server";
 import { InfluencerResults } from "./influencer-results";
 import { InfluencerSearch } from "./influencer-search";
 
-export async function InfluencerBrowser({ query }: { query: InfluencerQuery }) {
-  const options = await getInfluencerSearchOptions();
+export async function InfluencerBrowser({ query }: { query: DirectoryQuery }) {
+  const options = buildSearchOptions(await loadFilters());
 
   return (
     <section className="bg-surface px-4 pb-24 pt-8 sm:px-6 lg:px-8">

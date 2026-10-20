@@ -9,7 +9,7 @@ import { TEST_CONFIG, TOKEN, apiUser, errorBody, fakeFetch, jsonResponse, sessio
 const deps = (fetchImpl: typeof fetch, config = TEST_CONFIG) => ({ config, fetchImpl, newRequestId: () => "req-test-0001" });
 
 describe("endpoint allowlist", () => {
-  it("lists exactly the allowed operations (auth, creator application wizard, brand campaigns, offers and hires, notifications, funding, administration) with fixed paths", () => {
+  it("lists exactly the allowed operations (auth, creator application wizard, brand campaigns, offers and hires, notifications, funding, administration, public creator pages) with fixed paths", () => {
     expect(Object.values(ENDPOINTS).map((e) => `${e.method} ${e.path}`).sort()).toEqual([
       "DELETE /brand/campaigns/:id",
       "GET /admin/campaigns",
@@ -36,6 +36,9 @@ describe("endpoint allowlist", () => {
       "GET /creators/:username",
       "GET /notifications",
       "GET /notifications/unread-count",
+      "GET /public/creators",
+      "GET /public/creators/:username",
+      "GET /public/creators/filters",
       "PATCH /brand/campaigns/:id",
       "POST /admin/campaigns/:id/approve",
       "POST /admin/campaigns/:id/reject",
@@ -73,7 +76,7 @@ describe("endpoint allowlist", () => {
       expect(operation.path, operation.name).not.toMatch(/\{|\[|\*/);
       const variable: string[] = operation.path.match(/:[a-z]+/g) ?? [];
       expect(variable.every((part) => part === ":id" || part === ":username")).toBe(true);
-      if (variable.includes(":username")) expect(operation.path).toBe("/creators/:username");
+      if (variable.includes(":username")) expect(["/creators/:username", "/public/creators/:username"]).toContain(operation.path);
       if (variable.includes(":id")) expect(/^\/(?:brand\/(?:campaigns|offers)|creator\/offers|notifications|admin\/(?:users|creator-applications|campaigns|payments))\//.test(operation.path), operation.path).toBe(true);
     }
   });
@@ -108,6 +111,17 @@ describe("endpoint allowlist", () => {
     expect(headers.get("idempotency-key")).toBe("fund-0123456789");
     expect(String(calls[0]!.url)).not.toContain("fund-0123456789");
     expect(String(calls[0]!.init.body)).not.toContain("fund-0123456789");
+  });
+
+  it("the public creator operations take NO session: the cookie is never sent to them, even when one is passed", async () => {
+    expect(ENDPOINTS.publicCreators.auth).toBe("none");
+    expect(ENDPOINTS.publicCreator.auth).toBe("none");
+    expect(ENDPOINTS.publicCreatorFilters.auth).toBe("none");
+    const { fetch, calls } = fakeFetch(jsonResponse(200, { data: { niches: [], cities: [], platforms: [], languages: [], sorts: [] } }));
+    await callApi(ENDPOINTS.publicCreatorFilters, { session: TOKEN }, { config: TEST_CONFIG, fetchImpl: fetch });
+    const headers = new Headers(calls[0]!.init.headers as HeadersInit);
+    expect(headers.get("cookie")).toBeNull();
+    expect(JSON.stringify([...headers.entries()])).not.toContain(TOKEN);
   });
 
   it("accepts only the frozen table objects, not copies or look-alikes", () => {

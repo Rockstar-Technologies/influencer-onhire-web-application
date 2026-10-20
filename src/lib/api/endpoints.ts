@@ -26,6 +26,9 @@ import {
   notificationListSchema,
   meDataSchema,
   offerEnvelopeSchema,
+  publicCardListSchema,
+  publicFiltersSchema,
+  publicProfileSchema,
   offerListSchema,
   paymentListSchema,
   unreadCountSchema,
@@ -126,6 +129,11 @@ export const ENDPOINTS = {
   adminPayments: endpoint({ name: "adminPayments", method: "GET", path: "/admin/payments", query: ["status", "disputed", "releasable", "invoice", "dir", "limit", "cursor"], auth: "session", schema: adminPaymentListSchema }),
   adminPayment: endpoint({ name: "adminPayment", method: "GET", path: "/admin/payments/:id", auth: "session", schema: adminPaymentEnvelopeSchema }),
   adminPaymentRelease: endpoint({ name: "adminPaymentRelease", method: "POST", path: "/admin/payments/:id/release", auth: "session", schema: z.unknown() }),
+
+  // Anonymous public creator pages (backend docs/PUBLIC_CREATORS.md): no session is ever sent (auth "none"); a fixed allowlist of public fields.
+  publicCreators: endpoint({ name: "publicCreators", method: "GET", path: "/public/creators", query: ["q", "niche", "city", "platform", "language", "minEngagement", "followersMin", "followersMax", "priceMin", "priceMax", "minRating", "minSuccessRate", "sort", "cursor", "limit"], auth: "none", schema: publicCardListSchema }),
+  publicCreator: endpoint({ name: "publicCreator", method: "GET", path: "/public/creators/:username", auth: "none", schema: publicProfileSchema }),
+  publicCreatorFilters: endpoint({ name: "publicCreatorFilters", method: "GET", path: "/public/creators/filters", auth: "none", schema: publicFiltersSchema }),
 
   applicationReapply: endpoint({ name: "applicationReapply", method: "POST", path: "/creator/applications/reapply", auth: "session", schema: reapplyResultSchema }),
 } as const;

@@ -10,12 +10,13 @@ import {
   toggleFilterValue,
 } from "@/components/shared/filter-chips";
 import { cn } from "@/lib/utils";
-import type { FilterGroup, InfluencerQuery, InfluencerSearchOptions } from "@/types/influencer-filters";
-import { buildInfluencersHref } from "../influencer-query";
+import type { FilterGroup, InfluencerSearchOptions } from "@/types/influencer-filters";
+import { buildDirectoryHref } from "../../creators/query";
+import type { DirectoryQuery } from "../../creators/query";
 
 interface InfluencerSearchProps {
   options: InfluencerSearchOptions;
-  query: InfluencerQuery;
+  query: DirectoryQuery;
   children: ReactNode;
 }
 
@@ -30,10 +31,10 @@ export function InfluencerSearch({ options, query, children }: InfluencerSearchP
 
   const activeFilters = getActiveFilters(filterGroups, current.filters);
 
-  function navigate(next: InfluencerQuery) {
+  function navigate(next: DirectoryQuery) {
     startTransition(() => {
       setCurrent(next);
-      router.push(buildInfluencersHref(next), { scroll: false });
+      router.push(buildDirectoryHref({ ...next, cursor: "" }), { scroll: false });
     });
   }
 
