@@ -61,6 +61,7 @@ export const CREATOR_DASHBOARD_NAV: DashboardNavSection[] = [
   {
     label: "Creator Account",
     links: [
+      { label: "Open Campaigns", href: "/creator/campaigns", icon: "message" },
       { label: "Campaign Requests", href: "/creator/requests", icon: "message" },
       { label: "Earnings & Payouts", href: "/creator/earnings", icon: "wallet" },
     ],

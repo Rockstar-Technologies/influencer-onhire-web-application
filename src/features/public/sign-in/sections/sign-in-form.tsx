@@ -5,15 +5,8 @@ import type { FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { signIn } from "@/services/auth.service";
-import { InvalidCredentialsError } from "@/types/auth";
-import type { AccountType } from "@/types/auth";
-
-// Each account type lands on its own dashboard after signing in.
-const HOME: Record<AccountType, string> = {
-  brand: "/brand/payments",
-  creator: "/creator/requests",
-};
+import { signInAction } from "@/features/auth/actions";
+import { authFailureMessage } from "@/features/auth/messages";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -23,7 +16,8 @@ const control = (hasError?: boolean) =>
     hasError ? "border-danger" : "border-border"
   );
 
-export function SignInForm({ initialEmail = "" }: { initialEmail?: string }) {
+/** `next` is only a suggestion: the server re-validates it against the signed-in user's role before redirecting. */
+export function SignInForm({ initialEmail = "", next }: { initialEmail?: string; next?: string }) {
   const router = useRouter();
   const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState("");
@@ -48,16 +42,18 @@ export function SignInForm({ initialEmail = "" }: { initialEmail?: string }) {
 
     setSubmitting(true);
     try {
-      const account = await signIn({ email, password, remember });
-      router.push(HOME[account.accountType]);
-    } catch (error) {
-      setServerError(
-        error instanceof InvalidCredentialsError
-          ? "Email or password is incorrect. Check them and try again."
-          : "We couldn't sign you in. Check your connection and try again."
-      );
-      setSubmitting(false);
+      const result = await signInAction({ email: email.trim(), password, remember }, next);
+      if (result.ok) {
+        // Full navigation so the new session cookie is used by every server component on the next page.
+        router.replace(result.redirectTo);
+        router.refresh();
+        return;
+      }
+      setServerError(authFailureMessage(result.error));
+    } catch {
+      setServerError(authFailureMessage({ kind: "unavailable", requestId: null }));
     }
+    setSubmitting(false);
   }
 
   return (

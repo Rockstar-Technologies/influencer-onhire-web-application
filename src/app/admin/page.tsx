@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import { DashboardPage } from "@/features/admin-panel/dashboard/dashboard-page";
-import { parseRange } from "@/features/admin-panel/dashboard/dashboard-range";
+import { OverviewPage } from "@/features/admin/overview-page";
+import { requireAdmin } from "@/lib/auth/session";
 
-export const metadata: Metadata = { title: "Dashboard · Admin · Influencer On Hire" };
+export const metadata: Metadata = { title: "Overview · Admin · Influencer On Hire" };
 
-export default async function Page({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  return <DashboardPage range={parseRange((await searchParams).range)} />;
+export default async function Page() {
+  const { permissions } = await requireAdmin("/admin");
+  return <OverviewPage permissions={permissions} />;
 }

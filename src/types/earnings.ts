@@ -13,7 +13,8 @@ export interface CreatorCampaignEarning {
   releasedAt?: string;
 }
 
-export type WithdrawalStatus = "processing" | "completed";
+export type { WithdrawalStatus } from "@/lib/domain/vocabulary";
+import type { WithdrawalStatus } from "@/lib/domain/vocabulary";
 
 export interface Withdrawal {
   id: string;

@@ -1,21 +1,25 @@
-import type { TicketQuery } from "@/types/support";
-import { NewTicketDialog } from "./sections/new-ticket-dialog";
-import { SupportStats } from "./sections/support-stats";
-import { TicketTable } from "./sections/ticket-table";
-
-export function SupportPage({ query }: { query: TicketQuery }) {
+/**
+ * Support tickets are not available: the API has no support route (the `support_tickets` table and the `tickets.manage` permission exist, but no ticket can be
+ * opened, listed, answered or assigned), and the ticket flow is not decided. This page therefore shows no tickets, no counts and no form: nothing here is sample
+ * data and nothing can be "saved". See docs/FRONTEND_INTEGRATION_PLAN.md section 24.
+ */
+export function SupportPage() {
   return (
-    <div className="mx-auto max-w-7xl space-y-6">
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
-        <div>
-          <h1 className="font-display text-2xl font-extrabold text-heading sm:text-3xl">Support &amp; Communication</h1>
-          <p className="mt-2 text-sm text-body">Respond to tickets and manage messages from influencers and brands.</p>
-        </div>
-        <NewTicketDialog />
+    <div className="mx-auto max-w-3xl space-y-6">
+      <div>
+        <h1 className="font-display text-2xl font-extrabold text-heading sm:text-3xl">Support &amp; Communication</h1>
+        <p className="mt-2 text-sm text-body">Tickets from influencers and brands.</p>
       </div>
-
-      <SupportStats />
-      <TicketTable query={query} />
+      <section role="status" aria-labelledby="support-unavailable" className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
+        <h2 id="support-unavailable" className="font-display text-base font-bold text-heading">
+          Support tickets are not available yet
+        </h2>
+        <p className="mt-2 text-sm text-body">
+          The platform has no support service yet, so there are no tickets to show and none can be opened, answered or assigned here. Nothing on this page is
+          sample data. Until the service exists, support requests cannot be tracked in this application.
+        </p>
+        <p className="mt-3 text-xs text-muted">Waiting on: the support ticket flow and categories to be decided, and the service to be built.</p>
+      </section>
     </div>
   );
 }

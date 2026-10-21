@@ -1,9 +1,6 @@
-import type { PaymentMethod } from "@/types/payment";
+import { parseApiDate } from "@/lib/domain/dates";
 
-export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
-  mtn_momo: "MTN MoMo",
-  orange_money: "Orange Money",
-};
+export { PAYMENT_METHOD_LABELS } from "@/lib/domain/labels";
 
 export function formatNumber(amount: number) {
   return amount.toLocaleString("en-US");
@@ -14,7 +11,9 @@ export function formatFcfa(amount: number) {
 }
 
 export function formatDate(value: string) {
-  return new Date(`${value}T00:00:00`).toLocaleDateString("en-US", {
+  const date = parseApiDate(value);
+  if (!date) return "—";
+  return date.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",

@@ -53,6 +53,7 @@ export function StepActions({
   busyLabel,
   busy,
   error,
+  errorLink,
 }: {
   backHref?: string;
   onBack?: () => void;
@@ -60,12 +61,21 @@ export function StepActions({
   busyLabel: string;
   busy: boolean;
   error?: string | null;
+  errorLink?: { href: string; label: string };
 }) {
   return (
     <div className="flex flex-col gap-3 border-t border-border-light pt-5">
       {error && (
         <p className="text-sm font-medium text-danger" role="alert">
           {error}
+          {errorLink && (
+            <>
+              {" "}
+              <Link href={errorLink.href} className="font-semibold underline">
+                {errorLink.label}
+              </Link>
+            </>
+          )}
         </p>
       )}
       <div className="flex flex-wrap items-center justify-between gap-3">

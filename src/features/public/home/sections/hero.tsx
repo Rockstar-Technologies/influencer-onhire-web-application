@@ -1,6 +1,6 @@
-import Image from "next/image";
-import { getFeaturedInfluencers, getInfluencerSearchOptions } from "@/services/influencers.service";
-import { getPlatformStats } from "@/services/platform.service";
+import { CreatorAvatar } from "@/components/shared/creator-avatar";
+import { buildSearchOptions } from "../../creators/query";
+import { loadFeatured, loadFilters } from "../../creators/server";
 import { HeroSearch } from "./hero-search";
 
 function FlagStar({ className }: { className?: string }) {
@@ -23,9 +23,9 @@ function FlagStripe({ className }: { className?: string }) {
 }
 
 export async function Hero() {
-  const [searchOptions, featured, stats] = await Promise.all([getInfluencerSearchOptions(), getFeaturedInfluencers(), getPlatformStats()]);
-  const faces = featured.slice(0, 5);
-  const [creators, brands] = stats;
+  const [filters, featured] = await Promise.all([loadFilters(), loadFeatured(5)]);
+  const searchOptions = buildSearchOptions(filters);
+  const faces = featured.items;
 
   return (
     <section className="relative overflow-hidden bg-surface px-4 pb-20 pt-14 sm:px-6 sm:pt-20 lg:px-8">
@@ -71,27 +71,11 @@ export async function Hero() {
 
         {faces.length > 0 && (
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
-            <div className="flex -space-x-3">
+            <div role="group" aria-label="Some of our approved creators" className="flex -space-x-3">
               {faces.map((influencer) => (
-                <Image
-                  key={influencer.id}
-                  src={influencer.imageUrl}
-                  alt={influencer.name}
-                  width={40}
-                  height={40}
-                  className="h-10 w-10 rounded-full object-cover ring-2 ring-surface"
-                />
+                <CreatorAvatar key={influencer.username} name={influencer.displayName} className="h-10 w-10 text-xs ring-2 ring-surface" />
               ))}
             </div>
-            <p className="text-sm text-body">
-              {creators && <span className="font-semibold text-heading">{creators.value}</span>} {creators?.label.toLowerCase()}
-              {brands && (
-                <>
-                  {" "}
-                  · trusted by <span className="font-semibold text-heading">{brands.value}</span> brands
-                </>
-              )}
-            </p>
           </div>
         )}
       </div>

@@ -1,10 +1,8 @@
-import { getPasswordRules } from "@/services/auth.service";
+import { PASSWORD_MIN_LENGTH } from "@/lib/auth/rules";
 import { AuthShell } from "../auth/auth-shell";
 import { SignUpForm } from "./sections/sign-up-form";
 
-export async function SignUpPage() {
-  const { minLength } = await getPasswordRules();
-
+export function SignUpPage() {
   return (
     <AuthShell
       eyebrow="Join Influencer On Hire"
@@ -16,7 +14,7 @@ export async function SignUpPage() {
         "Pay and get paid with MTN MoMo or Orange Money",
       ]}
     >
-      <SignUpForm minPasswordLength={minLength} />
+      <SignUpForm minPasswordLength={PASSWORD_MIN_LENGTH} />
     </AuthShell>
   );
 }

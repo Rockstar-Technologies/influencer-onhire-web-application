@@ -3,12 +3,20 @@ import type { ReactNode } from "react";
 import { FiLogOut } from "react-icons/fi";
 import { inter, jakarta } from "@/lib/fonts";
 import { initials } from "@/lib/utils";
-import type { PlatformUser } from "@/types/user-management";
-import { signOutAction } from "./actions";
+import type { ApiUser } from "@/lib/api/schemas";
+import { headers } from "next/headers";
+import { signOutAction } from "@/features/auth/actions";
+import { REQUEST_PATH_HEADER } from "@/lib/auth/request-path";
+import { NotificationBell } from "@/features/notifications/notification-bell";
 
-export function AccountShell({ account, children }: { account: PlatformUser; children: ReactNode }) {
-  const isBrand = account.type === "brand";
+export async function AccountShell({ account, children }: { account: ApiUser; children: ReactNode }) {
+  const isBrand = account.role === "brand";
   const area = isBrand ? "/brand" : "/creator";
+  const path = (await headers()).get(REQUEST_PATH_HEADER) ?? "";
+  const links = [
+    { href: `${area}/payments`, label: "Payments" },
+    ...(isBrand ? [{ href: "/brand/campaigns", label: "Campaigns" }, { href: "/brand/offers", label: "Hires" }, { href: "/influencers", label: "Find influencers" }] : []),
+  ];
 
   return (
     <div className={`${inter.variable} ${jakarta.variable} flex flex-1 flex-col bg-surface-alt font-body text-body`}>
@@ -23,20 +31,26 @@ export function AccountShell({ account, children }: { account: PlatformUser; chi
           </Link>
 
           <nav aria-label="Account" className="ml-4 hidden items-center gap-1 sm:flex">
-            <Link href={`${area}/payments`} aria-current="page" className="rounded-md bg-info-light px-3 py-1.5 text-sm font-semibold text-navy">
-              Payments
-            </Link>
-            {isBrand && (
-              <Link href="/influencers" className="rounded-md px-3 py-1.5 text-sm font-semibold text-body hover:bg-surface-alt hover:text-heading">
-                Find influencers
-              </Link>
-            )}
+            {links.map((link) => {
+              const current = path === link.href || path.startsWith(`${link.href}/`) || path.startsWith(`${link.href}?`);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  aria-current={current ? "page" : undefined}
+                  className={current ? "rounded-md bg-info-light px-3 py-1.5 text-sm font-semibold text-navy" : "rounded-md px-3 py-1.5 text-sm font-semibold text-body hover:bg-surface-alt hover:text-heading"}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
           </nav>
 
           <div className="ml-auto flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-info-light text-xs font-bold text-navy">{initials(account.name)}</span>
+            <NotificationBell area={isBrand ? "brand" : "creator"} />
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-info-light text-xs font-bold text-navy">{initials(account.fullName)}</span>
             <span className="hidden leading-tight sm:block">
-              <span className="block text-sm font-semibold text-heading">{account.name}</span>
+              <span className="block text-sm font-semibold text-heading">{account.fullName}</span>
               <span className="block text-xs text-muted">{isBrand ? "Brand account" : "Creator account"}</span>
             </span>
             <form action={signOutAction}>

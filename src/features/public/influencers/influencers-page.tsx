@@ -1,8 +1,8 @@
-import type { InfluencerQuery } from "@/types/influencer-filters";
+import type { DirectoryQuery } from "../creators/query";
 import { BrowseHeader } from "./sections/browse-header";
 import { InfluencerBrowser } from "./sections/influencer-browser";
 
-export function InfluencersPage({ query }: { query: InfluencerQuery }) {
+export function InfluencersPage({ query }: { query: DirectoryQuery }) {
   return (
     <>
       <BrowseHeader />

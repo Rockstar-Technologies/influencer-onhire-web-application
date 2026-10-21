@@ -6,9 +6,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { formatCameroonPhone, isCameroonMobile } from "@/lib/format";
-import { signUp } from "@/services/auth.service";
-import { EmailTakenError } from "@/types/auth";
-import type { AccountType } from "@/types/auth";
+import { signUpAction } from "@/features/auth/actions";
+import { authFailureMessage } from "@/features/auth/messages";
+import type { SignUpAccountType as AccountType } from "@/features/auth/schemas";
 
 interface Values {
   fullName: string;
@@ -22,12 +22,6 @@ const ACCOUNT_TYPES: { id: AccountType; title: string; description: string }[] =
   { id: "brand", title: "I'm a Brand", description: "Hire creators for my business" },
   { id: "creator", title: "I'm a Creator", description: "Get paid for my content" },
 ];
-
-// Where each account type goes right after signing up.
-const NEXT_STEP: Record<AccountType, string> = {
-  brand: "/campaigns/new",
-  creator: "/for-creators/apply/profile",
-};
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -93,30 +87,36 @@ export function SignUpForm({ minPasswordLength }: { minPasswordLength: number })
 
     setSubmitting(true);
     try {
-      await signUp({
+      const result = await signUpAction({
         accountType,
         fullName: values.fullName,
         email: values.email,
         phone: formatCameroonPhone(values.phone),
         password: values.password,
+        acceptTerms: agreed,
       });
-      router.push(NEXT_STEP[accountType]);
-    } catch (error) {
-      setServerError(
-        error instanceof EmailTakenError ? (
+      if (result.ok) {
+        router.replace(result.redirectTo);
+        router.refresh();
+        return;
+      }
+      if (result.error.kind === "email_taken") {
+        setServerError(
           <>
             An account with this email already exists.{" "}
-            <Link href={`/login?email=${encodeURIComponent(values.email.trim())}`} className="font-semibold underline">
+            <Link href={`/sign-in?email=${encodeURIComponent(values.email.trim())}`} className="font-semibold underline">
               Login instead
             </Link>
             .
           </>
-        ) : (
-          "We couldn't create your account. Check your connection and try again."
-        )
-      );
-      setSubmitting(false);
+        );
+      } else {
+        setServerError(authFailureMessage(result.error));
+      }
+    } catch {
+      setServerError(authFailureMessage({ kind: "unavailable", requestId: null }));
     }
+    setSubmitting(false);
   }
 
   return (
@@ -238,7 +238,7 @@ export function SignUpForm({ minPasswordLength }: { minPasswordLength: number })
 
       <p className="text-center text-sm text-body">
         Already have an account?{" "}
-        <Link href="/login" className="font-semibold text-primary hover:text-primary-hover">
+        <Link href="/sign-in" className="font-semibold text-primary hover:text-primary-hover">
           Login
         </Link>
       </p>

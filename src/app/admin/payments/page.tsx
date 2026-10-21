@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
-import { PaymentsPage } from "@/features/admin-panel/payments/payments-page";
-import { parsePaymentQuery, type RawSearchParams } from "@/features/admin-panel/payments/payment-query";
+import { PaymentsAdminPage } from "@/features/admin/payments-page";
+import { parsePaymentQuery } from "@/features/admin/server";
+import { requireAdmin } from "@/lib/auth/session";
 
 export const metadata: Metadata = { title: "Payments · Admin · Influencer On Hire" };
 
-export default async function Page({ searchParams }: { searchParams: Promise<RawSearchParams> }) {
-  return <PaymentsPage query={parsePaymentQuery(await searchParams)} />;
+export default async function Page({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  await requireAdmin("/admin/payments", "payments.view");
+  return <PaymentsAdminPage query={parsePaymentQuery(await searchParams)} />;
 }

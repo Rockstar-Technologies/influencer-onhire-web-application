@@ -34,3 +34,17 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Backend integration (authentication)
+
+The browser never calls the Express API. Next.js server code (Server Components, Server Actions) is the only caller, through a single
+server-only client in `src/lib/api/`. The session lives in an `HttpOnly` cookie on this app's own origin and is forwarded to the API.
+Configuration is server-side only: see `.env.example` (`API_BASE_URL`, `APP_ORIGIN`, `TRUSTED_PROXY_HOPS`, ...).
+
+- `npm run test` — unit and component tests (Vitest, React Testing Library).
+- `npm run test:e2e` — Playwright journeys against a production build and disposable test APIs; see `tests/e2e/README.md`.
+- `npm run typecheck`, `npm run lint`, `npm run build`.
+
+## Documentation
+
+- `docs/FRONTEND_FLOW_ANALYSIS.md` — the frontend flow analysis (screens, flows and the data each one needs; referred to as **FFA** in the backend documents). It was moved here, unchanged, from the shared workspace folder `influencer-onhire-web/docs/` on 2026-10-21; the backend repository's documents now point to this location. Its "Scope note" describes the original workspace layout and is kept as written.

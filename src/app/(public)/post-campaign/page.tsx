@@ -1,11 +1,6 @@
-import type { Metadata } from "next";
-import { PostCampaignPage } from "@/features/public/direct-campaign/post-campaign-page";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Post a Campaign | Influencer On Hire",
-  description: "Describe your campaign, set your budget and get matched with verified influencers across Cameroon.",
-};
-
+/** Compatibility route: `/post-campaign` is now `/campaigns/new` (the canonical campaign form). */
 export default function Page() {
-  return <PostCampaignPage />;
+  redirect("/campaigns/new");
 }

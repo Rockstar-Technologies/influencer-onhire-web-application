@@ -1,84 +1,9 @@
-export type SocialPlatform = "facebook" | "instagram" | "tiktok" | "youtube";
-export type MobileMoneyMethod = "mtn_momo" | "orange_money";
+import type { PaymentMethodCode, PlatformCode } from "@/lib/domain/vocabulary";
 
-// Step 1 — who the creator is
-export interface CreatorProfileBasics {
-  fullName: string;
-  photoDataUrl?: string;
-  niche: string;
-  city: string;
-  bio: string;
-}
-
-export interface PlatformAudience {
-  platform: SocialPlatform;
-  handle: string;
-  followers: number;
-}
-
-export interface PastCollaboration {
-  brand: string;
-  description: string;
-  year: string;
-}
-
-// Step 2 — reach and track record
-export interface CreatorAudience {
-  platforms: PlatformAudience[];
-  collaborations: PastCollaboration[];
-  brandFit: string[];
-}
-
-export interface PlatformPrice {
-  platform: SocialPlatform;
-  price: number;
-}
-
-export interface PayoutAccount {
-  method: MobileMoneyMethod;
-  number: string;
-}
-
-// Step 3 — how brands book and pay them
-export interface CreatorRates {
-  prices: PlatformPrice[];
-  minimumBooking: string;
-  deliverables: string;
-  revisions: string;
-  usageRights: string;
-  depositTerms: string;
-  payoutAccounts: PayoutAccount[];
-}
-
-export interface CreatorApplicationDraft {
-  basics?: CreatorProfileBasics;
-  audience?: CreatorAudience;
-  rates?: CreatorRates;
-}
-
-export interface CreatorApplication {
-  id: string;
-  status: "under_review";
-  submittedAt: string;
-  basics: CreatorProfileBasics;
-  audience: CreatorAudience;
-  rates: CreatorRates;
-}
-
-export interface CreatorApplicationOptions {
-  niches: string[];
-  cities: string[];
-  platforms: { id: SocialPlatform; label: string }[];
-  brandFit: string[];
-  minimumBooking: string[];
-  revisions: string[];
-  usageRights: string[];
-  depositTerms: string[];
-  defaultDeliverables: string;
-  minFollowers: number;
-  minPricePerPlatform: number;
-  maxCollaborations: number;
-}
+// The application wizard's data now comes from the API (see src/features/creator-application and src/lib/api/schemas.ts).
+// Only the shared vocabulary aliases and the static "For creators" marketing content types remain here.
+export type SocialPlatform = PlatformCode;
+export type MobileMoneyMethod = PaymentMethodCode;
 
 export interface ForCreatorsContent {
   hero: { eyebrow: string; title: string; body: string; benefits: string[] };

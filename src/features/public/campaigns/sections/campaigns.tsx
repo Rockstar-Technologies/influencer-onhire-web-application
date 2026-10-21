@@ -146,8 +146,7 @@ export async function Campaigns() {
 
           <div>
             <h3 className="text-3xl font-bold leading-tight text-heading sm:text-4xl">
-              Post Campaigns and Have{" "}
-              <span className="text-primary">{overview.influencerReach} Influencers</span> Come to You
+              Post Campaigns and Have <span className="text-primary">Influencers</span> Come to You
             </h3>
 
             <ol className="mt-10 space-y-8">

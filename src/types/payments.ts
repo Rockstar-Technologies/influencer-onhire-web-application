@@ -1,6 +1,10 @@
-export type EscrowStatus = "held" | "requested" | "released";
+import type { PaymentMethodCode, PaymentStatus, WithdrawalStatus } from "@/lib/domain/vocabulary";
 
-export type PaymentMethod = "MTN MoMo" | "Orange Money";
+/** The API's payment statuses (held, requested, released, refund_pending, refunded). */
+export type EscrowStatus = PaymentStatus;
+
+/** The API's method code (`mtn_momo`, `orange_money`); show it with PAYMENT_METHOD_LABELS. */
+export type PaymentMethod = PaymentMethodCode;
 
 export interface EscrowPayment {
   id: string;
@@ -28,20 +32,6 @@ export interface DeliveryReport {
 }
 
 // What a brand is allowed to see: what they paid and where it is. No fee, no creator payout details.
-export interface BrandPaymentView {
-  id: string;
-  invoice: string;
-  campaign: string;
-  creatorName: string;
-  deposited: number;
-  method: PaymentMethod;
-  status: EscrowStatus;
-  fundedAt: string;
-  requestedAt?: string;
-  releasedAt?: string;
-  report?: DeliveryReport;
-}
-
 // What a creator is allowed to see: their take-home pay and how it's worked out.
 export interface CreatorPaymentView {
   id: string;
@@ -54,13 +44,6 @@ export interface CreatorPaymentView {
   requestedAt?: string;
   releasedAt?: string;
   report?: DeliveryReport;
-}
-
-export interface BrandPaymentSummary {
-  totalDeposited: number;
-  onHold: number;
-  awaitingRelease: number;
-  released: number;
 }
 
 export interface CreatorPaymentSummary {
@@ -79,7 +62,8 @@ export interface Withdrawal {
   amount: number;
   method: PaymentMethod;
   phone: string;
-  status: "processing" | "completed";
+  /** All eight API withdrawal states; the mock data only uses processing and completed. */
+  status: WithdrawalStatus;
   requestedAt: string;
   completedAt?: string;
 }
@@ -93,13 +77,6 @@ export interface CreatorWallet {
 
 // --- form state (shared by server actions and client forms) ---
 
-export type FundField = "creatorId" | "campaign" | "amount" | "method" | "phone";
-
-export type FundFormState =
-  | { status: "idle" }
-  | { status: "error"; values: Record<FundField, string>; errors: Partial<Record<FundField, string>> }
-  | { status: "success"; invoice: string; creatorName: string; amount: number };
-
 export type CashoutField = "summary" | "links";
 
 export type CashoutFormState =
@@ -111,7 +88,7 @@ export type WithdrawField = "amount" | "method" | "phone";
 
 export type WithdrawFormState =
   | { status: "idle" }
-  | { status: "error"; values: Record<WithdrawField, string>; errors: Partial<Record<WithdrawField, string>> }
+  | { status: "error"; values: Record<WithdrawField, string>; errors: Partial<Record<WithdrawField, string>>; message?: string }
   | { status: "success"; withdrawal: Withdrawal };
 
 export interface PaymentSplit {
