@@ -4,11 +4,11 @@ import { describe, expect, it } from "vitest";
 import * as v from "@/lib/domain/vocabulary";
 
 /**
- * Drift check against the REAL backend, when its repository is checked out next to this one (influencer-onhire-web/backend).
+ * Drift check against the REAL backend, when its repository is checked out next to this one (influencer-on-hire/).
  * It rebuilds every PostgreSQL enum from the migrations (CREATE TYPE plus every later ALTER TYPE ... ADD VALUE) and reads the seeded
  * reference codes, then requires the frontend's canonical lists to match exactly. Without the backend checkout the suite is skipped.
  */
-const BACKEND = path.resolve(import.meta.dirname, "../../../influencer-onhire-web/backend");
+const BACKEND = path.resolve(import.meta.dirname, "../../../influencer-on-hire");
 const present = existsSync(path.join(BACKEND, "migrations"));
 
 function enumsFromMigrations(): Map<string, string[]> {
