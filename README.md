@@ -44,3 +44,7 @@ Configuration is server-side only: see `.env.example` (`API_BASE_URL`, `APP_ORIG
 - `npm run test` — unit and component tests (Vitest, React Testing Library).
 - `npm run test:e2e` — Playwright journeys against a production build and disposable test APIs; see `tests/e2e/README.md`.
 - `npm run typecheck`, `npm run lint`, `npm run build`.
+
+## Documentation
+
+- `docs/FRONTEND_FLOW_ANALYSIS.md` — the frontend flow analysis (screens, flows and the data each one needs; referred to as **FFA** in the backend documents). It was moved here, unchanged, from the shared workspace folder `influencer-onhire-web/docs/` on 2026-10-21; the backend repository's documents now point to this location. Its "Scope note" describes the original workspace layout and is kept as written.
